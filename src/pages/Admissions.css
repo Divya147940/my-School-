@@ -1,0 +1,379 @@
+/* ===== Admissions Page ===== */
+.adm-page {
+    background: #fff;
+}
+
+.adm-hero {
+    background: linear-gradient(rgba(26, 26, 110, 0.92), rgba(26, 26, 110, 0.92)),
+        url('https://images.unsplash.com/photo-1523050335456-c7bb327b5e1c?auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.adm-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+}
+
+.adm-hero p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.adm-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Info Cards */
+.adm-info-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin: -40px auto 50px;
+    position: relative;
+    z-index: 2;
+}
+
+.adm-info-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 35px 30px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid #eee;
+}
+
+.adm-info-card h3 {
+    color: #1a1a6e;
+    font-size: 1.2rem;
+    margin-bottom: 18px;
+    font-weight: 700;
+}
+
+.adm-info-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.adm-info-card ul li {
+    padding: 8px 0;
+    color: #555;
+    font-size: 0.92rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.adm-info-card ul li:last-child {
+    border-bottom: none;
+}
+
+/* Fee Table */
+.adm-fee-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.adm-fee-table th {
+    background: #1a1a6e;
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.adm-fee-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    color: #444;
+}
+
+.adm-fee-table tr:hover td {
+    background: #f8f9fa;
+}
+
+/* Form Section */
+.adm-form-section {
+    background: #f8f9fa;
+    border-radius: 20px;
+    padding: 50px;
+    margin-bottom: 50px;
+}
+
+.adm-form-section h2 {
+    font-family: 'Playfair Display', serif;
+    color: #1a1a6e;
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.adm-form-subtitle {
+    display: block;
+    color: #e67e22;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 35px;
+}
+
+.adm-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+}
+
+.adm-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.adm-field-full {
+    margin-top: 22px;
+}
+
+.adm-field label {
+    color: #333;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.adm-field input,
+.adm-field select,
+.adm-field textarea {
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #333;
+    background: #fff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: inherit;
+}
+
+.adm-field input:focus,
+.adm-field select:focus,
+.adm-field textarea:focus {
+    outline: none;
+    border-color: #1a1a6e;
+    box-shadow: 0 0 0 3px rgba(26, 26, 110, 0.1);
+}
+
+.adm-field textarea {
+    resize: vertical;
+}
+
+.adm-submit-btn {
+    display: block;
+    width: 100%;
+    margin-top: 30px;
+    padding: 16px;
+    background: linear-gradient(135deg, #1a1a6e, #3a3aae);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(26, 26, 110, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.adm-submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(26, 26, 110, 0.4);
+}
+
+/* Payment Section */
+.adm-payment-section {
+    background: linear-gradient(135deg, #1a1a6e 0%, #2a2a8e 100%);
+    border-radius: 20px;
+    padding: 50px;
+    margin-bottom: 60px;
+    text-align: center;
+    animation: paymentSlideIn 0.5s ease forwards;
+}
+
+@keyframes paymentSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.adm-payment-section h2 {
+    font-family: 'Playfair Display', serif;
+    color: #fff;
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.adm-payment-subtitle {
+    display: block;
+    color: #e67e22;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 30px;
+}
+
+.adm-payment-summary {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 35px;
+    flex-wrap: wrap;
+}
+
+.adm-payment-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.adm-payment-detail span {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.adm-payment-detail strong {
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.adm-payment-methods {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.adm-pay-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 30px 25px;
+    backdrop-filter: blur(10px);
+    text-align: left;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.adm-pay-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.adm-pay-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.adm-pay-card h3 {
+    color: #e67e22;
+    font-size: 1.15rem;
+    margin-bottom: 15px;
+}
+
+.adm-bank-details p,
+.adm-cash-info p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.88rem;
+    line-height: 1.8;
+    margin: 0;
+}
+
+.adm-bank-details p strong,
+.adm-cash-info p strong {
+    color: #fff;
+}
+
+.adm-upi-box {
+    text-align: center;
+}
+
+.adm-upi-id {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+}
+
+.adm-upi-id span {
+    display: block;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
+
+.adm-upi-id strong {
+    color: #e67e22;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+}
+
+.adm-upi-note {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.adm-payment-note {
+    background: rgba(230, 126, 34, 0.15);
+    border: 1px solid rgba(230, 126, 34, 0.3);
+    border-radius: 10px;
+    padding: 15px 20px;
+    text-align: left;
+}
+
+.adm-payment-note p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .adm-hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .adm-info-section {
+        grid-template-columns: 1fr;
+        margin-top: -25px;
+    }
+
+    .adm-form-section {
+        padding: 30px 20px;
+    }
+
+    .adm-form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .adm-payment-section {
+        padding: 30px 20px;
+    }
+
+    .adm-payment-methods {
+        grid-template-columns: 1fr;
+    }
+
+    .adm-payment-summary {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+}

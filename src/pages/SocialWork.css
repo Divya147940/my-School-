@@ -1,0 +1,175 @@
+/* ===== Social Work Page ===== */
+.sw-page {
+    background: #fff;
+}
+
+.sw-hero {
+    background: linear-gradient(rgba(26, 26, 110, 0.9), rgba(26, 26, 110, 0.9)),
+        url('https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.sw-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+}
+
+.sw-hero p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Intro */
+.sw-intro {
+    max-width: 900px;
+    margin: -40px auto 0;
+    background: white;
+    padding: 50px;
+    border-radius: 15px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.sw-intro h2 {
+    color: #c0392b;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.sw-intro p {
+    color: #555;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+/* Grid */
+.sw-grid-section {
+    padding: 60px 20px 80px;
+    background: #f8f9fa;
+}
+
+.sw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sw-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 40px 30px 35px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eee;
+    position: relative;
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sw-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+}
+
+.sw-card-tag {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.sw-card-icon {
+    font-size: 2.8rem;
+    margin-bottom: 18px;
+}
+
+.sw-card h3 {
+    color: #1a1a6e;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.sw-card p {
+    color: #666;
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+
+/* CTA */
+.sw-cta {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.sw-cta h2 {
+    font-family: 'Playfair Display', serif;
+    color: #fff;
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+}
+
+.sw-cta p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+.sw-cta-btn {
+    display: inline-block;
+    background: #fff;
+    color: #27ae60;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.sw-cta-btn:hover {
+    background: #1a1a6e;
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sw-hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .sw-intro {
+        padding: 30px 20px;
+        margin-top: -25px;
+        width: 90%;
+    }
+
+    .sw-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sw-cta h2 {
+        font-size: 1.6rem;
+    }
+}
