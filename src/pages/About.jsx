@@ -46,13 +46,12 @@ function About() {
         <div className="about-page">
             <div className="about-hero">
                 <h1>About Our Institute</h1>
-                <p>Nurturing Excellence Since 2013 — 13 Years of Educational Legacy</p>
+                <p>Celebrating 13 Years of Educational Legacy</p>
             </div>
 
             <div className="about-content">
                 <h2>Our Story & Legacy</h2>
                 <p>
-                    श्री जागेश्वर मेमोरियल एजुकेशनल इंस्टीट्यूट की स्थापना सन् <strong>2013</strong> में हुई थी।
                     पिछले <strong>13 वर्षों</strong> से हमारा संस्थान गुणवत्तापूर्ण शिक्षा प्रदान करने के लिए
                     समर्पित है। हम शिक्षा के क्षेत्र में एक प्रकाशस्तंभ के रूप में खड़े हैं,
                     जहाँ हर विद्यार्थी अपनी पूरी क्षमता को पहचान सकता है।
