@@ -2,6 +2,7 @@ import React from 'react';
 import './TopBar.css';
 import logo from '../assets/school-logo.png';
 
+// Elite Institutional Header - Vercel Deployment Trigger
 const TopBar = () => {
     return (
         <header className="main-header">
