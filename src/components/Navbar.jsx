@@ -53,6 +53,7 @@ const Navbar = () => {
                     <li><Link to="/academics" className={`nav-link ${isActive('/academics') ? 'active-link' : ''}`} onClick={closeMenu}>Academics</Link></li>
                     <li><Link to="/admissions" className={`nav-link ${isActive('/admissions') ? 'active-link' : ''}`} onClick={closeMenu}>Admissions</Link></li>
                     <li><Link to="/faculty" className={`nav-link ${isActive('/faculty') ? 'active-link' : ''}`} onClick={closeMenu}>Faculty</Link></li>
+                    <li><Link to="/attendance" className={`nav-link ${isActive('/attendance') ? 'active-link' : ''}`} onClick={closeMenu}>Attendance</Link></li>
                     <li><Link to="/gallery" className={`nav-link ${isActive('/gallery') ? 'active-link' : ''}`} onClick={closeMenu}>Gallery</Link></li>
                     <li><Link to="/contact" className={`nav-link ${isActive('/contact') ? 'active-link' : ''}`} onClick={closeMenu}>Contact</Link></li>
                 </ul>

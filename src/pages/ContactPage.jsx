@@ -10,6 +10,26 @@ function ContactPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
         setSent(true);
+
+        // Format message for WhatsApp
+        const message = `*New Contact Inquiry*\n\n` +
+            `*Name:* ${form.name}\n` +
+            `*Phone:* ${form.phone}\n` +
+            `*Email:* ${form.email || 'N/A'}\n` +
+            `*Subject:* ${form.subject}\n` +
+            `*Message:* ${form.message}`;
+
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/919792799550?text=${encodedMessage}`;
+
+        // Redirect to WhatsApp after a brief delay
+        setTimeout(() => {
+            window.open(whatsappUrl, '_blank');
+        }, 1500);
+    };
+
+    const handleCall = () => {
+        window.location.href = "tel:+919792799550";
     };
 
     return (
@@ -127,7 +147,7 @@ function ContactPage() {
                 <div className="cp-quick-connect">
                     <h2>Quick Connect</h2>
                     <div className="cp-quick-buttons">
-                        <a href="tel:+919792799550" className="cp-quick-btn cp-call">📞 Call Now</a>
+                        <button onClick={handleCall} className="cp-quick-btn cp-call">📞 Call Now</button>
                         <a href="https://wa.me/919792799550" target="_blank" rel="noopener noreferrer" className="cp-quick-btn cp-whatsapp">💬 WhatsApp</a>
                         <a href="mailto:divyanshiverma@gmail.com" className="cp-quick-btn cp-email">✉️ Email Us</a>
                         <a href="https://maps.google.com/?q=Tiloi,Amethi,Uttar+Pradesh" target="_blank" rel="noopener noreferrer" className="cp-quick-btn cp-map">📍 Directions</a>

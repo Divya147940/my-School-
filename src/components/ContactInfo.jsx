@@ -32,7 +32,7 @@ const ContactInfo = () => {
                 </svg>
             ),
             title: "Contact No.& Mobile No.",
-            line1: "+91 9792799550,",
+            line1: <a href="tel:+919792799550">+91 9792799550</a>,
             line2: " "
         },
         {
@@ -43,7 +43,7 @@ const ContactInfo = () => {
                 </svg>
             ),
             title: "Mail ID",
-            line1: "divyanshiverma@gmal.com",
+            line1: <a href="mailto:divyanshiverma@gmail.com">divyanshiverma@gmail.com</a>,
             line2: " "
         }
     ];

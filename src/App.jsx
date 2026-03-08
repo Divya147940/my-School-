@@ -14,6 +14,7 @@ import VisionMission from './pages/VisionMission';
 import SocialWork from './pages/SocialWork';
 import Achievements from './pages/Achievements';
 import Facilities from './pages/Facilities';
+import Attendance from './pages/Attendance';
 import './App.css';
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
             <Route path="/academics" element={<Academics />} />
             <Route path="/admissions" element={<Admissions />} />
             <Route path="/faculty" element={<Faculty />} />
+            <Route path="/attendance" element={<Attendance />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/contact" element={<ContactPage />} />
           </Routes>

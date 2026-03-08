@@ -377,3 +377,29 @@
         align-items: center;
     }
 }
+
+/* Error Text Styles */
+.error-text {
+    color: #ff4d4d;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: block;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.adm-field input.error {
+    border-color: #ff4d4d !important;
+}

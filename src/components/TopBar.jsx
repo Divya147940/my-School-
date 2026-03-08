@@ -3,60 +3,88 @@ import './TopBar.css';
 import logo from '../assets/school-logo.png';
 
 const TopBar = () => {
-  return (
-    <div className="topbar">
-      <div className="topbar-container">
-        {/* Logo & School Name */}
-        <div className="topbar-brand">
-          <img src={logo} alt="Shri Jageshwar Memorial Logo" className="topbar-logo" />
-          <div className="topbar-brand-text">
-            <h1 className="topbar-title">SHRI JAGESHWAR MEMORIAL</h1>
-            <h2 className="topbar-subtitle">EDUCATIONAL INSTITUTE</h2>
-            <p className="topbar-tagline">Shaping futures through quality education</p>
-          </div>
-        </div>
+    return (
+        <header className="main-header">
+            {/* Upper Elite Bar - For News & Socials */}
+            <div className="upper-bar">
+                <div className="upper-container">
+                    <div className="news-ticker">
+                        <span className="news-label">LATEST</span>
+                        <p className="news-text">Admissions Open for Session 2024-25 • Excellence in Education Since 1998</p>
+                    </div>
+                    <div className="upper-links">
+                        <a href="#" className="upper-link">Alumni</a>
+                        <a href="#" className="upper-link">Careers</a>
+                        <a href="#" className="upper-link">Portal Login</a>
+                        <div className="social-mini">
+                            <a href="#" className="social-icon-mini">FB</a>
+                            <a href="#" className="social-icon-mini">IG</a>
+                            <a href="#" className="social-icon-mini">YT</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        {/* Contact Info */}
-        <div className="topbar-contacts">
-          <div className="topbar-contact-item">
-            <div className="topbar-icon phone-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1.003 1.003 0 011.01-.24c1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.1.31.03.66-.25 1.02l-2.2 2.2z" />
-              </svg>
-            </div>
-            <div className="topbar-contact-text">
-              <span className="contact-label">Phone:</span>
-              <span className="contact-value">+91 9792799550</span>
-            </div>
-          </div>
+            {/* Main Branding & Contact Bar */}
+            <div className="topbar-main">
+                <div className="topbar-container">
+                    <div className="brand-elite">
+                        <div className="logo-box">
+                            <img src={logo} alt="Shri Jageshwar Memorial Logo" className="logo-main" />
+                        </div>
+                        <div className="brand-info">
+                            <h1 className="brand-title">SHRI JAGESHWAR MEMORIAL</h1>
+                            <h2 className="brand-subtitle">EDUCATIONAL INSTITUTE</h2>
+                            <div className="brand-motto">
+                                <span className="motto-dot"></span>
+                                <p className="motto-text">Shaping futures through quality education</p>
+                            </div>
+                        </div>
+                    </div>
 
-          <div className="topbar-contact-item">
-            <div className="topbar-icon email-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-              </svg>
-            </div>
-            <div className="topbar-contact-text">
-              <span className="contact-label">Email:</span>
-              <span className="contact-value">divyanshiverma@gmal.com</span>
-            </div>
-          </div>
+                    <div className="contact-nodes">
+                        <div className="contact-node">
+                            <div className="node-icon call">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                </svg>
+                            </div>
+                            <div className="node-details">
+                                <span className="detail-label">Admission Helpline</span>
+                                <a href="tel:+919792799550" className="detail-value">+91 9792799550</a>
+                            </div>
+                        </div>
 
-          <div className="topbar-contact-item">
-            <div className="topbar-icon address-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
-              </svg>
+                        <div className="contact-node">
+                            <div className="node-icon mail">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                    <polyline points="22,6 12,13 2,6" />
+                                </svg>
+                            </div>
+                            <div className="node-details">
+                                <span className="detail-label">Official Email</span>
+                                <a href="mailto:divyanshiverma@gmail.com" className="detail-value">divyanshiverma@gmail.com</a>
+                            </div>
+                        </div>
+
+                        <div className="contact-node">
+                            <div className="node-icon loc">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                            </div>
+                            <div className="node-details">
+                                <span className="detail-label">Campus Location</span>
+                                <address className="detail-value">Laxman Ganj, Tiloi, Amethi</address>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div className="topbar-contact-text">
-              <span className="contact-label">Address:</span>
-              <span className="contact-value">Laxman Ganj, Tiloi, Amethi</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+        </header>
+    );
 };
 
 export default TopBar;

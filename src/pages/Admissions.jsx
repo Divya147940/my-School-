@@ -19,16 +19,82 @@ function Admissions() {
 
     const [submitted, setSubmitted] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
+    const [errors, setErrors] = useState({});
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const validateForm = () => {
+        let newErrors = {};
+
+        // Aadhaar Validation (12 digits)
+        if (formData.aadhar && !/^\d{12}$/.test(formData.aadhar.replace(/-/g, ''))) {
+            newErrors.aadhar = 'Invalid Aadhaar: Please enter a 12-digit number.';
+        }
+
+        // Phone Validation (exactly 10 digits)
+        if (!/^\d{10}$/.test(formData.phone)) {
+            newErrors.phone = 'Invalid Phone: Please enter exactly 10 digits.';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors({ ...errors, [name]: '' });
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setSubmitted(true);
-        setShowPayment(true);
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+        if (!validateForm()) {
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5001/api/admissions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                setSubmitted(true);
+                setShowPayment(true);
+
+                // Format message for WhatsApp
+                const message = `*New Admission Inquiry*\n\n` +
+                    `*Student:* ${formData.studentName}\n` +
+                    `*Father:* ${formData.fatherName}\n` +
+                    `*Mother:* ${formData.motherName}\n` +
+                    `*DOB:* ${formData.dob}\n` +
+                    `*Gender:* ${formData.gender}\n` +
+                    `*Aadhar:* ${formData.aadhar || 'N/A'}\n` +
+                    `*Class:* ${formData.classApplied}\n` +
+                    `*Phone:* ${formData.phone}\n` +
+                    `*Address:* ${formData.address}`;
+
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/918009799550?text=${encodedMessage}`;
+
+                // Redirect to WhatsApp after a brief delay
+                setTimeout(() => {
+                    window.open(whatsappUrl, '_blank');
+                }, 1500);
+
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            } else {
+                alert("Failed to submit admission form to server.");
+            }
+        } catch (err) {
+            console.error("Error submitting form:", err);
+            alert("An error occurred. Please try again later.");
+        }
     };
 
     const feeStructure = [
@@ -117,7 +183,8 @@ function Admissions() {
                             </div>
                             <div className="adm-field">
                                 <label>Aadhar Number / आधार नंबर</label>
-                                <input type="text" name="aadhar" value={formData.aadhar} onChange={handleChange} placeholder="XXXX-XXXX-XXXX" maxLength="14" />
+                                <input type="text" name="aadhar" value={formData.aadhar} onChange={handleChange} placeholder="XXXX-XXXX-XXXX" maxLength="12" />
+                                {errors.aadhar && <span className="error-text">{errors.aadhar}</span>}
                             </div>
                             <div className="adm-field">
                                 <label>Class Applied For / कक्षा *</label>
@@ -155,6 +222,7 @@ function Admissions() {
                             <div className="adm-field">
                                 <label>Phone Number / फ़ोन नंबर *</label>
                                 <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="10-digit mobile number" maxLength="10" required />
+                                {errors.phone && <span className="error-text">{errors.phone}</span>}
                             </div>
                             <div className="adm-field">
                                 <label>Email / ईमेल</label>

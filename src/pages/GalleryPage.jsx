@@ -1,23 +1,13 @@
 import React, { useState } from 'react';
 import './GalleryPage.css';
-import photo1 from '../assets/gallery/photo1.png';
 import photo2 from '../assets/gallery/photo2.png';
-import photo3 from '../assets/gallery/photo3.png';
-import photo4 from '../assets/gallery/photo4.png';
-import photo5 from '../assets/gallery/photo5.png';
-import campus1 from '../assets/gallery/campus1.png';
 
 function GalleryPage() {
     const [activeFilter, setActiveFilter] = useState('all');
     const [lightbox, setLightbox] = useState(null);
 
     const galleryItems = [
-        { src: campus1, category: 'campus', title: 'विद्यालय परिसर', desc: 'Our School Campus' },
-        { src: photo1, category: 'events', title: 'वार्षिक उत्सव', desc: 'Annual Function' },
         { src: photo2, category: 'events', title: 'सांस्कृतिक कार्यक्रम', desc: 'Cultural Program' },
-        { src: photo3, category: 'classroom', title: 'कक्षा में शिक्षण', desc: 'Classroom Teaching' },
-        { src: photo4, category: 'events', title: 'पुरस्कार वितरण', desc: 'Prize Distribution' },
-        { src: photo5, category: 'campus', title: 'परिसर का दृश्य', desc: 'Campus View' },
     ];
 
     const filters = [
