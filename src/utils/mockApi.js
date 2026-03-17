@@ -30,6 +30,67 @@ const defaultData = {
   fees: [
     { id: 1, student: 'Aman Gupta', class: '10A', total: 45000, paid: 40000, status: 'Partial' },
     { id: 2, student: 'Priya Singh', class: '9B', total: 40000, paid: 15000, status: 'Pending' },
+  ],
+  elearning: [
+    { id: 1, title: 'Introduction to Algebra', subject: 'Mathematics', type: 'video', url: 'https://example.com/algebra', author: 'Dr. Smith', date: '2026-03-10' },
+    { id: 2, title: 'Cell Structure PDF', subject: 'Biology', type: 'pdf', url: '#', author: 'Prof. Miller', date: '2026-03-12' },
+  ],
+  transport: {
+    busNo: 'NSGI-007',
+    driver: 'Rajesh Kumar',
+    status: 'on-route',
+    currentStop: 'Main Gate',
+    nextStop: 'Civil Lines',
+    eta: '10 Mins'
+  },
+  quizzes: [
+    {
+      id: 1,
+      title: 'Monthly Math Quiz',
+      subject: 'Mathematics',
+      creator: 'Mr. Verma',
+      questions: [
+        { q: 'What is 5 x 5?', options: ['10', '20', '25', '30'], correct: 2 },
+        { q: 'Square root of 81?', options: ['7', '8', '9', '10'], correct: 2 }
+      ]
+    }
+  ],
+  reportCards: [
+    {
+      id: 1,
+      studentName: 'Aman Gupta',
+      rollNo: '2026001',
+      class: '10A',
+      examType: 'Final Term',
+      subjects: [
+        { name: 'Mathematics', marks: 85, total: 100 },
+        { name: 'Science', marks: 78, total: 100 },
+        { name: 'English', marks: 92, total: 100 },
+        { name: 'Social Science', marks: 74, total: 100 },
+        { name: 'Hindi', marks: 88, total: 100 }
+      ],
+      remarks: 'Excellent performance in Mathematics and English.',
+      date: '2026-03-15'
+    }
+  ],
+  qrSettings: {
+    schoolLocation: { lat: 26.2167, lng: 81.2333 }, // Example: Raebareli
+    rangeMeter: 10,
+    morning: { start: '07:00', end: '09:00' },
+    evening: { start: '15:00', end: '17:00' }
+  },
+  qrAttendanceLogs: [],
+  gallery: [
+    { id: 1, type: 'image', url: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d', title: 'Annual Day 2025' },
+    { id: 2, type: 'video', url: 'https://www.w3schools.com/html/mov_bbb.mp4', title: 'Science Fair Highlights' },
+  ],
+  jobs: [
+    { id: 1, position: 'Mathematics Teacher', department: 'Senior School', status: 'Active', date: '2026-03-15' },
+    { id: 2, position: 'Physical Education Coach', department: 'Sports', status: 'Filled', date: '2026-02-10' },
+  ],
+  newsItems: [
+    { id: 1, date: 'Mar 2026', title: 'Teachers Written Exam Result' },
+    { id: 2, date: '24 Feb 2026', title: 'NSPS Lalganj First Entrance Test Result' },
   ]
 };
 
@@ -146,5 +207,110 @@ export const mockApi = {
       record.status = record.paid >= record.total ? 'Paid' : 'Partial';
     }
     saveDB(db);
+  },
+
+  // Generic Initial Data
+  getInitialData: () => getDB(),
+
+  // E-Learning
+  addELearning: (resource) => {
+    const db = getDB();
+    const newRes = { ...resource, id: Date.now(), date: new Date().toISOString().split('T')[0] };
+    db.elearning.unshift(newRes);
+    saveDB(db);
+    return newRes;
+  },
+
+  // Quizzes
+  addQuiz: (quiz) => {
+    const db = getDB();
+    const newQuiz = { ...quiz, id: Date.now() };
+    db.quizzes.unshift(newQuiz);
+    saveDB(db);
+    return newQuiz;
+  },
+
+  // Gallery
+  getGallery: () => getDB().gallery,
+  addGallery: (item) => {
+    const db = getDB();
+    db.gallery.unshift({ id: Date.now(), ...item });
+    saveDB(db);
+  },
+  removeGallery: (id) => {
+    const db = getDB();
+    db.gallery = db.gallery.filter(item => item.id !== id);
+    saveDB(db);
+  },
+
+  // Hiring
+  getJobs: () => getDB().jobs,
+  addJob: (job) => {
+    const db = getDB();
+    db.jobs.unshift({ id: Date.now(), date: new Date().toISOString().split('T')[0], status: 'Active', ...job });
+    saveDB(db);
+  },
+  updateJobStatus: (id, status) => {
+    const db = getDB();
+    const job = db.jobs.find(j => j.id === id);
+    if (job) job.status = status;
+    saveDB(db);
+  },
+
+  // News
+  getNews: () => getDB().newsItems,
+  addNews: (news) => {
+    const db = getDB();
+    db.newsItems.unshift({ id: Date.now(), ...news });
+    saveDB(db);
+  },
+
+  // Report Cards
+  getReportCards: (studentName) => {
+    const db = getDB();
+    if (studentName) {
+      return db.reportCards.filter(rc => rc.studentName === studentName);
+    }
+    return db.reportCards;
+  },
+  addReportCard: (card) => {
+    const db = getDB();
+    db.reportCards.unshift({ id: Date.now(), date: new Date().toISOString().split('T')[0], ...card });
+    saveDB(db);
+  },
+
+  // QR Attendance
+  getQRSettings: () => {
+    return getDB().qrSettings;
+  },
+  updateQRSettings: (settings) => {
+    const db = getDB();
+    db.qrSettings = { ...db.qrSettings, ...settings };
+    saveDB(db);
+  },
+  getQRAttendance: (name) => {
+    const db = getDB();
+    if (name) return db.qrAttendanceLogs.filter(log => log.name === name);
+    return db.qrAttendanceLogs;
+  },
+  logQRAttendance: (log) => {
+    const db = getDB();
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Find if user already logged today
+    let userLog = db.qrAttendanceLogs.find(l => l.name === log.name && l.date === today);
+    
+    if (!userLog) {
+      userLog = { id: Date.now(), name: log.name, role: log.role, date: today, morning: null, evening: null, complete: false };
+      db.qrAttendanceLogs.unshift(userLog);
+    }
+    
+    if (log.type === 'morning') userLog.morning = log.time;
+    if (log.type === 'evening') userLog.evening = log.time;
+    
+    if (userLog.morning && userLog.evening) userLog.complete = true;
+    
+    saveDB(db);
+    return userLog;
   }
 };

@@ -1,0 +1,28 @@
+.lang-toggle-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 6px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.lang-toggle-btn:hover {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+}
+
+.lang-icon { font-size: 1rem; }
+
+@media (max-width: 768px) {
+    .lang-text { display: none; }
+    .lang-toggle-btn { padding: 8px; border-radius: 50%; }
+}

@@ -23,12 +23,16 @@ import FacultyDashboard from './pages/FacultyDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ParentDashboard from './pages/ParentDashboard';
+import Careers from './pages/Careers';
+import AIChatbot from './components/Common/AIChatbot';
+import AnnouncementTicker from './components/Common/AnnouncementTicker';
 import './App.css';
 
 function App() {
   return (
     <Router>
       <div className="app">
+        <AnnouncementTicker />
         <TopBar />
         <Navbar />
 
@@ -52,6 +56,7 @@ function App() {
             <Route path="/student-dashboard" element={<StudentDashboard />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/parent-dashboard" element={<ParentDashboard />} />
+            <Route path="/careers" element={<Careers />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-conditions" element={<TermsConditions />} />
             <Route path="/user-data-deletion" element={<UserDataDeletion />} />
@@ -60,6 +65,7 @@ function App() {
 
         {/* Footer */}
         <Footer />
+        <AIChatbot />
       </div>
     </Router>
   );

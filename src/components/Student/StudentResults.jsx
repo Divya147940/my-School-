@@ -1,51 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { mockApi } from '../../utils/mockApi';
+import ReportCard from '../Common/ReportCard';
 
-const StudentResults = () => {
-  const results = [
-    { subject: 'Mathematics', marks: 48, total: 50, grade: 'A+' },
-    { subject: 'Science', marks: 42, total: 50, grade: 'A' },
-    { subject: 'English', marks: 45, total: 50, grade: 'A+' },
-    { subject: 'Hindi', marks: 40, total: 50, grade: 'B+' },
-  ];
+const StudentResults = ({ studentName = 'Aman Gupta' }) => {
+  const [reportCards, setReportCards] = useState([]);
+  const [selectedCard, setSelectedCard] = useState(null);
+
+  useEffect(() => {
+    setReportCards(mockApi.getReportCards(studentName));
+  }, [studentName]);
+
+  if (selectedCard) {
+    return (
+      <div className="report-card-view">
+        <button 
+          onClick={() => setSelectedCard(null)}
+          style={{ marginBottom: '20px', padding: '10px 20px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+        >
+          ← Back to Results List
+        </button>
+        <ReportCard data={selectedCard} />
+        <div style={{ textAlign: 'center', marginTop: '30px' }}>
+          <button 
+            onClick={() => window.print()}
+            style={{ padding: '12px 30px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 20px rgba(59,130,246,0.3)' }}
+          >
+            🖨️ Print Report Card
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="student-results">
-      <div style={{ background: 'rgba(30, 41, 59, 0.5)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead>
-            <tr style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
-              <th style={{ padding: '15px 20px' }}>Subject</th>
-              <th style={{ padding: '15px 20px' }}>Marks Obtained</th>
-              <th style={{ padding: '15px 20px' }}>Total Marks</th>
-              <th style={{ padding: '15px 20px' }}>Grade</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((res, index) => (
-              <tr key={index} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                <td style={{ padding: '15px 20px' }}>{res.subject}</td>
-                <td style={{ padding: '15px 20px' }}>{res.marks}</td>
-                <td style={{ padding: '15px 20px' }}>{res.total}</td>
-                <td style={{ padding: '15px 20px', fontWeight: 'bold', color: '#60a5fa' }}>{res.grade}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div style={{ marginTop: '30px', padding: '25px', borderRadius: '20px', background: 'linear-gradient(to right, rgba(96, 165, 250, 0.1), rgba(168, 85, 247, 0.1))', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <h3 style={{ marginTop: 0 }}>Final Assessment Summary</h3>
-        <p style={{ color: '#94a3b8' }}>Excellent performance this term. Keep up the good work in Mathematics and Science.</p>
-        <div style={{ display: 'flex', gap: '30px', marginTop: '15px' }}>
-          <div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>87.5%</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Percentage</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>A</div>
-            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Overall Grade</div>
-          </div>
+        <h3 style={{ marginBottom: '20px' }}>Your Official Examination Reports</h3>
+        <div className="report-cards-list" style={{ display: 'grid', gap: '20px' }}>
+            {reportCards.length > 0 ? reportCards.map((rc) => {
+                const totalMarks = rc.subjects.reduce((sum, s) => sum + s.marks, 0);
+                const totalPossible = rc.subjects.reduce((sum, s) => sum + s.total, 0);
+                const pct = ((totalMarks / totalPossible) * 100).toFixed(1);
+                
+                return (
+                    <div key={rc.id} className="report-card-item" style={{ background: 'rgba(255,255,255,0.03)', padding: '25px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{rc.examType} ({rc.date})</span>
+                            <h4 style={{ fontSize: '1.4rem', margin: '5px 0' }}>Score: {pct}%</h4>
+                            <p style={{ margin: 0, color: '#10b981', fontWeight: 'bold' }}>Status: {pct >= 50 ? 'Promoted' : 'Detained'}</p>
+                        </div>
+                        <button 
+                            onClick={() => setSelectedCard(rc)}
+                            style={{ padding: '12px 25px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                            View & Print Report Card
+                        </button>
+                    </div>
+                );
+            }) : (
+                <div style={{ textAlign: 'center', padding: '40px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', color: '#94a3b8' }}>
+                    No report cards available yet.
+                </div>
+            )}
         </div>
+
+      <div style={{ marginTop: '40px', padding: '25px', borderRadius: '20px', background: 'linear-gradient(to right, rgba(96, 165, 250, 0.1), rgba(168, 85, 247, 0.1))', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <h3 style={{ marginTop: 0 }}>Academic Note</h3>
+        <p style={{ color: '#94a3b8' }}>Official report cards are generated by the Registrar office. If you find any discrepancy, please contact your class teacher immediately.</p>
       </div>
     </div>
   );

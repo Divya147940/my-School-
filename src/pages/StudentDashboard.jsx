@@ -7,6 +7,14 @@ import StudentLeave from '../components/Student/StudentLeave';
 import StudentDiary from '../components/Student/StudentDiary';
 import Library from '../components/Faculty/Library'; // Reusing visual component
 import Transport from '../components/Faculty/Transport'; // Reusing visual component
+import ELearningHub from '../components/ELearningHub';
+import BusTracking from '../components/BusTracking';
+import QuizSystem from '../components/QuizSystem';
+import AchievementGallery from '../components/Common/AchievementGallery';
+import SmartStore from '../components/Common/SmartStore';
+import HealthTracker from '../components/Common/HealthTracker';
+import DocumentVault from '../components/Common/DocumentVault';
+import QRAttendance from '../components/Common/QRAttendance';
 import CommandPalette from '../components/CommandPalette';
 import './StudentDashboard.css';
 
@@ -16,10 +24,18 @@ const StudentDashboard = () => {
 
   const navItems = [
     { name: 'Overview', icon: '🏠' },
+    { name: 'Scan Attendance', icon: '📲' },
     { name: 'Attendance', icon: '📝' },
     { name: 'Assignments', icon: '📚' },
     { name: 'Results', icon: '🏆' },
+    { name: 'Online Quizzes', icon: '🧠' },
+    { name: 'Hall of Fame', icon: '🌟' },
+    { name: 'Smart Store', icon: '🛒' },
+    { name: 'Health Record', icon: '🏥' },
+    { name: 'Doc Vault', icon: '📂' },
     { name: 'Timetable', icon: '📅' },
+    { name: 'E-Learning', icon: '🎥' },
+    { name: 'Live Bus', icon: '🚌' },
     { name: 'Digital Diary', icon: '📝' },
     { name: 'Leave', icon: '✉️' },
     { name: 'Extra Resources', icon: '💡' }
@@ -67,14 +83,30 @@ const StudentDashboard = () => {
             </div>
           </div>
         );
+      case 'Scan Attendance':
+        return <div className="feature-section"><QRAttendance user={{ name: studentInfo.name, role: 'student' }} /></div>;
       case 'Attendance':
         return <div className="feature-section"><StudentAttendance /></div>;
       case 'Assignments':
         return <div className="feature-section"><StudentAssignments /></div>;
       case 'Results':
         return <div className="feature-section"><StudentResults /></div>;
+      case 'Online Quizzes':
+        return <div className="feature-box"><QuizSystem userType="student" /></div>;
+      case 'Hall of Fame':
+        return <div className="feature-section"><AchievementGallery /></div>;
+      case 'Smart Store':
+        return <div className="feature-section"><SmartStore /></div>;
+      case 'Health Record':
+        return <div className="feature-section"><HealthTracker /></div>;
+      case 'Doc Vault':
+        return <div className="feature-section"><DocumentVault /></div>;
       case 'Timetable':
         return <div className="feature-section"><StudentTimetable /></div>;
+      case 'E-Learning':
+        return <div className="feature-section"><ELearningHub userType="student" /></div>;
+      case 'Live Bus':
+        return <div className="feature-section"><BusTracking /></div>;
       case 'Digital Diary':
         return <div className="feature-section"><StudentDiary /></div>;
       case 'Leave':

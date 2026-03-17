@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import LanguageToggle from './Common/LanguageToggle';
 import './TopBar.css';
 import logo from '../assets/school-logo.png';
 
@@ -15,6 +16,7 @@ const TopBar = () => {
                         <p className="news-text">Admissions Open for Session 2024-25 • Excellence in Education Since 1998</p>
                     </div>
                     <div className="upper-links">
+                        <LanguageToggle />
                         <a href="#" className="upper-link">Alumni</a>
                         <a href="#" className="upper-link">Careers</a>
                         <Link to="/login" className="upper-link">Portal Login</Link>

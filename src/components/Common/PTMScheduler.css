@@ -1,0 +1,123 @@
+.ptm-container {
+    padding: 20px;
+    color: #fff;
+}
+
+.ptm-header {
+    margin-bottom: 40px;
+}
+
+.ptm-header p { color: #94a3b8; margin-top: 10px; }
+
+.ptm-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.booking-form-card, .upcoming-ptm-card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 30px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.booking-form-card h3, .upcoming-ptm-card h3 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+.ptm-input-group { margin-bottom: 20px; }
+.ptm-input-group label { display: block; margin-bottom: 10px; color: #94a3b8; font-size: 0.85rem; }
+.ptm-input-group input, .ptm-input-group select {
+    width: 100%;
+    padding: 12px;
+    background: #0f172a;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    border-radius: 12px;
+}
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 25px 0;
+}
+
+.slot-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #94a3b8;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.slot-btn.selected {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+}
+
+.confirm-booking-btn {
+    width: 100%;
+    padding: 15px;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.confirm-booking-btn:hover { background: #2563eb; }
+
+/* Upcoming List */
+.no-ptm { color: #475569; text-align: center; padding: 50px 0; }
+
+.ptm-item {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    background: rgba(255,255,255,0.02);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.ptm-date-box {
+    background: #1e293b;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.p-day { font-size: 1.2rem; font-weight: 800; color: #3b82f6; }
+.p-month { font-size: 0.6rem; text-transform: uppercase; color: #64748b; }
+
+.ptm-details h4 { margin: 0; font-size: 0.95rem; }
+.ptm-details p { margin: 5px 0; color: #94a3b8; font-size: 0.8rem; }
+
+.ptm-status-badge {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+@media (max-width: 900px) {
+    .ptm-layout { grid-template-columns: 1fr; }
+}

@@ -5,8 +5,13 @@ import Timetable from '../components/Faculty/Timetable';
 import Exams from '../components/Faculty/Exams';
 import LeaveRequest from '../components/Faculty/LeaveRequest';
 import DigitalDiary from '../components/Faculty/DigitalDiary';
-import Library from '../components/Faculty/Library';
+import SalarySlip from '../components/Faculty/SalarySlip';
+import PTMScheduler from '../components/Common/PTMScheduler';
 import Transport from '../components/Faculty/Transport';
+import ELearningHub from '../components/ELearningHub';
+import QuizSystem from '../components/QuizSystem';
+import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
+import QRAttendance from '../components/Common/QRAttendance';
 import CommandPalette from '../components/CommandPalette';
 import './FacultyDashboard.css';
 
@@ -15,10 +20,16 @@ const FacultyDashboard = () => {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
   const navItems = [
-    { name: 'Overview', icon: '📊' },
+    { name: 'Overview', icon: '🏠' },
+    { name: 'E-Attendance', icon: '📲' },
     { name: 'Attendance', icon: '📝' },
     { name: 'Examinations', icon: '✍️' },
+    { name: 'Report Card Generator', icon: '📊' },
+    { name: 'PTM Meetings', icon: '🗓️' },
+    { name: 'Create Quizzes', icon: '🧠' },
     { name: 'Timetable', icon: '📅' },
+    { name: 'Salary Slips', icon: '💳' },
+    { name: 'E-Learning (Upload)', icon: '🎥' },
     { name: 'Homework', icon: '📚' },
     { name: 'Leave Request', icon: '✉️' },
     { name: 'Digital Diary', icon: '📓' },
@@ -72,6 +83,8 @@ const FacultyDashboard = () => {
             </div>
           </div>
         );
+      case 'E-Attendance':
+        return <div className="feature-section"><QRAttendance user={{ name: 'Professor Divyanshi', role: 'faculty' }} /></div>;
       case 'Attendance':
         return (
           <div className="feature-section">
@@ -91,11 +104,24 @@ const FacultyDashboard = () => {
             <Timetable />
           </div>
         );
+      case 'Salary Slips':
+        return <div className="feature-section"><SalarySlip /></div>;
+      case 'Create Quizzes':
+        return <div className="feature-section"><QuizSystem userType="faculty" /></div>;
+      case 'E-Learning (Upload)':
+        return <div className="feature-section"><ELearningHub userType="faculty" /></div>;
       case 'Examinations':
         return (
           <div className="feature-section">
             <h3 className="section-title">Examination & Results Entry</h3>
             <Exams />
+          </div>
+        );
+      case 'Report Card Generator':
+        return (
+          <div className="feature-section">
+            <h3 className="section-title">Digital Result Builder</h3>
+            <ReportCardGenerator />
           </div>
         );
       case 'Leave Request':

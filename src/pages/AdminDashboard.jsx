@@ -5,8 +5,12 @@ import StaffPayroll from '../components/Admin/StaffPayroll';
 import AdminNotifications from '../components/Admin/AdminNotifications';
 import RecordManagement from '../components/Admin/RecordManagement';
 import BulkSMS from '../components/Admin/BulkSMS';
+import IDCardGenerator from '../components/Admin/IDCardGenerator';
 import Library from '../components/Faculty/Library';
 import Transport from '../components/Faculty/Transport';
+import SiteManagement from '../components/Admin/SiteManagement';
+import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
+import AttendanceControl from '../components/Admin/AttendanceControl';
 import CommandPalette from '../components/CommandPalette';
 import './AdminDashboard.css';
 
@@ -18,10 +22,15 @@ const AdminDashboard = () => {
     { name: 'Overview', icon: '💎' },
     { name: 'Fee management', icon: '💰' },
     { name: 'Staff Payroll', icon: '💳' },
+    { name: 'ID Cards', icon: '🪪' },
+    { name: 'Elite Controls', icon: '🌟' },
     { name: 'Leave Approvals', icon: '✅' },
     { name: 'Student Records', icon: '📁' },
     { name: 'Notifications', icon: '📢' },
     { name: 'Bulk Send', icon: '🚀' },
+    { name: 'Site Management', icon: '🌐' },
+    { name: 'Report Cards', icon: '📜' },
+    { name: 'Attendance Ops', icon: '⏲️' },
     { name: 'Settings', icon: '⚙️' }
   ];
 
@@ -82,6 +91,36 @@ const AdminDashboard = () => {
         return <div className="feature-box"><FeeManagement /></div>;
       case 'Staff Payroll':
         return <div className="feature-box"><StaffPayroll /></div>;
+      case 'ID Cards':
+        return <div className="feature-box"><IDCardGenerator /></div>;
+      case 'Elite Controls':
+        return (
+          <div className="feature-box">
+            <h3 className="box-title">Super-Elite Module Management</h3>
+            <div className="elite-controls-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px' }}>
+                    <h4>📣 Announcement Ticker</h4>
+                    <input type="text" defaultValue="🚀 ADMISSIONS OPEN 2026-27..." style={{ width: '100%', padding: '10px', marginTop: '10px' }} />
+                    <button style={{ marginTop: '10px', padding: '8px 15px', background: '#3b82f6', border: 'none', color: '#fff', borderRadius: '5px' }}>Update Ticker</button>
+                </div>
+                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px' }}>
+                    <h4>🛒 Smart Store Inventory</h4>
+                    <p>Manage uniforms and books catalog.</p>
+                    <button style={{ padding: '8px 15px', background: '#10b981', border: 'none', color: '#fff', borderRadius: '5px' }}>Manage Catalog</button>
+                </div>
+                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px' }}>
+                    <h4>🏥 Health Records</h4>
+                    <p>Verified medical entries for students.</p>
+                    <button style={{ padding: '8px 15px', background: '#f59e0b', border: 'none', color: '#fff', borderRadius: '5px' }}>Verify Records</button>
+                </div>
+                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px' }}>
+                    <h4>📂 Document Vault</h4>
+                    <p>Upload official certificates and reports.</p>
+                    <button style={{ padding: '8px 15px', background: '#6366f1', border: 'none', color: '#fff', borderRadius: '5px' }}>Upload Docs</button>
+                </div>
+            </div>
+          </div>
+        );
       case 'Leave Approvals':
         return <div className="feature-box"><h3 className="box-title">Pending Leave Requests</h3><LeaveApprovals /></div>;
       case 'Student Records':
@@ -90,6 +129,12 @@ const AdminDashboard = () => {
         return <div className="feature-box"><AdminNotifications /></div>;
       case 'Bulk Send':
         return <div className="feature-box"><BulkSMS /></div>;
+      case 'Site Management':
+        return <div className="feature-box"><SiteManagement /></div>;
+      case 'Report Cards':
+        return <div className="feature-box"><ReportCardGenerator /></div>;
+      case 'Attendance Ops':
+        return <div className="feature-box"><AttendanceControl /></div>;
       case 'Settings':
         return (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>

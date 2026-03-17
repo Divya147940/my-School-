@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
+import { mockApi } from '../utils/mockApi';
 import './QuickLinks.css';
-
-const newsItems = [
-    { date: 'Mar 2026', title: 'Teachers Written Exam Result' },
-    { date: '24 Feb 2026', title: 'NSPS Lalganj First Entrance Test Result' },
-    { date: '24 Feb 2026', title: '1st Entrance Test Result NSPS Salon 22 Feb 2026' },
-    { date: '15 Feb 2026', title: 'Annual Sports Day Celebration' },
-    { date: '10 Feb 2026', title: 'Republic Day Program 2026' },
-];
 
 const quickLinks = [
     {
@@ -68,14 +62,17 @@ const quickLinks = [
 ];
 
 const QuickLinks = () => {
+    const [newsItems, setNewsItems] = useState(mockApi.getNews());
     const [currentNews, setCurrentNews] = useState(0);
+    const { t } = useLanguage();
 
     useEffect(() => {
+        if (newsItems.length === 0) return;
         const interval = setInterval(() => {
             setCurrentNews((prev) => (prev + 1) % newsItems.length);
         }, 3000);
         return () => clearInterval(interval);
-    }, []);
+    }, [newsItems.length]);
 
     return (
         <section className="quicklinks-section">
@@ -84,7 +81,7 @@ const QuickLinks = () => {
                 <div className="news-panel">
                     <div className="news-header">
                         <span className="news-icon">📰</span>
-                        <h3>News & Events</h3>
+                        <h3>{t('latest_updates')}</h3>
                     </div>
                     <div className="news-list">
                         {newsItems.map((item, index) => (
@@ -102,7 +99,7 @@ const QuickLinks = () => {
                 {/* Quick Link Cards Grid */}
                 <div className="quicklinks-grid">
                     {quickLinks.map((link, index) => (
-                        <Link to={index === 0 ? "/admissions" : index === 1 ? "/academics" : index === 2 ? "/contact" : index === 3 ? "/gallery" : index === 4 ? "/" : "/contact"} key={index} className="quicklink-card">
+                        <Link to={index === 0 ? "/admissions" : index === 1 ? "/academics" : index === 2 ? "/contact" : index === 3 ? "/gallery" : index === 4 ? "/" : "/careers"} key={index} className="quicklink-card">
                             <div className="quicklink-icon">{link.icon}</div>
                             <div className="quicklink-info">
                                 <h4 className="quicklink-title">{link.title}</h4>

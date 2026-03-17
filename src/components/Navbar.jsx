@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -26,11 +27,13 @@ const Navbar = () => {
 
     const isActive = (path) => location.pathname === path;
 
+    const { t } = useLanguage();
+
     return (
         <nav className="navbar">
             <div className="navbar-container">
                 <ul className={`navbar-links ${menuOpen ? 'active' : ''}`}>
-                    <li><Link to="/" className={`nav-link ${isActive('/') ? 'active-link' : ''}`} onClick={closeMenu}>Home</Link></li>
+                    <li><Link to="/" className={`nav-link ${isActive('/') ? 'active-link' : ''}`} onClick={closeMenu}>{t('home')}</Link></li>
 
                     <li className={`nav-item dropdown ${aboutDropdown ? 'dropdown-active' : ''}`}>
                         <Link
@@ -38,7 +41,7 @@ const Navbar = () => {
                             className={`nav-link dropdown-toggle ${isActive('/about') || isActive('/vision-mission') || isActive('/social-work') ? 'active-link' : ''}`}
                             onClick={toggleAboutDropdown}
                         >
-                            About Us <span className="arrow-icon">▼</span>
+                            {t('about')} <span className="arrow-icon">▼</span>
                         </Link>
                         <ul className="dropdown-menu">
                             <li><Link to="/about" onClick={closeMenu}>About NSGI</Link></li>
@@ -50,13 +53,13 @@ const Navbar = () => {
                         </ul>
                     </li>
 
-                    <li><Link to="/academics" className={`nav-link ${isActive('/academics') ? 'active-link' : ''}`} onClick={closeMenu}>Academics</Link></li>
-                    <li><Link to="/admissions" className={`nav-link ${isActive('/admissions') ? 'active-link' : ''}`} onClick={closeMenu}>Admissions</Link></li>
-                    <li><Link to="/faculty" className={`nav-link ${isActive('/faculty') ? 'active-link' : ''}`} onClick={closeMenu}>Faculty</Link></li>
+                    <li><Link to="/academics" className={`nav-link ${isActive('/academics') ? 'active-link' : ''}`} onClick={closeMenu}>{t('academics')}</Link></li>
+                    <li><Link to="/admissions" className={`nav-link ${isActive('/admissions') ? 'active-link' : ''}`} onClick={closeMenu}>{t('admissions')}</Link></li>
+                    <li><Link to="/faculty" className={`nav-link ${isActive('/faculty') ? 'active-link' : ''}`} onClick={closeMenu}>{t('faculty')}</Link></li>
                     <li><Link to="/attendance" className={`nav-link ${isActive('/attendance') ? 'active-link' : ''}`} onClick={closeMenu}>Attendance</Link></li>
-                    <li><Link to="/gallery" className={`nav-link ${isActive('/gallery') ? 'active-link' : ''}`} onClick={closeMenu}>Gallery</Link></li>
-                    <li><Link to="/contact" className={`nav-link ${isActive('/contact') ? 'active-link' : ''}`} onClick={closeMenu}>Contact</Link></li>
-                    <li><Link to="/login" className={`nav-link ${isActive('/login') ? 'active-link' : ''}`} onClick={closeMenu}>Login</Link></li>
+                    <li><Link to="/gallery" className={`nav-link ${isActive('/gallery') ? 'active-link' : ''}`} onClick={closeMenu}>{t('gallery')}</Link></li>
+                    <li><Link to="/contact" className={`nav-link ${isActive('/contact') ? 'active-link' : ''}`} onClick={closeMenu}>{t('contact')}</Link></li>
+                    <li><Link to="/login" className={`nav-link ${isActive('/login') ? 'active-link' : ''}`} onClick={closeMenu}>{t('login')}</Link></li>
                 </ul>
 
                 <button className="navbar-toggle" onClick={toggleMenu} aria-label="Toggle navigation">

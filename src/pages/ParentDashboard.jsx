@@ -5,10 +5,16 @@ import StudentResults from '../components/Student/StudentResults';
 import StudentTimetable from '../components/Student/StudentTimetable';
 import StudentLeave from '../components/Student/StudentLeave';
 import StudentDiary from '../components/Student/StudentDiary';
-import ParentFees from '../components/Parent/ParentFees';
+import FeeInvoice from '../components/Parent/FeeInvoice';
 import ParentNotifications from '../components/Parent/ParentNotifications';
 import Library from '../components/Faculty/Library';
 import Transport from '../components/Faculty/Transport';
+import BusTracking from '../components/BusTracking';
+import AchievementGallery from '../components/Common/AchievementGallery';
+import SmartStore from '../components/Common/SmartStore';
+import HealthTracker from '../components/Common/HealthTracker';
+import DocumentVault from '../components/Common/DocumentVault';
+import PTMScheduler from '../components/Common/PTMScheduler';
 import CommandPalette from '../components/CommandPalette';
 import './ParentDashboard.css';
 
@@ -28,8 +34,14 @@ const ParentDashboard = () => {
     { name: 'Overview', icon: '🏠' },
     { name: 'Attendance', icon: '📝' },
     { name: 'Fees & Receipts', icon: '💰' },
+    { name: 'PTM Scheduler', icon: '🗓️' },
     { name: 'Results', icon: '🏆' },
+    { name: 'Hall of Fame', icon: '🌟' },
+    { name: 'Smart Store', icon: '🛒' },
+    { name: 'Health Record', icon: '🏥' },
+    { name: 'Doc Vault', icon: '📂' },
     { name: 'Timetable', icon: '📅' },
+    { name: 'E-Learning', icon: '🎥' },
     { name: 'Apply Leave', icon: '✉️' },
     { name: 'Digital Diary', icon: '📔' },
     { name: 'Library', icon: '📚' },
@@ -78,11 +90,23 @@ const ParentDashboard = () => {
       case 'Attendance':
         return <div className="feature-box"><h3 className="box-title">Ward Attendance Record</h3><StudentAttendance /></div>;
       case 'Fees & Receipts':
-        return <div className="feature-box"><ParentFees /></div>;
+        return <div className="feature-box"><FeeInvoice studentName={childInfo.name} /></div>;
+      case 'PTM Scheduler':
+        return <div className="feature-box"><PTMScheduler userType="parent" /></div>;
       case 'Results':
-        return <div className="feature-box"><h3 className="box-title">Academic Performance</h3><StudentResults /></div>;
+        return <div className="feature-box"><h3 className="box-title">Academic Performance</h3><StudentResults studentName={childInfo.name} /></div>;
+      case 'Hall of Fame':
+        return <div className="feature-section"><AchievementGallery /></div>;
+      case 'Smart Store':
+        return <div className="feature-section"><SmartStore /></div>;
+      case 'Health Record':
+        return <div className="feature-section"><HealthTracker /></div>;
+      case 'Doc Vault':
+        return <div className="feature-section"><DocumentVault /></div>;
       case 'Timetable':
         return <div className="feature-box"><h3 className="box-title">Class Schedule</h3><StudentTimetable /></div>;
+      case 'E-Learning':
+        return <div className="feature-box"><ELearningHub userType="parent" /></div>;
       case 'Apply Leave':
         return <div className="feature-box"><h3 className="box-title">Request Leave for Ward</h3><StudentLeave /></div>;
       case 'Notifications':

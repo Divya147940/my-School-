@@ -1,0 +1,203 @@
+.id-gen-container {
+    padding: 20px;
+    color: #fff;
+}
+
+.id-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.print-btn {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.id-preview-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 50px;
+}
+
+/* ID Card Design */
+.id-card-modern {
+    width: 350px;
+    height: 520px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+    color: #000;
+}
+
+.card-top-accent {
+    height: 100px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.card-header {
+    position: relative;
+    z-index: 2;
+    padding: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    color: #fff;
+}
+
+.school-logo-small {
+    background: #fff;
+    color: #1e3a8a;
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.8rem;
+}
+
+.school-name-id h3 { margin: 0; font-size: 0.9rem; font-weight: 800; text-transform: uppercase; }
+.school-name-id p { margin: 0; font-size: 0.6rem; opacity: 0.8; }
+
+.card-body {
+    padding-top: 50px; /* Offset for accent */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.student-photo-frame {
+    width: 140px;
+    height: 140px;
+    border: 5px solid #fff;
+    border-radius: 20px;
+    background: #f1f5f9;
+    z-index: 3;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 0.6rem;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.student-details-id {
+    text-align: center;
+    width: 100%;
+    padding: 0 30px;
+}
+
+.student-name-id {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.student-title-id {
+    margin: 5px 0 25px;
+    color: #3b82f6;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+}
+
+.details-grid-id {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    text-align: left;
+}
+
+.detail-item-id label {
+    display: block;
+    font-size: 0.6rem;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.detail-item-id span {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #1e293b;
+}
+
+.card-footer-id {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: #f8fafc;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e2e8f0;
+}
+
+.qr-code-placeholder {
+    width: 60px;
+    height: 60px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    font-size: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.emergency-contact label { display: block; font-size: 0.6rem; color: #64748b; }
+.emergency-contact p { margin: 0; font-weight: 700; color: #1e293b; }
+
+.admin-controls-id {
+    background: rgba(255,255,255,0.03);
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.input-group-id { margin-bottom: 20px; }
+.input-group-id label { display: block; margin-bottom: 8px; color: #94a3b8; }
+.input-group-id input, .input-group-id select {
+    width: 100%;
+    padding: 12px;
+    background: #0f172a;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    border-radius: 10px;
+}
+
+.note-id { font-size: 0.8rem; color: #64748b; margin-top: 20px; }
+
+@media print {
+    body * { visibility: hidden; }
+    .print-only-card, .print-only-card * { visibility: visible; }
+    .print-only-card {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    .no-print { display: none !important; }
+}
