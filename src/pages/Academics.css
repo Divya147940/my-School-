@@ -1,0 +1,309 @@
+/* ===== Academics Page ===== */
+.acad-page {
+    background: #fff;
+}
+
+.acad-hero {
+    background: linear-gradient(rgba(26, 26, 110, 0.92), rgba(26, 26, 110, 0.92)),
+        url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.acad-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+}
+
+.acad-hero p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Intro */
+.acad-intro {
+    max-width: 900px;
+    margin: -40px auto 0;
+    background: white;
+    padding: 50px;
+    border-radius: 15px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.acad-intro h2 {
+    color: #c0392b;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.acad-intro p {
+    color: #555;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+/* Programs Section */
+.acad-programs-section {
+    padding: 70px 20px 80px;
+    background: #f8f9fa;
+    text-align: center;
+}
+
+.acad-section-title {
+    font-family: 'Playfair Display', serif;
+    color: #1a1a6e;
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+}
+
+.acad-section-sub {
+    display: block;
+    color: #e67e22;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 45px;
+}
+
+.acad-programs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 28px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.acad-program-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: left;
+}
+
+.acad-program-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+}
+
+.acad-prog-header {
+    padding: 30px 25px;
+    color: white;
+    position: relative;
+}
+
+.acad-prog-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.acad-prog-header h3 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.acad-prog-classes {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    font-weight: 600;
+}
+
+.acad-prog-body {
+    padding: 25px;
+}
+
+.acad-prog-desc {
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 18px;
+}
+
+.acad-prog-body h4 {
+    color: #1a1a6e;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.acad-subject-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.acad-tag {
+    background: #f0f0fa;
+    color: #1a1a6e;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* Teaching Features */
+.acad-features-section {
+    padding: 80px 20px;
+    background: linear-gradient(135deg, #1a1a6e 0%, #2a2a8e 100%);
+    text-align: center;
+}
+
+.acad-features-title {
+    font-family: 'Playfair Display', serif;
+    color: #fff;
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+}
+
+.acad-features-sub {
+    display: block;
+    color: #e67e22;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 45px;
+}
+
+.acad-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.acad-feature-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 35px 25px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, background 0.3s ease;
+    text-align: left;
+}
+
+.acad-feature-card:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.acad-feat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.acad-feature-card h3 {
+    color: #e67e22;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.acad-feature-card p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* Exam Pattern */
+.acad-exam-section {
+    padding: 80px 20px;
+    background: #f8f9fa;
+    text-align: center;
+}
+
+.acad-exam-section h2 {
+    font-family: 'Playfair Display', serif;
+    color: #1a1a6e;
+    font-size: 2.2rem;
+    margin-bottom: 40px;
+}
+
+.acad-exam-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.acad-exam-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 35px 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eee;
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.acad-exam-card:hover {
+    transform: translateY(-8px);
+}
+
+.acad-exam-num {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #e67e22;
+    margin-bottom: 12px;
+    font-family: 'Playfair Display', serif;
+}
+
+.acad-exam-card h3 {
+    color: #1a1a6e;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.acad-exam-card p {
+    color: #666;
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .acad-hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .acad-intro {
+        padding: 30px 20px;
+        margin-top: -25px;
+        width: 90%;
+    }
+
+    .acad-section-title,
+    .acad-features-title {
+        font-size: 1.8rem;
+    }
+
+    .acad-programs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .acad-exam-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .acad-exam-section h2 {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .acad-exam-grid {
+        grid-template-columns: 1fr;
+    }
+}

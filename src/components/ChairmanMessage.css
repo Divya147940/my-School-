@@ -1,0 +1,163 @@
+/* ===== Chairman Message Section ===== */
+.chairman-section {
+    padding: 60px 0;
+    background: #ffffff;
+    width: 100%;
+}
+
+.chairman-container {
+    max-width: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    background: #e8e8e8;
+    border-radius: 0;
+    padding: 40px 60px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.chairman-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, #c0392b, #e67e22);
+    border-radius: 5px 0 0 5px;
+}
+
+/* Chairman Image */
+.chairman-image-wrapper {
+    flex-shrink: 0;
+}
+
+.chairman-image {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #e8e8e8;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transition: transform 0.3s ease;
+}
+
+.chairman-image:hover {
+    transform: scale(1.05);
+}
+
+/* Chairman Content */
+.chairman-content {
+    flex: 1;
+}
+
+.chairman-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #c0392b;
+    margin: 0 0 18px 0;
+    letter-spacing: 0.5px;
+}
+
+.chairman-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a6e;
+    margin: 0 0 18px 0;
+    padding: 0;
+    border: none;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.chairman-text {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.8;
+    margin: 0 0 25px 0;
+    text-align: justify;
+}
+
+.chairman-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: #c0392b;
+    color: #ffffff;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+}
+
+.chairman-btn:hover {
+    background: #a93226;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(192, 57, 43, 0.4);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .chairman-container {
+        flex-direction: column;
+        text-align: center;
+        padding: 35px 25px;
+        gap: 25px;
+    }
+
+    .chairman-container::before {
+        width: 100%;
+        height: 4px;
+        bottom: auto;
+        right: 0;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .chairman-image {
+        width: 150px;
+        height: 150px;
+    }
+
+    .chairman-heading {
+        font-size: 24px;
+    }
+
+    .chairman-quote {
+        font-size: 18px;
+    }
+
+    .chairman-text {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .chairman-section {
+        padding: 40px 15px;
+    }
+
+    .chairman-image {
+        width: 120px;
+        height: 120px;
+    }
+
+    .chairman-heading {
+        font-size: 22px;
+    }
+
+    .chairman-quote {
+        font-size: 16px;
+    }
+
+    .chairman-text {
+        font-size: 14px;
+    }
+}

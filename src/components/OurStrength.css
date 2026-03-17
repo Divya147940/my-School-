@@ -1,0 +1,115 @@
+/* ===== Our Strength Section ===== */
+.strength-section {
+    padding: 60px 40px;
+    background: #ffffff;
+    text-align: center;
+}
+
+.strength-header {
+    max-width: 900px;
+    margin: 0 auto 50px auto;
+}
+
+.strength-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1a3e;
+    margin: 0 0 10px 0;
+}
+
+.strength-divider {
+    width: 50px;
+    height: 2px;
+    background: #1a1a3e;
+    margin: 0 auto 20px auto;
+    position: relative;
+}
+
+.strength-divider::after {
+    content: '~~~';
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: #1a1a3e;
+    letter-spacing: -2px;
+}
+
+.strength-subtitle {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Grid */
+.strength-grid {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.strength-item {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.strength-icon-circle {
+    width: 80px;
+    height: 80px;
+    background: #1a1a3e;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.strength-number {
+    font-size: 48px;
+    font-weight: 700;
+    color: #c0392b;
+    /* Red color from screenshot */
+    margin: 0 0 5px 0;
+    font-family: 'Inter', sans-serif;
+}
+
+.strength-label {
+    font-size: 18px;
+    font-weight: 900;
+    color: #1a1a3e;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .strength-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .strength-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .strength-number {
+        font-size: 40px;
+    }
+
+    .strength-label {
+        font-size: 16px;
+    }
+}

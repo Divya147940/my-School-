@@ -1,0 +1,225 @@
+/* ===== Gallery & Video Section ===== */
+.galvid-section {
+    width: 100%;
+    position: relative;
+    padding: 60px 0;
+    overflow: hidden;
+}
+
+/* Background */
+.galvid-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+}
+
+.galvid-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.galvid-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.galvid-bg-text {
+    position: absolute;
+    font-family: 'Playfair Display', serif;
+    font-size: 10vw;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+    pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 10px;
+}
+
+/* Container */
+.galvid-container {
+    position: relative;
+    z-index: 2;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 50px;
+    display: flex;
+    gap: 60px;
+}
+
+/* Each Block */
+.galvid-block {
+    flex: 1;
+    text-align: center;
+}
+
+.galvid-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+    letter-spacing: 0.5px;
+}
+
+.galvid-divider {
+    width: 60px;
+    height: 3px;
+    background: #c0392b;
+    margin: 0 auto 30px auto;
+    border-radius: 5px;
+}
+
+/* Cards */
+.galvid-cards {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.galvid-card {
+    width: 220px;
+    height: 170px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+}
+
+.galvid-card:hover {
+    transform: scale(1.05);
+    border-color: #e67e22;
+    box-shadow: 0 8px 30px rgba(230, 126, 34, 0.3);
+}
+
+.galvid-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Video Play Button Overlay */
+.video-card {
+    position: relative;
+}
+
+.play-btn-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    transition: background 0.3s ease;
+}
+
+.video-card:hover .play-btn-overlay {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.play-btn {
+    width: 60px;
+    height: 60px;
+    background: #c0392b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(192, 57, 43, 0.5);
+    transition: all 0.3s ease;
+}
+
+.video-card:hover .play-btn {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(192, 57, 43, 0.7);
+}
+
+.video-title {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    backdrop-filter: blur(3px);
+}
+
+/* Button */
+.galvid-btn {
+    display: inline-block;
+    padding: 10px 30px;
+    background: #c0392b;
+    color: #ffffff;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    transition: all 0.3s ease;
+    border: 2px solid #c0392b;
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+}
+
+.galvid-btn:hover {
+    background: transparent;
+    color: #ffffff;
+    border-color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 992px) {
+    .galvid-container {
+        flex-direction: column;
+        gap: 40px;
+        padding: 0 20px;
+    }
+
+    .galvid-cards {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 576px) {
+    .galvid-heading {
+        font-size: 24px;
+    }
+
+    .galvid-card {
+        width: 100%;
+        height: 180px;
+    }
+
+    .galvid-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .galvid-section {
+        padding: 40px 0;
+    }
+}

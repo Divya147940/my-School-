@@ -1,0 +1,74 @@
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import './Navbar.css';
+
+const Navbar = () => {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [aboutDropdown, setAboutDropdown] = useState(false);
+    const location = useLocation();
+
+    const toggleMenu = () => {
+        setMenuOpen(!menuOpen);
+        setAboutDropdown(false); // Close dropdown when menu toggles
+    };
+
+    const toggleAboutDropdown = (e) => {
+        if (window.innerWidth <= 768) {
+            e.preventDefault();
+            setAboutDropdown(!aboutDropdown);
+        }
+    };
+
+    const closeMenu = () => {
+        setMenuOpen(false);
+        setAboutDropdown(false);
+    };
+
+    const isActive = (path) => location.pathname === path;
+
+    return (
+        <nav className="navbar">
+            <div className="navbar-container">
+                <ul className={`navbar-links ${menuOpen ? 'active' : ''}`}>
+                    <li><Link to="/" className={`nav-link ${isActive('/') ? 'active-link' : ''}`} onClick={closeMenu}>Home</Link></li>
+
+                    <li className={`nav-item dropdown ${aboutDropdown ? 'dropdown-active' : ''}`}>
+                        <Link
+                            to="/about"
+                            className={`nav-link dropdown-toggle ${isActive('/about') || isActive('/vision-mission') || isActive('/social-work') ? 'active-link' : ''}`}
+                            onClick={toggleAboutDropdown}
+                        >
+                            About Us <span className="arrow-icon">▼</span>
+                        </Link>
+                        <ul className="dropdown-menu">
+                            <li><Link to="/about" onClick={closeMenu}>About NSGI</Link></li>
+                            <li><Link to="/about" onClick={closeMenu}>Chairman Message</Link></li>
+                            <li><Link to="/vision-mission" onClick={closeMenu}>Vision & Mission</Link></li>
+                            <li><Link to="/facilities" onClick={closeMenu}>Facilities</Link></li>
+                            <li><Link to="/achievements" onClick={closeMenu}>Achievements</Link></li>
+                            <li><Link to="/social-work" onClick={closeMenu}>Social Work</Link></li>
+                        </ul>
+                    </li>
+
+                    <li><Link to="/academics" className={`nav-link ${isActive('/academics') ? 'active-link' : ''}`} onClick={closeMenu}>Academics</Link></li>
+                    <li><Link to="/admissions" className={`nav-link ${isActive('/admissions') ? 'active-link' : ''}`} onClick={closeMenu}>Admissions</Link></li>
+                    <li><Link to="/faculty" className={`nav-link ${isActive('/faculty') ? 'active-link' : ''}`} onClick={closeMenu}>Faculty</Link></li>
+                    <li><Link to="/attendance" className={`nav-link ${isActive('/attendance') ? 'active-link' : ''}`} onClick={closeMenu}>Attendance</Link></li>
+                    <li><Link to="/gallery" className={`nav-link ${isActive('/gallery') ? 'active-link' : ''}`} onClick={closeMenu}>Gallery</Link></li>
+                    <li><Link to="/contact" className={`nav-link ${isActive('/contact') ? 'active-link' : ''}`} onClick={closeMenu}>Contact</Link></li>
+                    <li><Link to="/login" className={`nav-link ${isActive('/login') ? 'active-link' : ''}`} onClick={closeMenu}>Login</Link></li>
+                </ul>
+
+                <button className="navbar-toggle" onClick={toggleMenu} aria-label="Toggle navigation">
+                    <span className={`hamburger ${menuOpen ? 'open' : ''}`}>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+            </div>
+        </nav>
+    );
+};
+
+export default Navbar;

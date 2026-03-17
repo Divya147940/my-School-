@@ -1,0 +1,201 @@
+.attendance-page {
+    background-color: #0b1120;
+    color: #fff;
+    min-height: 100vh;
+    padding-bottom: 50px;
+}
+
+.attendance-hero {
+    background: linear-gradient(135deg, #1e3a8a 0%, #000 100%);
+    padding: 80px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.attendance-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.attendance-hero p {
+    color: #e67e22;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.attendance-main {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.attendance-card,
+.student-list-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+}
+
+.attendance-card h2,
+.student-list-card h2 {
+    color: #e67e22;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.teacher-select {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.attendance-actions {
+    margin-top: 20px;
+}
+
+.check-in-btn,
+.check-out-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    border: none;
+    width: 100%;
+}
+
+.check-in-btn {
+    background-color: #27ae60;
+    color: #fff;
+}
+
+.check-in-btn:hover {
+    background-color: #2ecc71;
+}
+
+.check-out-btn {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+.check-out-btn:hover {
+    background-color: #ff5e5e;
+}
+
+.check-out-btn.disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.status-box {
+    text-align: center;
+}
+
+.status-text {
+    font-weight: 500;
+    margin-bottom: 15px;
+    color: #27ae60;
+}
+
+.wait-msg {
+    color: #ff4d4d;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+/* Student List */
+.student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.student-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: 0.3s;
+}
+
+.student-card.absent {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+.student-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.student-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toggle-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    width: 100%;
+}
+
+.present-btn {
+    background-color: #27ae60;
+    color: #fff;
+}
+
+.absent-btn {
+    background-color: #c0392b;
+    color: #fff;
+}
+
+.notify-btn {
+    background-color: #25d366;
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.hint {
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .attendance-hero h1 {
+        font-size: 2rem;
+    }
+
+    .student-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+}
