@@ -11,6 +11,7 @@ import Transport from '../components/Faculty/Transport';
 import SiteManagement from '../components/Admin/SiteManagement';
 import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
 import AttendanceControl from '../components/Admin/AttendanceControl';
+import ReviewManager from '../components/Admin/ReviewManager';
 import FacultyManagement from '../components/Admin/FacultyManagement';
 import CommandPalette from '../components/CommandPalette';
 import './AdminDashboard.css';
@@ -30,6 +31,7 @@ const AdminDashboard = () => {
     { name: 'Notifications', icon: '📢' },
     { name: 'Bulk Send', icon: '🚀' },
     { name: 'Site Management', icon: '🌐' },
+    { name: 'Review Manager', icon: '✍️' },
     { name: 'Report Cards', icon: '📜' },
     { name: 'Attendance Ops', icon: '⏲️' },
     { name: 'Manage Faculty', icon: '👨‍🏫' },
@@ -137,6 +139,8 @@ const AdminDashboard = () => {
         return <div className="feature-box"><ReportCardGenerator /></div>;
       case 'Attendance Ops':
         return <div className="feature-box"><AttendanceControl /></div>;
+      case 'Review Manager':
+        return <div className="feature-section"><ReviewManager /></div>;
       case 'Manage Faculty':
         return <div className="feature-box"><FacultyManagement /></div>;
       case 'Settings':
@@ -152,6 +156,8 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
+      case 'Manage Faculty':
+        return <div className="feature-box"><FacultyManagement /></div>;
       default:
         return (
           <div className="feature-box">

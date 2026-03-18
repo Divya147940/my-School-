@@ -1,9 +1,11 @@
 import React from 'react';
 import './About.css';
+import useScrollReveal from '../hooks/useScrollReveal';
 import divyanshiImg from '../assets/faculty/divyanshi.png';
 import chairmanImg from '../assets/chairman.png';
 
 function About() {
+    const sectionRef = useScrollReveal({ threshold: 0.1 });
     const facilities = [
         {
             icon: '🧠',
@@ -43,13 +45,14 @@ function About() {
     ];
 
     return (
-        <div className="about-page">
-            <div className="about-hero">
+        <div className="about-page" ref={sectionRef}>
+            {/* Hero */}
+            <div className="about-hero reveal-on-scroll">
                 <h1>About Our Institute</h1>
                 <p>Celebrating 13 Years of Educational Legacy</p>
             </div>
 
-            <div className="about-content">
+            <div className="about-content reveal-on-scroll">
                 <h2>Our Story & Legacy</h2>
                 <p>
                     पिछले <strong>13 वर्षों</strong> से हमारा संस्थान गुणवत्तापूर्ण शिक्षा प्रदान करने के लिए
@@ -64,7 +67,7 @@ function About() {
             </div>
 
             {/* Chairman's Message Section */}
-            <div className="chairman-msg-section">
+            <div className="chairman-msg-section reveal-on-scroll">
                 <div className="chairman-msg-container">
                     <div className="chairman-msg-img-wrapper">
                         <img src={chairmanImg} alt="Chairman" className="chairman-msg-img" />
@@ -102,12 +105,18 @@ function About() {
 
             {/* Facilities Section */}
             <div className="facilities-section">
-                <h2 className="facilities-heading">हमारी सुविधाएँ</h2>
-                <span className="facilities-subtitle">Our Facilities & Infrastructure</span>
+                <div className="reveal-on-scroll">
+                    <h2 className="facilities-heading">हमारी सुविधाएँ</h2>
+                    <span className="facilities-subtitle">Our Facilities & Infrastructure</span>
+                </div>
 
                 <div className="facilities-grid">
                     {facilities.map((facility, index) => (
-                        <div className="facility-card" key={index} style={{ animationDelay: `${index * 0.1}s` }}>
+                        <div 
+                            className="facility-card reveal-on-scroll" 
+                            key={index} 
+                            style={{ transitionDelay: `${(index % 3) * 0.1}s` }}
+                        >
                             <div className="facility-icon">{facility.icon}</div>
                             <h3 className="facility-title">{facility.title}</h3>
                             <p className="facility-desc">{facility.desc}</p>
@@ -117,12 +126,14 @@ function About() {
             </div>
 
             <div className="team-section">
-                <h2>Meet Our Visionary Team</h2>
-                <span className="team-subtitle">The Minds Behind Our Excellence</span>
+                <div className="reveal-on-scroll">
+                    <h2>Meet Our Visionary Team</h2>
+                    <span className="team-subtitle">The Minds Behind Our Excellence</span>
+                </div>
 
                 <div className="team-container">
                     {/* Husbun Jahan - MBA, HR & IT */}
-                    <div className="team-card">
+                    <div className="team-card reveal-on-scroll" style={{ transitionDelay: '0.1s' }}>
                         <div className="team-img-box">
                             <div className="team-avatar" style={{ background: 'linear-gradient(135deg, #1a1a6e, #3a3aae)' }}>
                                 <span>HJ</span>
@@ -139,7 +150,7 @@ function About() {
                     </div>
 
                     {/* Divyanshi Verma */}
-                    <div className="team-card">
+                    <div className="team-card reveal-on-scroll" style={{ transitionDelay: '0.2s' }}>
                         <div className="team-img-box">
                             <img src={divyanshiImg} alt="Divyanshi Verma" className="team-img" />
                         </div>
@@ -152,8 +163,6 @@ function About() {
                             </p>
                         </div>
                     </div>
-
-
                 </div>
             </div>
         </div>

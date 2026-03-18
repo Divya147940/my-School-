@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import TopBar from './components/TopBar';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -24,50 +26,56 @@ import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ParentDashboard from './pages/ParentDashboard';
 import Careers from './pages/Careers';
-import AIChatbot from './components/Common/AIChatbot';
+import SchoolBot from './components/Common/SchoolBot';
 import AnnouncementTicker from './components/Common/AnnouncementTicker';
+import FloatingContact from './components/Common/FloatingContact';
 import './App.css';
 
 function App() {
   return (
-    <Router>
-      <div className="app">
-        <AnnouncementTicker />
-        <TopBar />
-        <Navbar />
+    <LanguageProvider>
+      <ThemeProvider>
+      <Router>
+        <div className="app">
+          <AnnouncementTicker />
+          <TopBar />
+          <Navbar />
 
-        {/* Main Content Area */}
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/vision-mission" element={<VisionMission />} />
-            <Route path="/facilities" element={<Facilities />} />
-            <Route path="/achievements" element={<Achievements />} />
-            <Route path="/social-work" element={<SocialWork />} />
-            <Route path="/academics" element={<Academics />} />
-            <Route path="/admissions" element={<Admissions />} />
-            <Route path="/faculty" element={<Faculty />} />
-            <Route path="/attendance" element={<Attendance />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/faculty-dashboard" element={<FacultyDashboard />} />
-            <Route path="/student-dashboard" element={<StudentDashboard />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/parent-dashboard" element={<ParentDashboard />} />
-            <Route path="/careers" element={<Careers />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-conditions" element={<TermsConditions />} />
-            <Route path="/user-data-deletion" element={<UserDataDeletion />} />
-          </Routes>
-        </main>
+          {/* Main Content Area */}
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/vision-mission" element={<VisionMission />} />
+              <Route path="/facilities" element={<Facilities />} />
+              <Route path="/achievements" element={<Achievements />} />
+              <Route path="/social-work" element={<SocialWork />} />
+              <Route path="/academics" element={<Academics />} />
+              <Route path="/admissions" element={<Admissions />} />
+              <Route path="/faculty" element={<Faculty />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/faculty-dashboard" element={<FacultyDashboard />} />
+              <Route path="/student-dashboard" element={<StudentDashboard />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/parent-dashboard" element={<ParentDashboard />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-conditions" element={<TermsConditions />} />
+              <Route path="/user-data-deletion" element={<UserDataDeletion />} />
+            </Routes>
+          </main>
 
-        {/* Footer */}
-        <Footer />
-        <AIChatbot />
-      </div>
-    </Router>
+          {/* Global Components */}
+          <Footer />
+          <FloatingContact />
+          <SchoolBot />
+        </div>
+      </Router>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 

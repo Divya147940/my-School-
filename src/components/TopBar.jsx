@@ -1,25 +1,36 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import LanguageToggle from './Common/LanguageToggle';
+import NotificationSystem from './Common/NotificationSystem';
 import './TopBar.css';
 import logo from '../assets/school-logo.png';
 
 // Elite Institutional Header - Vercel Deployment Trigger
 const TopBar = () => {
+    const { isDark, toggleTheme } = useTheme();
+    const { language, t } = useLanguage();
+
     return (
         <header className="main-header">
             {/* Upper Elite Bar - For News & Socials */}
             <div className="upper-bar">
                 <div className="upper-container">
                     <div className="news-ticker">
-                        <span className="news-label">LATEST</span>
-                        <p className="news-text">Admissions Open for Session 2024-25 • Excellence in Education Since 1998</p>
+                        <span className="news-label">{language === 'hi' ? 'ताज़ा' : 'LATEST'}</span>
+                        <p className="news-text">{language === 'hi' ? 'सत्र 2024-25 के लिए प्रवेश खुले हैं • 1998 से शिक्षा में उत्कृष्टता' : 'Admissions Open for Session 2024-25 • Excellence in Education Since 1998'}</p>
                     </div>
                     <div className="upper-links">
-                        <LanguageToggle />
+                        <div className="top-utils">
+                            <button className="theme-toggle-btn" onClick={toggleTheme}>
+                                {isDark ? '☀️' : '🌙'}
+                            </button>
+                            <NotificationSystem />
+                            <LanguageToggle />
+                        </div>
                         <a href="#" className="upper-link">Alumni</a>
                         <a href="#" className="upper-link">Careers</a>
-                        <Link to="/login" className="upper-link">Portal Login</Link>
+                        <Link to="/login" className="upper-link">{t('login')}</Link>
                         <div className="social-mini">
                             <a href="#" className="social-icon-mini">FB</a>
                             <a href="#" className="social-icon-mini">IG</a>

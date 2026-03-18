@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import './Admissions.css';
+import useScrollReveal from '../hooks/useScrollReveal';
 
 function Admissions() {
+    const sectionRef = useScrollReveal({ threshold: 0.1 });
     const [formData, setFormData] = useState({
         studentName: '',
         fatherName: '',
@@ -105,9 +107,9 @@ function Admissions() {
     ];
 
     return (
-        <div className="adm-page">
+        <div className="adm-page" ref={sectionRef}>
             {/* Hero */}
-            <div className="adm-hero">
+            <div className="adm-hero reveal-on-scroll">
                 <h1>Admissions Open 2025-26</h1>
                 <p>प्रवेश प्रारंभ — Secure Your Child's Future Today</p>
             </div>
@@ -115,7 +117,7 @@ function Admissions() {
             <div className="adm-main">
                 {/* Info Section */}
                 <div className="adm-info-section">
-                    <div className="adm-info-card">
+                    <div className="adm-info-card reveal-on-scroll" style={{ transitionDelay: '0.1s' }}>
                         <h3>📋 प्रवेश प्रक्रिया</h3>
                         <ul>
                             <li>नीचे दिया गया फॉर्म भरें</li>
@@ -124,7 +126,7 @@ function Admissions() {
                             <li>प्रवेश की पुष्टि प्राप्त करें</li>
                         </ul>
                     </div>
-                    <div className="adm-info-card">
+                    <div className="adm-info-card reveal-on-scroll" style={{ transitionDelay: '0.2s' }}>
                         <h3>📄 आवश्यक दस्तावेज़</h3>
                         <ul>
                             <li>आधार कार्ड (छात्र व अभिभावक)</li>
@@ -134,23 +136,25 @@ function Admissions() {
                             <li>2 पासपोर्ट साइज़ फोटो</li>
                         </ul>
                     </div>
-                    <div className="adm-info-card">
+                    <div className="adm-info-card reveal-on-scroll" style={{ transitionDelay: '0.3s' }}>
                         <h3>💰 शुल्क संरचना</h3>
-                        <table className="adm-fee-table">
-                            <thead>
-                                <tr><th>Class</th><th>Annual Fee</th></tr>
-                            </thead>
-                            <tbody>
-                                {feeStructure.map((item, i) => (
-                                    <tr key={i}><td>{item.class}</td><td>{item.fee}</td></tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className="adm-fee-table-container">
+                            <table className="adm-fee-table">
+                                <thead>
+                                    <tr><th>Class</th><th>Annual Fee</th></tr>
+                                </thead>
+                                <tbody>
+                                    {feeStructure.map((item, i) => (
+                                        <tr key={i}><td>{item.class}</td><td>{item.fee}</td></tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 {/* Admission Form */}
-                <div className="adm-form-section">
+                <div className="adm-form-section reveal-on-scroll">
                     <h2>📝 Admission Form / प्रवेश फॉर्म</h2>
                     <span className="adm-form-subtitle">Fill all details carefully / सभी जानकारी सही-सही भरें</span>
 
@@ -242,7 +246,7 @@ function Admissions() {
 
                 {/* Payment Section */}
                 {showPayment && (
-                    <div className="adm-payment-section">
+                    <div className="adm-payment-section reveal-on-scroll">
                         <h2>💳 Payment / शुल्क भुगतान</h2>
                         <span className="adm-payment-subtitle">Choose your preferred payment method</span>
 

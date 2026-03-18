@@ -62,17 +62,17 @@ const quickLinks = [
 ];
 
 const QuickLinks = () => {
-    const [newsItems, setNewsItems] = useState(mockApi.getNews());
+    const [newsItems, setNewsItems] = useState(mockApi.getNews() || []);
     const [currentNews, setCurrentNews] = useState(0);
     const { t } = useLanguage();
 
     useEffect(() => {
-        if (newsItems.length === 0) return;
+        if (!newsItems || newsItems.length === 0) return;
         const interval = setInterval(() => {
             setCurrentNews((prev) => (prev + 1) % newsItems.length);
         }, 3000);
         return () => clearInterval(interval);
-    }, [newsItems.length]);
+    }, [newsItems?.length]);
 
     return (
         <section className="quicklinks-section">
@@ -80,33 +80,41 @@ const QuickLinks = () => {
                 {/* News & Events Panel */}
                 <div className="news-panel">
                     <div className="news-header">
-                        <span className="news-icon">📰</span>
-                        <h3>{t('latest_updates')}</h3>
+                        <span className="news-icon">🔔</span>
+                        <h3>{t('latest_updates') || 'News & Events'}</h3>
                     </div>
                     <div className="news-list">
-                        {newsItems.map((item, index) => (
-                            <div key={index} className={`news-item ${index === currentNews ? 'active' : ''}`}>
-                                <div className="news-date">
-                                    <span className="date-num">{item.date.split(' ')[0]}</span>
-                                    <span className="date-month">{item.date.split(' ').slice(1).join(' ')}</span>
+                        {newsItems.length > 0 ? newsItems.map((item, index) => {
+                            const dateParts = item.date ? item.date.split(' ') : ['01', 'Jan'];
+                            return (
+                                <div key={index} className={`news-item ${index === currentNews ? 'active' : ''}`}>
+                                    <div className="news-date">
+                                        <span className="date-num">{dateParts[0]}</span>
+                                        <span className="date-month">{dateParts.slice(1).join(' ')}</span>
+                                    </div>
+                                    <p className="news-title">{item.title}</p>
                                 </div>
-                                <p className="news-title">{item.title}</p>
+                            );
+                        }) : (
+                            <div className="news-item">
+                                <p className="news-title" style={{ opacity: 0.5 }}>No recent updates</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
 
                 {/* Quick Link Cards Grid */}
                 <div className="quicklinks-grid">
-                    {quickLinks.map((link, index) => (
-                        <Link to={index === 0 ? "/admissions" : index === 1 ? "/academics" : index === 2 ? "/contact" : index === 3 ? "/gallery" : index === 4 ? "/" : "/careers"} key={index} className="quicklink-card">
-                            <div className="quicklink-icon">{link.icon}</div>
-                            <div className="quicklink-info">
-                                <h4 className="quicklink-title">{link.title}</h4>
+                    {quickLinks.map((link, index) => {
+                        const targets = ["/admissions", "/academics", "/contact", "/gallery", "/", "/careers"];
+                        return (
+                            <Link to={targets[index] || "/"} key={index} className="quicklink-card">
+                                <div className="quicklink-icon">{link.icon}</div>
+                                <h4 className="quicklink-title-badge">{link.title}</h4>
                                 <p className="quicklink-desc">{link.desc}</p>
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        );
+                    })}
                 </div>
             </div>
         </section>

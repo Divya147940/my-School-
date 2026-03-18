@@ -3,12 +3,12 @@ import { useLanguage } from '../../context/LanguageContext';
 import './LanguageToggle.css';
 
 const LanguageToggle = () => {
-    const { lang, toggleLanguage } = useLanguage();
+    const { language, toggleLanguage } = useLanguage();
 
     return (
         <button className="lang-toggle-btn" onClick={toggleLanguage}>
             <span className="lang-icon">🌐</span>
-            <span className="lang-text">{lang === 'en' ? 'हिन्दी' : 'English'}</span>
+            <span className="lang-text">{language === 'en' ? 'हिन्दी' : 'English'}</span>
         </button>
     );
 };

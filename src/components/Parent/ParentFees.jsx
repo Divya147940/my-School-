@@ -1,166 +1,160 @@
 import React, { useState, useEffect } from 'react';
+import { mockApi } from '../../utils/mockApi';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ParentFees = () => {
-  const [fees, setFees] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const { t, language } = useLanguage();
+    const [fees, setFees] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [paymentState, setPaymentState] = useState('idle'); // idle, processing, success
+    const [selectedFee, setSelectedFee] = useState(null);
+    const [transactionId, setTransactionId] = useState('');
 
-  useEffect(() => {
-    fetchFees();
-  }, []);
+    useEffect(() => {
+        fetchFees();
+    }, []);
 
-  const fetchFees = async () => {
-    try {
-      // Using studentId=1 for demo purposes
-      const response = await fetch('http://localhost:5001/api/fees/1');
-      const data = await response.json();
-      setFees(data);
-    } catch (err) {
-      console.error('Error fetching fees:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const handlePayment = async (feeId, amount) => {
-    const res = await loadRazorpay();
-    if (!res) {
-      alert('Razorpay SDK failed to load. Are you online?');
-      return;
-    }
-
-    // Create order on backend
-    const orderRes = await fetch('http://localhost:5001/api/fees/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ feeId, amount }),
-    });
-    const orderData = await orderRes.json();
-
-    const options = {
-      key: "rzp_test_v7X4vUfExnL9uX", // Test Key
-      amount: orderData.amount,
-      currency: orderData.currency,
-      name: "My School",
-      description: `Monthly Fee Payment`,
-      order_id: orderData.id,
-      handler: async (response) => {
-        const verifyRes = await fetch('http://localhost:5001/api/fees/verify-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            feeId,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-          }),
-        });
-        const verifyData = await verifyRes.json();
-        if (verifyData.status === 'success') {
-          alert('Payment Successful!');
-          fetchFees();
-        } else {
-          alert('Payment verification failed!');
+    const fetchFees = async () => {
+        setLoading(true);
+        try {
+            const data = mockApi.getParentFees();
+            setFees(data);
+        } finally {
+            setLoading(false);
         }
-      },
-      prefill: {
-        name: "Aman Gupta",
-        email: "aman@example.com",
-        contact: "9876543210",
-      },
-      theme: { color: "#3b82f6" },
     };
 
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
-  };
+    const handlePayment = (fee) => {
+        setSelectedFee(fee);
+        setPaymentState('processing');
+        
+        // Simulate network delay for premium feel
+        setTimeout(() => {
+            mockApi.payFee(fee.id);
+            setTransactionId('NSGI' + Math.random().toString(36).substr(2, 9).toUpperCase());
+            setPaymentState('success');
+            fetchFees();
+        }, 2500);
+    };
 
-  if (loading) return <div>Loading fees...</div>;
+    if (loading) return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '50px' }}>{language === 'hi' ? 'लोड हो रहा है...' : 'Loading fees...'}</div>;
 
-  const unpaidFee = fees.find(f => f.status === 'Unpaid');
+    const unpaidFee = fees.find(f => f.status === 'Unpaid');
 
-  return (
-    <div className="parent-fees">
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '30px' }}>
-        <div style={{ background: 'rgba(30, 41, 59, 0.5)', padding: '25px', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <h3 style={{ marginTop: 0 }}>Fee History</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
-                <th style={{ padding: '15px 10px' }}>Month</th>
-                <th style={{ padding: '15px 10px' }}>Amount</th>
-                <th style={{ padding: '15px 10px' }}>Status</th>
-                <th style={{ padding: '15px 10px' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fees.map(fee => (
-                <tr key={fee.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                  <td style={{ padding: '15px 10px' }}>{fee.month} {fee.year}</td>
-                  <td style={{ padding: '15px 10px' }}>₹{fee.amount}</td>
-                  <td style={{ padding: '15px 10px' }}>
-                    <span style={{ 
-                      padding: '4px 10px', 
-                      borderRadius: '10px', 
-                      background: fee.status === 'Paid' ? '#10b98120' : '#ef444420', 
-                      color: fee.status === 'Paid' ? '#10b981' : '#ef4444', 
-                      fontSize: '0.8rem' 
-                    }}>
-                      {fee.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '15px 10px' }}>
-                    {fee.status === 'Unpaid' ? (
-                      <button 
-                        onClick={() => handlePayment(fee.id, fee.amount)}
-                        style={{ background: '#3b82f6', border: 'none', color: '#fff', padding: '6px 15px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}
-                      >
-                        Pay Now
-                      </button>
+    return (
+        <div className="parent-fees">
+            {/* Mock Payment Gateway Modal */}
+            {paymentState !== 'idle' && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                    <div className="glass-panel" style={{ background: 'var(--bg-secondary)', padding: '40px', borderRadius: '32px', maxWidth: '450px', width: '100%', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', border: '1px solid var(--glass-border)' }}>
+                        {paymentState === 'processing' ? (
+                            <>
+                                <div className="loader" style={{ width: '80px', height: '80px', border: '5px solid var(--glass-border)', borderTop: '5px solid var(--accent-blue)', borderRadius: '50%', margin: '0 auto 30px', animation: 'spin 1s linear infinite' }}></div>
+                                <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>{t('processingPayment')}</h2>
+                                <p style={{ color: 'var(--text-secondary)' }}>{t('totalAmount')}: ₹{selectedFee?.amount}</p>
+                            </>
+                        ) : (
+                            <>
+                                <div style={{ fontSize: '5rem', marginBottom: '20px', animation: 'scaleUp 0.5s ease-out' }}>✅</div>
+                                <h2 style={{ fontSize: '2rem', marginBottom: '10px', color: '#10b981' }}>{t('paymentSuccess')}</h2>
+                                <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>{t('transactionId')}: <b>{transactionId}</b></p>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <button onClick={() => setPaymentState('idle')} style={{ padding: '15px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--glass-border)', cursor: 'pointer', fontWeight: '700' }}>DONE</button>
+                                    <button style={{ padding: '15px', borderRadius: '16px', background: 'var(--accent-blue)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '800' }}>{t('downloadReceipt')}</button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <div className="fees-layout" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '40px' }}>
+                <div className="fees-history">
+                    <h2 className="section-title" style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '30px' }}>
+                        {t('fees')}
+                    </h2>
+                    
+                    <div className="glass-panel" style={{ background: 'var(--glass-bg)', borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--glass-border)' }}>
+                                <tr>
+                                    <th style={{ padding: '20px', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase' }}>Month/Year</th>
+                                    <th style={{ padding: '20px', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase' }}>Amount</th>
+                                    <th style={{ padding: '20px', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase' }}>Status</th>
+                                    <th style={{ padding: '20px', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase' }}>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {fees.map((fee) => (
+                                    <tr key={fee.id} className="table-row-hover" style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                        <td style={{ padding: '20px', fontWeight: '600' }}>{fee.month} {fee.year}</td>
+                                        <td style={{ padding: '20px', fontWeight: '800', color: 'var(--accent-blue)' }}>₹{fee.amount}</td>
+                                        <td style={{ padding: '20px' }}>
+                                            <span style={{ 
+                                                padding: '6px 14px', 
+                                                borderRadius: '30px', 
+                                                fontSize: '0.75rem', 
+                                                fontWeight: '800',
+                                                background: fee.status === 'Paid' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+                                                color: fee.status === 'Paid' ? '#10b981' : '#f43f5e'
+                                            }}>
+                                                {fee.status.toUpperCase()}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '20px' }}>
+                                            {fee.status === 'Paid' ? (
+                                                <button style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)', padding: '8px 15px', borderRadius: '10px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '700' }}>
+                                                    RECEIPT 📥
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => handlePayment(fee)} style={{ background: 'var(--accent-blue)', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '10px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '800' }}>
+                                                    PAY 💳
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div className="glass-panel card-vibe" style={{ background: 'var(--glass-bg)', padding: '40px', borderRadius: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', border: '1px solid var(--glass-border)' }}>
+                    {!unpaidFee ? (
+                        <>
+                            <div style={{ fontSize: '4rem', marginBottom: '20px' }}>✨</div>
+                            <h3 style={{ fontSize: '1.8rem', fontWeight: '800' }}>{language === 'hi' ? 'सब भुगतान सफल!' : 'All Clear!'}</h3>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', maxWidth: '250px', lineHeight: '1.6' }}>{language === 'hi' ? 'आपके बच्चे की स्कूल फीस पूरी तरह से भरी हुई है।' : "Your ward's school fees are fully paid for the current session."}</p>
+                            <button style={{ padding: '12px 25px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', fontWeight: '700' }}>Download Statement</button>
+                        </>
                     ) : (
-                      <button style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: '0.9rem' }}>⬇ Receipt</button>
+                        <>
+                            <div style={{ fontSize: '4rem', marginBottom: '20px' }}>💳</div>
+                            <h3 style={{ fontSize: '1.8rem', fontWeight: '800' }}>{language === 'hi' ? 'बकाया राशि' : 'Due Balance'}</h3>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '10px' }}>{language === 'hi' ? `${unpaidFee.month} ${unpaidFee.year} के लिए बकाया` : `Outstanding for ${unpaidFee.month} ${unpaidFee.year}`}</p>
+                            <div style={{ fontSize: '3rem', fontWeight: '900', color: 'var(--accent-blue)', marginBottom: '30px' }}>₹{unpaidFee.amount}</div>
+                            <button 
+                                onClick={() => handlePayment(unpaidFee)}
+                                style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer', fontSize: '1.1rem', boxShadow: '0 15px 30px rgba(59, 130, 246, 0.4)', marginBottom: '15px' }}
+                            >
+                                {t('paySecurely')}
+                            </button>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>🔒 Secure SSL Encrypted Gateway</span>
+                        </>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                </div>
+            </div>
 
-        <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1))', padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-          {!unpaidFee ? (
-            <>
-              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>✅</div>
-              <h3>All Dues Cleared</h3>
-              <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Thank you! Your ward's school fees are up to date for this session.</p>
-            </>
-          ) : (
-            <>
-              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>💰</div>
-              <h3>Pending Dues</h3>
-              <p style={{ color: '#94a3b8', marginBottom: '20px' }}>You have pending fees for {unpaidFee.month} {unpaidFee.year}.</p>
-              <button 
-                onClick={() => handlePayment(unpaidFee.id, unpaidFee.amount)}
-                style={{ padding: '12px 30px', borderRadius: '12px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
-              >
-                Pay ₹{unpaidFee.amount} Now
-              </button>
-            </>
-          )}
-          <button style={{ marginTop: '15px', padding: '10px 20px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px' }}>View Full Statement</button>
+            <style>{`
+                @keyframes spin { 100% { transform: rotate(360deg); } }
+                @keyframes scaleUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+                .table-row-hover:hover { background: rgba(255, 255, 255, 0.02); }
+                @media (max-width: 1024px) {
+                    .fees-layout { grid-template-columns: 1fr !important; }
+                }
+            `}</style>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ParentFees;

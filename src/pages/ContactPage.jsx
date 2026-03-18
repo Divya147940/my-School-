@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import './ContactPage.css';
+import useScrollReveal from '../hooks/useScrollReveal';
 
 function ContactPage() {
+    const sectionRef = useScrollReveal({ threshold: 0.1 });
     const [form, setForm] = useState({ name: '', phone: '', email: '', subject: '', message: '' });
     const [sent, setSent] = useState(false);
 
@@ -33,8 +35,8 @@ function ContactPage() {
     };
 
     return (
-        <div className="cp-page">
-            <div className="cp-hero">
+        <div className="cp-page" ref={sectionRef}>
+            <div className="cp-hero reveal-on-scroll">
                 <h1>Contact Us</h1>
                 <p>हमसे संपर्क करें — We'd Love to Hear From You</p>
             </div>
@@ -42,25 +44,25 @@ function ContactPage() {
             <div className="cp-main">
                 {/* Contact Info Cards */}
                 <div className="cp-info-row">
-                    <div className="cp-info-card">
+                    <div className="cp-info-card reveal-on-scroll" style={{ transitionDelay: '0.1s' }}>
                         <div className="cp-info-icon">📍</div>
                         <h3>पता / Address</h3>
                         <p>Laxman Ganj, Tiloi,</p>
                         <p>Amethi, Uttar Pradesh</p>
                     </div>
-                    <div className="cp-info-card">
+                    <div className="cp-info-card reveal-on-scroll" style={{ transitionDelay: '0.2s' }}>
                         <div className="cp-info-icon">📞</div>
                         <h3>फ़ोन / Phone</h3>
                         <p><a href="tel:+919792799550">+91 9792799550</a></p>
                         <p>Mon - Sat: 8 AM - 2 PM</p>
                     </div>
-                    <div className="cp-info-card">
+                    <div className="cp-info-card reveal-on-scroll" style={{ transitionDelay: '0.3s' }}>
                         <div className="cp-info-icon">✉️</div>
                         <h3>ईमेल / Email</h3>
                         <p><a href="mailto:divyanshiverma@gmail.com">divyanshiverma@gmail.com</a></p>
                         <p>24/7 Support</p>
                     </div>
-                    <div className="cp-info-card">
+                    <div className="cp-info-card reveal-on-scroll" style={{ transitionDelay: '0.4s' }}>
                         <div className="cp-info-icon">🕐</div>
                         <h3>समय / Office Hours</h3>
                         <p>Monday - Saturday</p>
@@ -71,7 +73,7 @@ function ContactPage() {
                 {/* Form + Map Row */}
                 <div className="cp-content-row">
                     {/* Contact Form */}
-                    <div className="cp-form-section">
+                    <div className="cp-form-section reveal-on-scroll">
                         <h2>📩 Send us a Message</h2>
                         <span className="cp-form-sub">हमें संदेश भेजें</span>
 
@@ -121,7 +123,7 @@ function ContactPage() {
                     </div>
 
                     {/* Map */}
-                    <div className="cp-map-section">
+                    <div className="cp-map-section reveal-on-scroll">
                         <h2>📍 Our Location</h2>
                         <span className="cp-map-sub">हमारा स्थान</span>
                         <div className="cp-map-wrapper">
@@ -144,7 +146,7 @@ function ContactPage() {
                 </div>
 
                 {/* Quick Connect */}
-                <div className="cp-quick-connect">
+                <div className="cp-quick-connect reveal-on-scroll">
                     <h2>Quick Connect</h2>
                     <div className="cp-quick-buttons">
                         <button onClick={handleCall} className="cp-quick-btn cp-call">📞 Call Now</button>

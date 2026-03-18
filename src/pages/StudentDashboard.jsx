@@ -1,36 +1,66 @@
 import React, { useState } from 'react';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
+  BarChart, Bar, Cell
+} from 'recharts';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import QRAttendance from '../components/Common/QRAttendance';
+import LiveClasses from '../components/Student/LiveClasses';
 import StudentAttendance from '../components/Student/StudentAttendance';
 import StudentAssignments from '../components/Student/StudentAssignments';
 import StudentResults from '../components/Student/StudentResults';
-import StudentTimetable from '../components/Student/StudentTimetable';
-import StudentLeave from '../components/Student/StudentLeave';
-import StudentDiary from '../components/Student/StudentDiary';
-import Library from '../components/Faculty/Library'; // Reusing visual component
-import Transport from '../components/Faculty/Transport'; // Reusing visual component
-import ELearningHub from '../components/ELearningHub';
-import BusTracking from '../components/BusTracking';
 import QuizSystem from '../components/QuizSystem';
 import AchievementGallery from '../components/Common/AchievementGallery';
 import SmartStore from '../components/Common/SmartStore';
 import HealthTracker from '../components/Common/HealthTracker';
 import DocumentVault from '../components/Common/DocumentVault';
-import QRAttendance from '../components/Common/QRAttendance';
-import LiveClasses from '../components/Student/LiveClasses';
+import StudentTimetable from '../components/Student/StudentTimetable';
+import ELearningHub from '../components/ELearningHub';
+import StudentDiary from '../components/Student/StudentDiary';
+import StudentLeave from '../components/Student/StudentLeave';
+import Library from '../components/Faculty/Library';
 import CommandPalette from '../components/CommandPalette';
+import SchoolCalendar from '../components/Common/SchoolCalendar';
+import IDCard from '../components/Common/IDCard';
+import HallOfFame from '../components/Common/HallOfFame';
+import BusTracker from '../components/Common/BusTracker';
+import FaceAttendance from '../components/Student/FaceAttendance';
 import './StudentDashboard.css';
 
+const performanceData = [
+  { month: 'Jan', attendance: 92, grade: 85 },
+  { month: 'Feb', attendance: 95, grade: 88 },
+  { month: 'Mar', attendance: 88, grade: 82 },
+  { month: 'Apr', attendance: 98, grade: 94 },
+  { month: 'May', attendance: 95, grade: 90 },
+];
+
+const gradeDistribution = [
+  { subject: 'Math', score: 92, color: '#3b82f6' },
+  { subject: 'Science', score: 88, color: '#8b5cf6' },
+  { subject: 'English', score: 95, color: '#14b8a6' },
+  { subject: 'History', score: 84, color: '#f59e0b' },
+  { subject: 'Sanskrit', score: 98, color: '#ef4444' },
+];
+
 const StudentDashboard = () => {
+  const { theme } = useTheme();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('Overview');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
   const navItems = [
     { name: 'Overview', icon: '🏠' },
     { name: 'Scan Attendance', icon: '📲' },
+    { name: 'Face Attendance', icon: '👤' },
     { name: 'Live Classes', icon: '🎥' },
     { name: 'Attendance', icon: '📝' },
     { name: 'Assignments', icon: '📚' },
     { name: 'Results', icon: '🏆' },
     { name: 'Online Quizzes', icon: '🧠' },
+    { name: 'School Calendar', icon: '📅' },
+    { name: 'Digital ID', icon: '🪪' },
     { name: 'Hall of Fame', icon: '🌟' },
     { name: 'Smart Store', icon: '🛒' },
     { name: 'Health Record', icon: '🏥' },
@@ -58,35 +88,99 @@ const StudentDashboard = () => {
         return (
           <div className="overview-content">
             <div className="student-stats">
-              <div className="student-stat-card">
+              <div className="student-stat-card glass-panel card-vibe">
                 <div className="progress-circle" style={{ borderColor: '#10b981' }}>{studentInfo.attendance}</div>
-                <div style={{ color: '#94a3b8' }}>Attendance</div>
+                <div style={{ color: 'var(--text-secondary)' }}>Attendance</div>
               </div>
-              <div className="student-stat-card">
-                <div className="progress-circle">{studentInfo.avgGrade}</div>
-                <div style={{ color: '#94a3b8' }}>Academic Grade</div>
+              <div className="student-stat-card glass-panel card-vibe">
+                <div className="progress-circle" style={{ borderColor: 'var(--accent-purple)' }}>{studentInfo.avgGrade}</div>
+                <div style={{ color: 'var(--text-secondary)' }}>Academic Grade</div>
               </div>
-              <div className="student-stat-card">
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>2 Active</div>
-                <div style={{ color: '#94a3b8' }}>Assignments</div>
+              <div className="student-stat-card glass-panel card-vibe">
+                <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-primary)' }}>2 Active</div>
+                <div style={{ color: 'var(--text-secondary)' }}>Assignments</div>
               </div>
-              <div className="student-stat-card">
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981' }}>No Pending</div>
-                <div style={{ color: '#94a3b8' }}>Fee Status</div>
+              <div className="student-stat-card glass-panel card-vibe">
+                <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#10b981' }}>Paid</div>
+                <div style={{ color: 'var(--text-secondary)' }}>Fee Status</div>
               </div>
             </div>
 
-            <div className="feature-section" style={{ background: 'rgba(30, 41, 59, 0.3)', padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <h3 className="section-title">Schedule Today</h3>
-              <div style={{ color: '#94a3b8' }}>
-                <p>09:00 AM - Mathematics (Mr. Verma)</p>
-                <p>10:00 AM - Science (Mrs. Sharma)</p>
+            <div className="analytics-grid">
+              <div className="analytics-card glass-panel">
+                <h3 className="section-title">Attendance Trends</h3>
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <AreaChart data={performanceData}>
+                      <defs>
+                        <linearGradient id="colorAttend" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="month" stroke="var(--text-secondary)" />
+                      <YAxis stroke="var(--text-secondary)" />
+                      <Tooltip 
+                        contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                        itemStyle={{ color: '#fff' }}
+                      />
+                      <Area type="monotone" dataKey="attendance" stroke="#3b82f6" fillOpacity={1} fill="url(#colorAttend)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="analytics-card glass-panel">
+                <h3 className="section-title">Subject Performance</h3>
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={gradeDistribution}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="subject" stroke="var(--text-secondary)" />
+                      <YAxis stroke="var(--text-secondary)" />
+                      <Tooltip 
+                        contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                        cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                      />
+                      <Bar dataKey="score">
+                        {gradeDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            <div className="feature-section glass-panel">
+              <h3 className="section-title">Todays Classes</h3>
+              <div className="schedule-list">
+                <div className="schedule-item">
+                  <div className="schedule-time">09:00 AM</div>
+                  <div className="schedule-info">
+                    <h4>Mathematics</h4>
+                    <p>Mr. Verma • Room 102</p>
+                  </div>
+                  <div className="schedule-status">Upcoming</div>
+                </div>
+                <div className="schedule-item">
+                  <div className="schedule-time">10:00 AM</div>
+                  <div className="schedule-info">
+                    <h4>Science</h4>
+                    <p>Mrs. Sharma • Lab 1</p>
+                  </div>
+                  <div className="schedule-status">Upcoming</div>
+                </div>
               </div>
             </div>
           </div>
         );
       case 'Scan Attendance':
         return <div className="feature-section"><QRAttendance user={{ name: studentInfo.name, role: 'student' }} /></div>;
+      case 'Face Attendance':
+        return <div className="feature-section"><FaceAttendance /></div>;
       case 'Live Classes':
         return <div className="feature-section"><LiveClasses /></div>;
       case 'Attendance':
@@ -97,8 +191,12 @@ const StudentDashboard = () => {
         return <div className="feature-section"><StudentResults /></div>;
       case 'Online Quizzes':
         return <div className="feature-box"><QuizSystem userType="student" /></div>;
+      case 'School Calendar':
+        return <div className="feature-section"><SchoolCalendar /></div>;
+      case 'Digital ID':
+        return <div className="feature-section"><IDCard studentData={{ name: 'Aman Gupta', class: '10A', rollNo: '2026001', dob: '15/08/2010', bloodGroup: 'B+' }} /></div>;
       case 'Hall of Fame':
-        return <div className="feature-section"><AchievementGallery /></div>;
+        return <div className="feature-section"><HallOfFame /></div>;
       case 'Smart Store':
         return <div className="feature-section"><SmartStore /></div>;
       case 'Health Record':
@@ -110,7 +208,7 @@ const StudentDashboard = () => {
       case 'E-Learning':
         return <div className="feature-section"><ELearningHub userType="student" /></div>;
       case 'Live Bus':
-        return <div className="feature-section"><BusTracking /></div>;
+        return <div className="feature-section"><BusTracker /></div>;
       case 'Digital Diary':
         return <div className="feature-section"><StudentDiary /></div>;
       case 'Leave':
@@ -124,7 +222,7 @@ const StudentDashboard = () => {
             </div>
             <div className="feature-section">
               <h3 className="section-title">Transport Details</h3>
-              <Transport />
+              <BusTracker />
             </div>
           </div>
         );
@@ -139,7 +237,7 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="student-dashboard">
+    <div className={`student-dashboard ${theme === 'light' ? 'light-mode' : ''}`}>
       <nav className="student-sidebar">
         <div className="sidebar-header">
           <h2>Student Hub</h2>
@@ -170,7 +268,7 @@ const StudentDashboard = () => {
         <header className="content-header">
           <div>
             <h1>Dashboard</h1>
-            <p style={{ color: '#94a3b8' }}>Welcome back, {studentInfo.name} (Class {studentInfo.class})</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Welcome back, {studentInfo.name} (Class {studentInfo.class})</p>
           </div>
           <div className="user-profile">
             <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>AG</div>

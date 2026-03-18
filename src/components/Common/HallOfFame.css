@@ -1,0 +1,135 @@
+.hall-of-fame-container {
+  padding: 20px;
+}
+
+.hof-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.hof-podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 50px;
+  padding-top: 40px;
+}
+
+.podium-card {
+  width: 250px;
+  text-align: center;
+  padding: 30px 20px;
+  border-radius: 20px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.podium-card:hover {
+  transform: translateY(-10px);
+}
+
+.podium-1 {
+  height: 380px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(217, 119, 6, 0.15));
+  border: 2px solid #fbbf24;
+  z-index: 2;
+}
+
+.podium-2 {
+  height: 320px;
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(71, 85, 105, 0.15));
+  border: 1px solid #94a3b8;
+}
+
+.podium-3 {
+  height: 280px;
+  background: linear-gradient(135deg, rgba(180, 83, 9, 0.15), rgba(120, 53, 15, 0.15));
+  border: 1px solid #b45309;
+}
+
+.rank-badge {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+}
+
+.avatar-large {
+  width: 80px;
+  height: 80px;
+  background: var(--accent-blue);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0 auto 20px;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.merit-points {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--accent-blue);
+  margin: 10px 0;
+}
+
+.badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.badge-tag {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.points-pill {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-blue);
+  padding: 5px 15px;
+  border-radius: 100px;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.table-badges {
+  display: flex;
+  gap: 5px;
+}
+
+.small-badge {
+  font-size: 1.2rem;
+  cursor: help;
+}
+
+/* Light Mode */
+.hall-of-fame-container.light-mode .podium-card {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.hall-of-fame-container.light-mode .badge-tag {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+@media (max-width: 900px) {
+  .hof-podium {
+    flex-direction: column;
+    align-items: center;
+  }
+  .podium-card {
+    width: 100%;
+    height: auto !important;
+  }
+}

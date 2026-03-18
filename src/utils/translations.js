@@ -1,0 +1,110 @@
+export const translations = {
+    en: {
+        // Navigation
+        home: "Home",
+        about: "About",
+        academics: "Academics",
+        facilities: "Facilities",
+        gallery: "Gallery",
+        contact: "Contact",
+        login: "Identity Gateway",
+        
+        // Dashboards
+        overview: "Overview",
+        attendance: "Attendance",
+        results: "Results",
+        fees: "Fees & Receipts",
+        calendar: "School Calendar",
+        halloffame: "Hall of Fame",
+        bus: "Live Bus",
+        idcard: "Digital ID",
+        
+        // Actions
+        search: "Search (Ctrl+K)...",
+        notifications: "Notifications",
+        profile: "My Profile",
+        logout: "Logout",
+        askbot: "Ask NSGI",
+        paySecurely: "PAY SECURELY",
+        processingPayment: "Processing Payment...",
+        paymentSuccess: "Payment Successful!",
+        transactionId: "Transaction ID",
+        downloadReceipt: "Download Receipt",
+        totalAmount: "Total Amount",
+        faceScan: "Face Attendance",
+        startScan: "START SCAN",
+        scanning: "Scanning Face...",
+        matchFound: "Match Found! Attendance Marked.",
+        manualAttendance: "Manual Attendance Hub",
+        markPresent: "Mark Present",
+        markAbsent: "Mark Absent",
+        searchStudent: "Search Student...",
+        registerFaculty: "Register New Teacher",
+        registerStudent: "Register New Student",
+        assignedId: "Assigned ID",
+        rollNumber: "Roll Number",
+        subject: "Subject",
+        parentName: "Parent Name",
+        onboardSuccess: "User Registered Successfully!",
+        
+        // Titles
+        welcome: "Welcome back",
+        studentPortal: "Student Digital Portal",
+        parentPortal: "Parent Engagement Portal",
+        facultyPortal: "Faculty Management Hub"
+    },
+    hi: {
+        // Navigation
+        home: "होम",
+        about: "हमारे बारे में",
+        academics: "शिक्षा",
+        facilities: "सुविधाएं",
+        gallery: "गैलरी",
+        contact: "संपर्क",
+        login: "लॉगिन पोर्टल",
+        
+        // Dashboards
+        overview: "अवलोकन",
+        attendance: "उपस्थिति",
+        results: "परीक्षा परिणाम",
+        fees: "फीस और रसीद",
+        calendar: "स्कूल कैलेंडर",
+        halloffame: "हॉल ऑफ फेम",
+        bus: "बस ट्रैकिंग",
+        idcard: "डिजिटल आईडी",
+        
+        // Actions
+        search: "खोजें (Ctrl+K)...",
+        notifications: "सूचनाएं",
+        profile: "मेरी प्रोफाइल",
+        logout: "लॉगआउट",
+        askbot: "मदद लें",
+        paySecurely: "सुरक्षित भुगतान",
+        processingPayment: "भुगतान प्रक्रिया में है...",
+        paymentSuccess: "भुगतान सफल रहा!",
+        transactionId: "लेनदेन आईडी",
+        downloadReceipt: "रसीद डाउनलोड करें",
+        totalAmount: "कुल राशि",
+        faceScan: "फेस अटेंडेंस",
+        startScan: "स्कैन शुरू करें",
+        scanning: "चेहरा स्कैन हो रहा है...",
+        matchFound: "चेहरा मिल गया! उपस्थिति दर्ज की गई।",
+        manualAttendance: "मैन्युअल उपस्थिति हब",
+        markPresent: "उपस्थित मार्क करें",
+        markAbsent: "अनुपस्थित मार्क करें",
+        searchStudent: "छात्र खोजें...",
+        registerFaculty: "नया शिक्षक पंजीकृत करें",
+        registerStudent: "नया छात्र पंजीकृत करें",
+        assignedId: "असाइन की गई आईडी",
+        rollNumber: "रोल नंबर",
+        subject: "विषय",
+        parentName: "माता-पिता का नाम",
+        onboardSuccess: "उपयोगकर्ता सफलतापूर्वक पंजीकृत!",
+        
+        // Titles
+        welcome: "आपका स्वागत है",
+        studentPortal: "छात्र डिजिटल पोर्टल",
+        parentPortal: "अभिभावक सहभागिता पोर्टल",
+        facultyPortal: "शिक्षक प्रबंधन हब"
+    }
+};

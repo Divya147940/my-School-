@@ -52,7 +52,7 @@ const ContactInfo = () => {
         <section className="contact-info-section">
             <div className="contact-info-container">
                 {infoItems.map((item, index) => (
-                    <div key={index} className="contact-info-card">
+                    <div key={index} className="contact-info-card glass-panel card-vibe">
                         <div className="contact-info-header">
                             <span className="contact-info-icon">{item.icon}</span>
                             <h3 className="contact-info-title">{item.title}</h3>

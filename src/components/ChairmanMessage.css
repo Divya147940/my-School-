@@ -1,20 +1,22 @@
 /* ===== Chairman Message Section ===== */
 .chairman-section {
-    padding: 60px 0;
-    background: #ffffff;
+    padding: 100px 5%;
+    background: var(--bg-primary);
     width: 100%;
 }
 
 .chairman-container {
-    max-width: 100%;
-    margin: 0;
+    max-width: 1300px;
+    margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 50px;
-    background: #e8e8e8;
-    border-radius: 0;
-    padding: 40px 60px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    gap: 60px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 40px;
+    padding: 80px 100px;
+    box-shadow: var(--shadow-premium);
     position: relative;
     overflow: hidden;
 }
@@ -25,28 +27,29 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 5px;
-    background: linear-gradient(180deg, #c0392b, #e67e22);
-    border-radius: 5px 0 0 5px;
+    width: 8px;
+    background: linear-gradient(180deg, var(--accent-blue), var(--accent-purple));
 }
 
 /* Chairman Image */
 .chairman-image-wrapper {
     flex-shrink: 0;
+    position: relative;
 }
 
 .chairman-image {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
+    width: 280px;
+    height: 350px;
+    border-radius: 24px;
     object-fit: cover;
-    border: 4px solid #e8e8e8;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-    transition: transform 0.3s ease;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transition: all 0.5s ease;
 }
 
 .chairman-image:hover {
-    transform: scale(1.05);
+    transform: scale(1.02) translateY(-5px);
+    box-shadow: 0 30px 60px rgba(59, 130, 246, 0.2);
 }
 
 /* Chairman Content */
@@ -54,110 +57,118 @@
     flex: 1;
 }
 
+.chairman-badge {
+    display: inline-block;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-blue);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 25px;
+}
+
 .chairman-heading {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
+    font-size: clamp(28px, 4vw, 42px);
     font-weight: 800;
-    color: #c0392b;
-    margin: 0 0 18px 0;
-    letter-spacing: 0.5px;
+    color: #fff;
+    margin: 0 0 20px 0;
+    letter-spacing: -1px;
 }
 
 .chairman-quote {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a1a6e;
-    margin: 0 0 18px 0;
-    padding: 0;
-    border: none;
-    line-height: 1.5;
+    font-size: clamp(18px, 2vw, 24px);
+    font-weight: 600;
+    color: var(--accent-blue);
+    margin: 0 0 25px 0;
+    line-height: 1.4;
     font-style: italic;
+    opacity: 0.95;
 }
 
 .chairman-text {
-    font-size: 15px;
-    color: #555;
-    line-height: 1.8;
-    margin: 0 0 25px 0;
-    text-align: justify;
+    font-size: clamp(15px, 1.5vw, 17px);
+    color: var(--text-secondary);
+    line-height: 1.9;
+    margin: 0 0 40px 0;
+    text-align: left;
+    font-weight: 400;
 }
 
 .chairman-btn {
-    display: inline-block;
-    padding: 12px 30px;
-    background: #c0392b;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 40px;
+    background: linear-gradient(135deg, var(--accent-blue), #2563eb);
     color: #ffffff;
-    border-radius: 50px;
-    font-size: 14px;
+    border-radius: 100px;
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     text-decoration: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
 }
 
 .chairman-btn:hover {
-    background: #a93226;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(192, 57, 43, 0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2563eb, var(--accent-blue));
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
     .chairman-container {
-        flex-direction: column;
-        text-align: center;
-        padding: 35px 25px;
-        gap: 25px;
+        padding: 60px 50px;
+        gap: 40px;
     }
-
-    .chairman-container::before {
-        width: 100%;
-        height: 4px;
-        bottom: auto;
-        right: 0;
-        border-radius: 5px 5px 0 0;
-    }
-
+    
     .chairman-image {
-        width: 150px;
-        height: 150px;
-    }
-
-    .chairman-heading {
-        font-size: 24px;
-    }
-
-    .chairman-quote {
-        font-size: 18px;
-    }
-
-    .chairman-text {
-        text-align: center;
+        width: 220px;
+        height: 300px;
     }
 }
 
-@media (max-width: 480px) {
-    .chairman-section {
-        padding: 40px 15px;
+@media (max-width: 992px) {
+    .chairman-container {
+        flex-direction: column;
+        text-align: center;
+        padding: 50px 30px;
     }
 
     .chairman-image {
-        width: 120px;
-        height: 120px;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
     }
-
-    .chairman-heading {
-        font-size: 22px;
-    }
-
-    .chairman-quote {
-        font-size: 16px;
-    }
-
+    
     .chairman-text {
-        font-size: 14px;
+        text-align: center;
+    }
+    
+    .chairman-container::before {
+        width: 100%;
+        height: 6px;
+        bottom: auto;
+        border-radius: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .chairman-section {
+        padding: 60px 20px;
+    }
+    
+    .chairman-heading {
+        font-size: 28px;
+    }
+    
+    .chairman-btn {
+        width: 100%;
+        justify-content: center;
     }
 }

@@ -1,9 +1,13 @@
+import React, { useState } from 'react';
 import { mockApi } from '../utils/mockApi';
+import useScrollReveal from '../hooks/useScrollReveal';
 import './GalleryPage.css';
 
 function GalleryPage() {
+    const sectionRef = useScrollReveal({ threshold: 0.1 });
     const [galleryItems, setGalleryItems] = useState(mockApi.getGallery());
     const [activeFilter, setActiveFilter] = useState('all');
+    const [lightbox, setLightbox] = useState(null);
 
     const filters = [
         { key: 'all', label: 'All / सभी' },
@@ -17,14 +21,14 @@ function GalleryPage() {
         : galleryItems.filter(item => item.category === activeFilter);
 
     return (
-        <div className="gal-page">
-            <div className="gal-hero">
+        <div className="gal-page" ref={sectionRef}>
+            <div className="gal-hero reveal-on-scroll">
                 <h1>Photo Gallery</h1>
                 <p>हमारे विद्यालय की झलकियाँ — Campus, Events & More</p>
             </div>
 
             {/* Filters */}
-            <div className="gal-filters">
+            <div className="gal-filters reveal-on-scroll" style={{ transitionDelay: '0.1s' }}>
                 {filters.map(f => (
                     <button
                         key={f.key}
@@ -39,13 +43,21 @@ function GalleryPage() {
             {/* Grid */}
             <div className="gal-grid">
                 {filtered.map((item, i) => (
-                    <div className="gal-card" key={i} onClick={() => setLightbox(item)}>
+                    <div 
+                        className="gal-card reveal-on-scroll" 
+                        key={i} 
+                        onClick={() => setLightbox(item)}
+                        style={{ transitionDelay: `${(i % 4) * 0.1}s` }}
+                    >
                         {item.type === 'video' ? (
-                            <div className="gal-video-placeholder" style={{ height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: '#fff' }}>
-                                📹 Video: {item.title}
+                            <div className="gal-video-placeholder">
+                                <div className="play-icon">▶</div>
+                                <span>{item.title}</span>
                             </div>
                         ) : (
-                            <img src={item.url || item.src} alt={item.title} className="gal-img" />
+                            <div className="gal-img-wrapper">
+                                <img src={item.url || item.src} alt={item.title} className="gal-img" />
+                            </div>
                         )}
                         <div className="gal-overlay">
                             <h3>{item.title}</h3>
