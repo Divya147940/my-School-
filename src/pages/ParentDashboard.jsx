@@ -5,6 +5,7 @@ import StudentResults from '../components/Student/StudentResults';
 import StudentTimetable from '../components/Student/StudentTimetable';
 import StudentLeave from '../components/Student/StudentLeave';
 import StudentDiary from '../components/Student/StudentDiary';
+import ParentFees from '../components/Parent/ParentFees';
 import FeeInvoice from '../components/Parent/FeeInvoice';
 import ParentNotifications from '../components/Parent/ParentNotifications';
 import Library from '../components/Faculty/Library';
@@ -90,7 +91,12 @@ const ParentDashboard = () => {
       case 'Attendance':
         return <div className="feature-box"><h3 className="box-title">Ward Attendance Record</h3><StudentAttendance /></div>;
       case 'Fees & Receipts':
-        return <div className="feature-box"><FeeInvoice studentName={childInfo.name} /></div>;
+        return (
+          <div className="feature-box">
+            <h3 className="box-title">School Fee Management</h3>
+            <ParentFees />
+          </div>
+        );
       case 'PTM Scheduler':
         return <div className="feature-box"><PTMScheduler userType="parent" /></div>;
       case 'Results':

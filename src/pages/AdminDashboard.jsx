@@ -11,6 +11,7 @@ import Transport from '../components/Faculty/Transport';
 import SiteManagement from '../components/Admin/SiteManagement';
 import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
 import AttendanceControl from '../components/Admin/AttendanceControl';
+import FacultyManagement from '../components/Admin/FacultyManagement';
 import CommandPalette from '../components/CommandPalette';
 import './AdminDashboard.css';
 
@@ -31,6 +32,7 @@ const AdminDashboard = () => {
     { name: 'Site Management', icon: '🌐' },
     { name: 'Report Cards', icon: '📜' },
     { name: 'Attendance Ops', icon: '⏲️' },
+    { name: 'Manage Faculty', icon: '👨‍🏫' },
     { name: 'Settings', icon: '⚙️' }
   ];
 
@@ -135,6 +137,8 @@ const AdminDashboard = () => {
         return <div className="feature-box"><ReportCardGenerator /></div>;
       case 'Attendance Ops':
         return <div className="feature-box"><AttendanceControl /></div>;
+      case 'Manage Faculty':
+        return <div className="feature-box"><FacultyManagement /></div>;
       case 'Settings':
         return (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>

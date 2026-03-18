@@ -15,6 +15,7 @@ import SmartStore from '../components/Common/SmartStore';
 import HealthTracker from '../components/Common/HealthTracker';
 import DocumentVault from '../components/Common/DocumentVault';
 import QRAttendance from '../components/Common/QRAttendance';
+import LiveClasses from '../components/Student/LiveClasses';
 import CommandPalette from '../components/CommandPalette';
 import './StudentDashboard.css';
 
@@ -25,6 +26,7 @@ const StudentDashboard = () => {
   const navItems = [
     { name: 'Overview', icon: '🏠' },
     { name: 'Scan Attendance', icon: '📲' },
+    { name: 'Live Classes', icon: '🎥' },
     { name: 'Attendance', icon: '📝' },
     { name: 'Assignments', icon: '📚' },
     { name: 'Results', icon: '🏆' },
@@ -85,6 +87,8 @@ const StudentDashboard = () => {
         );
       case 'Scan Attendance':
         return <div className="feature-section"><QRAttendance user={{ name: studentInfo.name, role: 'student' }} /></div>;
+      case 'Live Classes':
+        return <div className="feature-section"><LiveClasses /></div>;
       case 'Attendance':
         return <div className="feature-section"><StudentAttendance /></div>;
       case 'Assignments':

@@ -155,7 +155,6 @@ const Gallery = () => {
                                 src={slide.src}
                                 alt={slide.title.join(' ')}
                                 className="slider-image"
-                                style={{ objectPosition: slide.position || 'center center' }}
                             />
                             <div className="slider-overlay-gradient"></div>
                         </div>

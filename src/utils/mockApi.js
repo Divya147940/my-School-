@@ -80,6 +80,18 @@ const defaultData = {
     evening: { start: '15:00', end: '17:00' }
   },
   qrAttendanceLogs: [],
+  faculty: [
+    {
+      id: 1,
+      name: "Divyanshi Verma",
+      designation: "Principal",
+      qualification: "M.Sc, B.Ed (Physics)",
+      experience: "12 Years",
+      description: "Dedicated to providing quality education and fostering an environment of excellence.",
+      image: null, // Will use avatar if null
+      avatarBg: "linear-gradient(135deg, #1a1a6e, #3a3aae)"
+    }
+  ],
   gallery: [
     { id: 1, type: 'image', url: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d', title: 'Annual Day 2025' },
     { id: 2, type: 'video', url: 'https://www.w3schools.com/html/mov_bbb.mp4', title: 'Science Fair Highlights' },
@@ -312,5 +324,27 @@ export const mockApi = {
     
     saveDB(db);
     return userLog;
+  },
+
+  // Faculty Management
+  getFaculty: () => {
+    return getDB().faculty;
+  },
+  addFaculty: (faculty) => {
+    const db = getDB();
+    const newFaculty = { id: Date.now(), ...faculty };
+    db.faculty.push(newFaculty);
+    saveDB(db);
+    return newFaculty;
+  },
+  updateFaculty: (id, updatedData) => {
+    const db = getDB();
+    db.faculty = db.faculty.map(f => f.id === id ? { ...f, ...updatedData } : f);
+    saveDB(db);
+  },
+  deleteFaculty: (id) => {
+    const db = getDB();
+    db.faculty = db.faculty.filter(f => f.id !== id);
+    saveDB(db);
   }
 };

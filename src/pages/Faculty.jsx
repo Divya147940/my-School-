@@ -1,30 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './Faculty.css';
-import divyanshiImg from '../assets/faculty/divyanshi.png';
+import { mockApi } from '../utils/mockApi';
 
 function Faculty() {
     const [facultyList, setFacultyList] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('http://localhost:5001/api/faculty')
-            .then(res => res.json())
-            .then(data => {
-                // Map DB fields to component fields if necessary
-                const mappedData = data.map(item => ({
-                    ...item,
-                    image: item.name === "Divyanshi Verma" ? divyanshiImg : (item.image_url || null),
-                    initials: item.name.split(' ').map(n => n[0]).join(''),
-                    avatarBg: "linear-gradient(135deg, #1a1a6e, #3a3aae)", // Default bg
-                    desc: item.description
-                }));
-                setFacultyList(mappedData);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Error fetching faculty:", err);
-                setLoading(false);
-            });
+        const data = mockApi.getFaculty();
+        const mappedData = data.map(item => ({
+            ...item,
+            initials: item.name.split(' ').map(n => n[0]).join(''),
+            desc: item.description
+        }));
+        setFacultyList(mappedData);
+        setLoading(false);
     }, []);
 
     return (

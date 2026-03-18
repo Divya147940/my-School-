@@ -12,6 +12,7 @@ import ELearningHub from '../components/ELearningHub';
 import QuizSystem from '../components/QuizSystem';
 import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
 import QRAttendance from '../components/Common/QRAttendance';
+import ScheduleLiveClass from '../components/Faculty/ScheduleLiveClass';
 import CommandPalette from '../components/CommandPalette';
 import './FacultyDashboard.css';
 
@@ -23,6 +24,7 @@ const FacultyDashboard = () => {
     { name: 'Overview', icon: '🏠' },
     { name: 'E-Attendance', icon: '📲' },
     { name: 'Attendance', icon: '📝' },
+    { name: 'Live Classes', icon: '🎥' },
     { name: 'Examinations', icon: '✍️' },
     { name: 'Report Card Generator', icon: '📊' },
     { name: 'PTM Meetings', icon: '🗓️' },
@@ -90,6 +92,12 @@ const FacultyDashboard = () => {
           <div className="feature-section">
             <h3 className="section-title">Digital Attendance Register</h3>
             <Attendance />
+          </div>
+        );
+      case 'Live Classes':
+        return (
+          <div className="feature-section">
+            <ScheduleLiveClass />
           </div>
         );
       case 'Homework':

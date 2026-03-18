@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './db.js';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -15,6 +17,11 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 // Health check route
 app.get('/api/health', async (req, res) => {
@@ -218,6 +225,102 @@ app.post('/api/diary', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save diary entry' });
+    }
+});
+
+// Fee Management API
+app.get('/api/fees/:studentId', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM fees WHERE student_id = $1 ORDER BY due_date DESC',
+            [req.params.studentId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch fees' });
+    }
+});
+
+app.post('/api/fees/create-order', async (req, res) => {
+    const { feeId, amount } = req.body;
+    try {
+        const options = {
+            amount: amount * 100, // amount in the smallest currency unit (paise)
+            currency: "INR",
+            receipt: `fee_${feeId}_${Date.now()}`,
+        };
+        const order = await razorpay.orders.create(options);
+        
+        // Save order to payments table
+        await pool.query(
+            'INSERT INTO payments (fee_id, razorpay_order_id, amount, status) VALUES ($1, $2, $3, $4)',
+            [feeId, order.id, amount, 'created']
+        );
+        
+        res.json(order);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to create Razorpay order' });
+    }
+});
+
+app.post('/api/fees/verify-payment', async (req, res) => {
+    const { feeId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    
+    const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
+    hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+    const generated_signature = hmac.digest('hex');
+
+    if (generated_signature === razorpay_signature) {
+        try {
+            // Update payment record
+            await pool.query(
+                'UPDATE payments SET razorpay_payment_id = $1, razorpay_signature = $2, status = $3 WHERE razorpay_order_id = $4',
+                [razorpay_payment_id, razorpay_signature, 'captured', razorpay_order_id]
+            );
+            
+            // Update fee status
+            await pool.query(
+                'UPDATE fees SET status = $1 WHERE id = $2',
+                ['Paid', feeId]
+            );
+            
+            res.json({ status: 'success', message: 'Payment verified successfully' });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ status: 'error', message: 'Failed to update payment status' });
+        }
+    } else {
+        res.status(400).json({ status: 'error', message: 'Invalid signature' });
+    }
+});
+
+// Live Classes API
+app.get('/api/live-classes/:className', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT l.*, f.name as teacher_name FROM live_classes l JOIN faculty f ON l.teacher_id = f.id WHERE l.class_name = $1 AND l.status = $2 ORDER BY l.start_time ASC',
+            [req.params.className, 'Scheduled']
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch live classes' });
+    }
+});
+
+app.post('/api/live-classes', async (req, res) => {
+    const { teacher_id, class_name, subject, meeting_link, start_time, topic } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO live_classes (teacher_id, class_name, subject, meeting_link, start_time, topic) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [teacher_id, class_name, subject, meeting_link, start_time, topic]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to schedule live class' });
     }
 });
 

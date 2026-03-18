@@ -139,6 +139,38 @@ async function setupDatabase() {
         progress_percentage INTEGER DEFAULT 0,
         remarks TEXT
       );
+
+      CREATE TABLE IF NOT EXISTS fees (
+        id SERIAL PRIMARY KEY,
+        student_id INTEGER REFERENCES students(id),
+        month VARCHAR(20),
+        year INTEGER,
+        amount DECIMAL(10,2),
+        status VARCHAR(20) DEFAULT 'Unpaid',
+        due_date DATE
+      );
+
+      CREATE TABLE IF NOT EXISTS payments (
+        id SERIAL PRIMARY KEY,
+        fee_id INTEGER REFERENCES fees(id),
+        razorpay_order_id VARCHAR(255),
+        razorpay_payment_id VARCHAR(255),
+        razorpay_signature VARCHAR(255),
+        amount DECIMAL(10,2),
+        status VARCHAR(20),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS live_classes (
+        id SERIAL PRIMARY KEY,
+        teacher_id INTEGER REFERENCES faculty(id),
+        class_name VARCHAR(50),
+        subject VARCHAR(100),
+        meeting_link TEXT,
+        start_time TIMESTAMP,
+        topic TEXT,
+        status VARCHAR(20) DEFAULT 'Scheduled'
+      );
     `);
 
     // Insert initial faculty data if empty
@@ -186,6 +218,17 @@ async function setupDatabase() {
         ('Class 10', 'Monday', 1, '09:00:00', '10:00:00', 'Mathematics', 1),
         ('Class 10', 'Monday', 2, '10:00:00', '11:00:00', 'Science', 2),
         ('Class 9', 'Monday', 1, '09:00:00', '10:00:00', 'English', 3)
+      `);
+    }
+
+    // Insert sample fees
+    const feeCheck = await dbClient.query("SELECT COUNT(*) FROM fees");
+    if (parseInt(feeCheck.rows[0].count) === 0) {
+      console.log("Inserting initial fee data...");
+      await dbClient.query(`
+        INSERT INTO fees (student_id, month, year, amount, status, due_date) VALUES
+        (1, 'March', 2026, 5000.00, 'Unpaid', '2026-03-31'),
+        (1, 'February', 2026, 5000.00, 'Paid', '2026-02-28')
       `);
     }
 
