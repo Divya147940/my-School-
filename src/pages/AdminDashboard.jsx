@@ -13,6 +13,8 @@ import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
 import AttendanceControl from '../components/Admin/AttendanceControl';
 import ReviewManager from '../components/Admin/ReviewManager';
 import FacultyManagement from '../components/Admin/FacultyManagement';
+import FeeCollector from '../components/Common/FeeCollector';
+import LessonDiary from '../components/Common/LessonDiary';
 import CommandPalette from '../components/CommandPalette';
 import './AdminDashboard.css';
 
@@ -35,6 +37,8 @@ const AdminDashboard = () => {
     { name: 'Report Cards', icon: '📜' },
     { name: 'Attendance Ops', icon: '⏲️' },
     { name: 'Manage Faculty', icon: '👨‍🏫' },
+    { name: 'Fee Ledger', icon: '📑' },
+    { name: 'Activity Tracker', icon: '🕵️' },
     { name: 'Settings', icon: '⚙️' }
   ];
 
@@ -143,6 +147,10 @@ const AdminDashboard = () => {
         return <div className="feature-section"><ReviewManager /></div>;
       case 'Manage Faculty':
         return <div className="feature-box"><FacultyManagement /></div>;
+      case 'Fee Ledger':
+        return <div className="feature-box"><FeeCollector userRole="admin" userName="Principal Admin" /></div>;
+      case 'Activity Tracker':
+        return <div className="feature-box"><LessonDiary mode="admin" /></div>;
       case 'Settings':
         return (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
@@ -156,8 +164,6 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
-      case 'Manage Faculty':
-        return <div className="feature-box"><FacultyManagement /></div>;
       default:
         return (
           <div className="feature-box">

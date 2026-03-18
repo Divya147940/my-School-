@@ -6,6 +6,33 @@ const FaceAttendance = () => {
     const { t, language } = useLanguage();
     const [scanStatus, setScanStatus] = useState('idle'); // idle, scanning, success
     const [progress, setProgress] = useState(0);
+    const [isEnrolled, setIsEnrolled] = useState(false);
+    const [isEnrolling, setIsEnrolling] = useState(false);
+
+    useEffect(() => {
+        const data = mockApi.loadData();
+        const student = data.studentRegistry.find(s => s.id === 'STU2026-001');
+        if (student) {
+            setIsEnrolled(student.isFaceEnrolled);
+        }
+    }, []);
+
+    const startEnrollment = () => {
+        setIsEnrolling(true);
+        setProgress(0);
+        let interval = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 100) {
+                    clearInterval(interval);
+                    mockApi.enrollFace('STU2026-001');
+                    setIsEnrolled(true);
+                    setIsEnrolling(false);
+                    return 100;
+                }
+                return prev + 5;
+            });
+        }, 100);
+    };
 
     const startScan = () => {
         setScanStatus('scanning');
@@ -24,6 +51,31 @@ const FaceAttendance = () => {
         }, 50);
     };
 
+    if (!isEnrolled && !isEnrolling) {
+        return (
+            <div className="face-attendance-container" style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+                <div className="glass-panel" style={{ background: 'var(--glass-bg)', padding: '60px 40px', borderRadius: '32px', textAlign: 'center', border: '1px solid var(--glass-border)' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔐</div>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '15px' }}>{t('enrollmentReq')}</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', lineHeight: '1.6' }}>{t('enrollmentDesc')}</p>
+                    <button onClick={startEnrollment} style={{ 
+                        padding: '18px 40px', 
+                        borderRadius: '16px', 
+                        background: 'var(--accent-blue)', 
+                        color: '#fff', 
+                        border: 'none', 
+                        fontWeight: '800', 
+                        cursor: 'pointer',
+                        fontSize: '1.1rem',
+                        boxShadow: '0 10px 20px rgba(59, 130, 246, 0.3)'
+                    }}>
+                        {t('startEnroll')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="face-attendance-container" style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
             <div className="glass-panel" style={{ 
@@ -35,7 +87,9 @@ const FaceAttendance = () => {
                 position: 'relative',
                 overflow: 'hidden'
             }}>
-                <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '30px' }}>{t('faceScan')}</h2>
+                <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '30px' }}>
+                    {isEnrolling ? t('enrollFace') : t('faceScan')}
+                </h2>
 
                 <div className="scanner-viewport" style={{ 
                     width: '280px', 
@@ -50,24 +104,30 @@ const FaceAttendance = () => {
                     justifyContent: 'center',
                     overflow: 'hidden'
                 }}>
-                    {/* Simulated Camera Feed */}
-                    <div style={{ 
-                        position: 'absolute', 
-                        inset: 0, 
-                        background: 'linear-gradient(45deg, #1e293b, #0f172a)',
-                        opacity: 0.8
-                    }}></div>
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(45deg, #1e293b, #0f172a)', opacity: 0.8 }}></div>
                     
-                    {/* Face Outline Placeholder */}
-                    <div style={{ 
-                        width: '180px', 
-                        height: '220px', 
-                        border: '2px dashed rgba(255,255,255,0.3)', 
-                        borderRadius: '50% 50% 40% 40%',
-                        zIndex: 1
-                    }}></div>
+                    {/* Landmark Mapping Circles for Enrollment */}
+                    {isEnrolling && (
+                        <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+                            {[1,2,3,4,5,6,7,8].map(i => (
+                                <div key={i} style={{ 
+                                    position: 'absolute',
+                                    width: '8px', height: '8px',
+                                    background: 'var(--accent-blue)',
+                                    borderRadius: '50%',
+                                    top: `${40 + Math.sin(i) * 30}%`,
+                                    left: `${50 + Math.cos(i) * 30}%`,
+                                    boxShadow: '0 0 10px var(--accent-blue)',
+                                    opacity: progress > i * 12 ? 1 : 0.2,
+                                    transition: 'all 0.3s'
+                                }}></div>
+                            ))}
+                        </div>
+                    )}
 
-                    {scanStatus === 'scanning' && (
+                    <div style={{ width: '180px', height: '220px', border: '2px dashed rgba(255,255,255,0.3)', borderRadius: '50% 50% 40% 40%', zIndex: 1 }}></div>
+
+                    {(scanStatus === 'scanning' || isEnrolling) && (
                         <>
                             <div className="scan-line" style={{ 
                                 position: 'absolute', 
@@ -79,35 +139,24 @@ const FaceAttendance = () => {
                                 boxShadow: '0 0 15px var(--accent-blue)',
                                 zIndex: 2
                             }}></div>
-                            <div className="radar-ping" style={{ 
-                                position: 'absolute', 
-                                inset: 0, 
-                                border: '2px solid var(--accent-blue)', 
-                                borderRadius: '50%',
-                                animation: 'ping 1.5s infinite',
-                                zIndex: 2
-                            }}></div>
                         </>
                     )}
 
                     {scanStatus === 'success' && (
-                        <div style={{ 
-                            position: 'absolute', 
-                            inset: 0, 
-                            background: 'rgba(16, 185, 129, 0.2)', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            zIndex: 3,
-                            animation: 'fadeIn 0.5s'
-                        }}>
+                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, animation: 'fadeIn 0.5s' }}>
                             <span style={{ fontSize: '5rem' }}>✅</span>
                         </div>
                     )}
                 </div>
 
                 <div className="scan-controls">
-                    {scanStatus === 'idle' && (
+                    {isEnrolling && (
+                        <div style={{ color: 'var(--accent-blue)', fontWeight: '700', fontSize: '1.2rem' }}>
+                            {t('mappingLandmarks')} {progress}%
+                        </div>
+                    )}
+
+                    {scanStatus === 'idle' && !isEnrolling && (
                         <button onClick={startScan} style={{ 
                             padding: '18px 40px', 
                             borderRadius: '16px', 
@@ -132,28 +181,14 @@ const FaceAttendance = () => {
                     {scanStatus === 'success' && (
                         <div>
                             <p style={{ color: '#10b981', fontWeight: '800', fontSize: '1.2rem', marginBottom: '20px' }}>{t('matchFound')}</p>
-                            <button onClick={() => setScanStatus('idle')} style={{ 
-                                padding: '12px 25px', 
-                                borderRadius: '12px', 
-                                background: 'rgba(255,255,255,0.05)', 
-                                color: '#fff', 
-                                border: '1px solid var(--glass-border)',
-                                cursor: 'pointer'
-                            }}>Reset</button>
+                            <button onClick={() => setScanStatus('idle')} style={{ padding: '12px 25px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>Reset</button>
                         </div>
                     )}
                 </div>
             </div>
 
             <style>{`
-                @keyframes ping {
-                    0% { transform: scale(1); opacity: 0.8; }
-                    100% { transform: scale(1.5); opacity: 0; }
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
             `}</style>
         </div>
     );

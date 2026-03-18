@@ -23,6 +23,8 @@ import CommandPalette from '../components/CommandPalette';
 import SchoolCalendar from '../components/Common/SchoolCalendar';
 import AttendanceOps from '../components/Faculty/AttendanceOps';
 import StudentManagement from '../components/Faculty/StudentManagement';
+import FeeCollector from '../components/Common/FeeCollector';
+import LessonDiary from '../components/Common/LessonDiary';
 import './FacultyDashboard.css';
 
 const classPerformanceData = [
@@ -60,6 +62,8 @@ const FacultyDashboard = () => {
     { name: language === 'hi' ? 'छुट्टी आवेदन' : 'Leave Request', icon: '✉️' },
     { name: language === 'hi' ? 'डिजिटल डायरी' : 'Digital Diary', icon: '📓' },
     { name: t('registerStudent'), icon: '🪪' },
+    { name: t('collectFee'), icon: '💰' },
+    { name: t('lessonDiary'), icon: '📝' },
     { name: language === 'hi' ? 'सेटिंग्स' : 'Settings', icon: '⚙️' }
   ];
 
@@ -241,6 +245,12 @@ const FacultyDashboard = () => {
       case 'Register New Student':
       case 'नया छात्र पंजीकृत करें':
         return <div className="feature-section"><StudentManagement /></div>;
+      case 'Collect Student Fees':
+      case 'छात्र शुल्क जमा करें':
+        return <div className="feature-section"><FeeCollector userRole="faculty" userName="Professor Divyanshi" /></div>;
+      case 'Daily Lesson Diary':
+      case 'दैनिक पाठ डायरी':
+        return <div className="feature-section"><LessonDiary mode="faculty" teacherId="TEA2026-02" teacherName="Professor Divyanshi" /></div>;
       case 'School Calendar':
         return <div className="feature-section"><SchoolCalendar /></div>;
       case 'Settings':

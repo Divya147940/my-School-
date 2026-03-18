@@ -22,7 +22,7 @@ import StudentLeave from '../components/Student/StudentLeave';
 import Library from '../components/Faculty/Library';
 import CommandPalette from '../components/CommandPalette';
 import SchoolCalendar from '../components/Common/SchoolCalendar';
-import IDCard from '../components/Common/IDCard';
+import StudentIdCard from '../components/Student/StudentIdCard';
 import HallOfFame from '../components/Common/HallOfFame';
 import BusTracker from '../components/Common/BusTracker';
 import FaceAttendance from '../components/Student/FaceAttendance';
@@ -194,7 +194,7 @@ const StudentDashboard = () => {
       case 'School Calendar':
         return <div className="feature-section"><SchoolCalendar /></div>;
       case 'Digital ID':
-        return <div className="feature-section"><IDCard studentData={{ name: 'Aman Gupta', class: '10A', rollNo: '2026001', dob: '15/08/2010', bloodGroup: 'B+' }} /></div>;
+        return <div className="feature-section"><StudentIdCard /></div>;
       case 'Hall of Fame':
         return <div className="feature-section"><HallOfFame /></div>;
       case 'Smart Store':

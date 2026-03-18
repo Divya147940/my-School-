@@ -108,11 +108,18 @@ const defaultData = {
     { id: 4, studentName: 'Sneha Kapoor', class: '10A', status: 'Pending', time: '-' },
   ],
   facultyRegistry: [
-    { id: 'TEA2026-01', name: 'Dr. Sharma', subject: 'Mathematics', role: 'faculty' },
-    { id: 'TEA2026-02', name: 'Professor Divyanshi', subject: 'Science', role: 'faculty' },
+    { id: 'TEA2026-01', name: 'Dr. Sharma', subject: 'Mathematics', role: 'faculty', contact: 'sharma@nsgi.edu' },
+    { id: 'TEA2026-02', name: 'Professor Divyanshi', subject: 'Science', role: 'faculty', contact: '9876543210' },
   ],
   studentRegistry: [
-    { id: 'STU2026-001', name: 'Aman Gupta', class: '10A', rollNo: 1, role: 'student', parentName: 'Deepak Gupta' },
+    { id: 'STU2026-001', name: 'Aman Gupta', class: '10A', rollNo: 1, role: 'student', parentName: 'Deepak Gupta', contact: '9988776655', isFaceEnrolled: false },
+  ],
+  feeLedger: [
+    { id: 'TXN1001', studentId: 'STU2026-001', studentName: 'Aman Gupta', amount: 5000, mode: 'Online', status: 'Success', date: '2026-03-15', collectedBy: 'System' },
+    { id: 'TXN1002', studentId: 'STU2026-001', studentName: 'Aman Gupta', amount: 2000, mode: 'Cash', status: 'Success', date: '2026-03-16', collectedBy: 'Professor Divyanshi' },
+  ],
+  lessonLogs: [
+    { id: 'LOG101', date: '2026-03-18', teacherId: 'TEA2026-02', teacherName: 'Professor Divyanshi', subject: 'Science', topic: 'Photosynthesis', summary: 'Explained the light-dependent and light-independent reactions in plants.' }
   ],
   qrAttendanceLogs: [],
   faculty: [
@@ -482,5 +489,70 @@ export const mockApi = {
     
     saveData(data);
     return newStudent;
+  },
+
+  enrollFace: (studentId) => {
+    const data = loadData();
+    const student = data.studentRegistry.find(s => s.id === studentId);
+    if (student) {
+      student.isFaceEnrolled = true;
+      saveData(data);
+      return { status: 'success' };
+    }
+    return { status: 'error' };
+  },
+
+  logLesson: (teacherId, teacherName, subject, topic, summary) => {
+    const data = loadData();
+    const newLog = {
+      id: `LOG${100 + data.lessonLogs.length + 1}`,
+      date: new Date().toISOString().split('T')[0],
+      teacherId,
+      teacherName,
+      subject,
+      topic,
+      summary
+    };
+    data.lessonLogs.push(newLog);
+    saveData(data);
+    return newLog;
+  },
+
+  recordFee: (studentId, studentName, amount, mode, collectorRole, collectorName) => {
+    const data = loadData();
+    const txnId = `TXN${1000 + data.feeLedger.length + 1}`;
+    const newEntry = {
+      id: txnId,
+      studentId,
+      studentName,
+      amount: parseInt(amount),
+      mode,
+      status: 'Success',
+      date: new Date().toISOString().split('T')[0],
+      collectedBy: collectorName || collectorRole
+    };
+    data.feeLedger.push(newEntry);
+    
+    // Update parentFees if it exists for this student
+    if (data.parentFees) {
+      const feeIndex = data.parentFees.findIndex(f => f.status === 'Pending' || f.studentName === studentName);
+      if (feeIndex !== -1) {
+        data.parentFees[feeIndex].status = 'Paid';
+      }
+    }
+    
+    saveData(data);
+    return newEntry;
+  },
+
+  recoverId: (info) => {
+    const data = loadData();
+    const faculty = data.facultyRegistry.find(f => f.contact === info);
+    if (faculty) return { type: 'Faculty', id: faculty.id, name: faculty.name };
+    
+    const student = data.studentRegistry.find(s => s.contact === info);
+    if (student) return { type: 'Student', id: student.id, name: student.name, rollNo: student.rollNo };
+    
+    return null;
   }
 };
