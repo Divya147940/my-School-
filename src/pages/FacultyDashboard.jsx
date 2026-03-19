@@ -26,6 +26,9 @@ import StudentManagement from '../components/Faculty/StudentManagement';
 import FeeCollector from '../components/Common/FeeCollector';
 import LessonDiary from '../components/Common/LessonDiary';
 import TeacherResourceCenter from '../components/Faculty/TeacherResourceCenter';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/Common/Toaster';
+import Skeleton from '../components/Common/Skeleton';
 import './FacultyDashboard.css';
 
 const classPerformanceData = [
@@ -43,8 +46,19 @@ const syllabusData = [
 const FacultyDashboard = () => {
   const { theme } = useTheme();
   const { t, language } = useLanguage();
+  const { user, logout } = useAuth();
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState('Overview');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+      addToast(`Welcome, ${user?.name || 'Faculty'}!`, 'info');
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [addToast, user]);
 
   const navItems = [
     { name: t('overview'), icon: '🏠' },
@@ -77,6 +91,24 @@ const FacultyDashboard = () => {
   ];
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="overview-content">
+          <div className="stats-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="stat-card glass-panel">
+                <Skeleton width="100%" height="80px" borderRadius="15px" />
+              </div>
+            ))}
+          </div>
+          <div className="analytics-grid" style={{ marginTop: '20px' }}>
+            <Skeleton width="100%" height="300px" borderRadius="15px" />
+            <Skeleton width="100%" height="300px" borderRadius="15px" />
+          </div>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'Overview':
         return (
@@ -302,10 +334,14 @@ const FacultyDashboard = () => {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <a href="/login" className="nav-link" style={{ color: '#ef4444' }}>
+          <button 
+            onClick={(e) => { e.preventDefault(); logout(); }} 
+            className="nav-link" 
+            style={{ color: '#ef4444', background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
+          >
             <span className="nav-icon">🚪</span>
             <span className="nav-text">Logout</span>
-          </a>
+          </button>
         </div>
       </nav>
 

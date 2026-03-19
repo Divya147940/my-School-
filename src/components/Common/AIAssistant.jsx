@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
 import './AIAssistant.css';
 import { useLanguage } from '../../context/LanguageContext';
+import { mockApi } from '../../utils/mockApi';
 
 const AIAssistant = () => {
   const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
+  const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState([
-    { type: 'bot', en: "Hello! How can I help you with school information today?", hi: "नमस्ते! मैं आज स्कूल की जानकारी के साथ आपकी क्या मदद कर सकता हूँ?" }
+    { type: 'bot', text: language === 'hi' ? "नमस्ते! मैं आज स्कूल की जानकारी के साथ आपकी क्या मदद कर सकता हूँ?" : "Hello! How can I help you with school information today?" }
   ]);
 
   const knowledgeBase = [
@@ -17,10 +18,24 @@ const AIAssistant = () => {
   ];
 
   const handleSuggest = (item) => {
+    const userText = language === 'hi' ? item.q_hi : item.q_en;
+    const botText = language === 'hi' ? item.a_hi : item.a_en;
     setMessages([...messages, 
-      { type: 'user', text: language === 'hi' ? item.q_hi : item.q_en },
-      { type: 'bot', en: item.a_en, hi: item.a_hi }
+      { type: 'user', text: userText },
+      { type: 'bot', text: botText }
     ]);
+  };
+
+  const handleSend = (e) => {
+    if (e.key === 'Enter' && inputText.trim()) {
+      const userText = inputText.trim();
+      const botResponse = mockApi.getBotResponse(userText);
+      setMessages([...messages, 
+        { type: 'user', text: userText },
+        { type: 'bot', text: botResponse }
+      ]);
+      setInputText('');
+    }
   };
 
   return (
@@ -34,7 +49,7 @@ const AIAssistant = () => {
           <div className="ai-chat-body">
             {messages.map((m, i) => (
               <div key={i} className={m.type === 'bot' ? 'message-bot' : 'message-user'}>
-                {m.type === 'user' ? m.text : (language === 'hi' ? m.hi : m.en)}
+                {m.text}
               </div>
             ))}
             <div className="suggested-qs">
@@ -46,7 +61,14 @@ const AIAssistant = () => {
             </div>
           </div>
           <div className="ai-chat-footer">
-            <input type="text" className="ai-input" placeholder={t('search')} />
+            <input 
+              type="text" 
+              className="ai-input" 
+              placeholder={t('search')} 
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleSend}
+            />
           </div>
         </div>
       )}

@@ -23,13 +23,27 @@ import SchoolCalendar from '../components/Common/SchoolCalendar';
 import IDCard from '../components/Common/IDCard';
 import HallOfFame from '../components/Common/HallOfFame';
 import BusTracker from '../components/Common/BusTracker';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/Common/Toaster';
+import Skeleton from '../components/Common/Skeleton';
 import './ParentDashboard.css';
 
 const ParentDashboard = () => {
   const { theme } = useTheme();
   const { t, language } = useLanguage();
+  const { user, logout } = useAuth();
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState('Overview');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+      addToast(`Welcome, Mr. Rajkumar Gupta!`, 'info');
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [addToast]);
   const [childInfo, setChildInfo] = useState({
     name: 'Aman Gupta',
     class: '10A',
@@ -71,6 +85,24 @@ const ParentDashboard = () => {
   }, []);
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="overview-content">
+          <div className="parent-stats-grid">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="parent-card glass-panel">
+                <Skeleton width="100%" height="80px" borderRadius="15px" />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginTop: '30px' }}>
+            <Skeleton width="100%" height="250px" borderRadius="15px" />
+            <Skeleton width="100%" height="250px" borderRadius="15px" />
+          </div>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'Overview':
         return (
@@ -185,10 +217,14 @@ const ParentDashboard = () => {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <a href="/login" className="nav-link" style={{ color: '#ef4444' }}>
+          <button 
+            onClick={(e) => { e.preventDefault(); logout(); }} 
+            className="nav-link" 
+            style={{ color: '#ef4444', background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
+          >
             <span className="nav-icon">🚪</span>
             <span className="nav-text">Logout</span>
-          </a>
+          </button>
         </div>
       </nav>
 

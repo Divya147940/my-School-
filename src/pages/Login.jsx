@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { mockApi } from '../utils/mockApi';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import useScrollReveal from '../hooks/useScrollReveal';
 import './Login.css';
 
@@ -42,11 +44,22 @@ const portals = [
 
 const Login = () => {
   const { t, language } = useLanguage();
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const sectionRef = useScrollReveal({ threshold: 0.1 });
   const [showRecover, setShowRecover] = useState(false);
   const [contactInfo, setContactInfo] = useState('');
   const [recoveredUser, setRecoveredUser] = useState(null);
   const [error, setError] = useState('');
+  const { user, isAuthenticated } = useAuth();
+
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      const portal = portals.find(p => p.type === user.role);
+      if (portal) navigate(portal.path);
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleRecover = () => {
     setError('');
@@ -79,6 +92,17 @@ const Login = () => {
     setRecoveredUser(null);
     setContactInfo('');
     setError('');
+  };
+
+  const handlePortalLogin = (portal) => {
+    // Simulate authentication
+    const mockUser = {
+      id: portal.type === 'Admin' ? 'ADM-001' : portal.type === 'Faculty' ? 'TEA-001' : 'STU-001',
+      name: portal.type === 'Admin' ? 'Admin User' : portal.type === 'Faculty' ? 'Professor Divyanshi' : 'Aman Gupta',
+      role: portal.type
+    };
+    login(mockUser);
+    navigate(portal.path);
   };
 
   return (
@@ -135,11 +159,11 @@ const Login = () => {
         
         <div className="portal-grid">
           {portals.map((portal, i) => (
-            <Link 
+            <div 
               key={portal.type} 
-              to={portal.path} 
+              onClick={() => handlePortalLogin(portal)}
               className="portal-card reveal-on-scroll"
-              style={{ transitionDelay: `${i * 0.1}s` }}
+              style={{ transitionDelay: `${i * 0.1}s`, cursor: 'pointer' }}
             >
               <div className="portal-glow" style={{ backgroundColor: portal.color }}></div>
               <div className="portal-icon">{portal.icon}</div>
@@ -148,7 +172,7 @@ const Login = () => {
                 <p>{portal.description}</p>
               </div>
               <div className="portal-arrow">→</div>
-            </Link>
+            </div>
           ))}
         </div>
 

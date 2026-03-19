@@ -1,28 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { mockApi } from '../../utils/mockApi';
+import { useAuth } from '../../context/AuthContext';
 import './HealthTracker.css';
 
 const HealthTracker = () => {
-    const healthData = {
-        bloodGroup: 'B+',
-        height: '142 cm',
-        weight: '38 kg',
-        vaccinations: [
-            { name: 'BCG', date: 'Done', type: 'Mandatory' },
-            { name: 'Hepatitis B', date: 'Done', type: 'Mandatory' },
-            { name: 'Covid-19', date: 'March 2022', type: 'Special' }
-        ],
-        allergies: ['Dust', 'Peanuts'],
-        emergencyContact: {
-            name: 'Mr. Gupta (Father)',
-            phone: '+91 98765 43210'
+    const { user } = useAuth();
+    const [healthData, setHealthData] = useState(null);
+
+    useEffect(() => {
+        if (user?.id) {
+            const data = mockApi.getHealthRecord(user.id);
+            setHealthData(data);
         }
-    };
+    }, [user]);
+
+    if (!healthData) return <div className="health-container">Loading health records...</div>;
 
     return (
         <div className="health-container">
             <header className="health-header">
                 <h2>🏥 Student Health Record</h2>
-                <div className="health-status-badge">Updated: March 2026</div>
+                <div className="health-status-badge">System Synced: {user?.name}</div>
             </header>
 
             <div className="health-summary-grid">
@@ -44,7 +42,7 @@ const HealthTracker = () => {
                 <div className="health-section">
                     <h3>🛡️ Vaccinations</h3>
                     <div className="vaccine-list">
-                        {healthData.vaccinations.map((v, i) => (
+                        {healthData.vaccinations.length > 0 ? healthData.vaccinations.map((v, i) => (
                             <div className="vaccine-item" key={i}>
                                 <div className="v-info">
                                     <p className="v-name">{v.name}</p>
@@ -52,7 +50,7 @@ const HealthTracker = () => {
                                 </div>
                                 <span className="v-status">{v.date}</span>
                             </div>
-                        ))}
+                        )) : <p style={{ opacity: 0.5 }}>No vaccination records available.</p>}
                     </div>
                 </div>
 
@@ -61,7 +59,7 @@ const HealthTracker = () => {
                     <div className="alerts-box">
                         <label>Allergies</label>
                         <div className="tag-cloud">
-                            {healthData.allergies.map(a => <span className="alert-tag" key={a}>{a}</span>)}
+                            {healthData.allergies.length > 0 ? healthData.allergies.map(a => <span className="alert-tag" key={a}>{a}</span>) : <span>No known allergies.</span>}
                         </div>
                     </div>
                     <div className="emergency-box">

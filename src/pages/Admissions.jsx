@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import './Admissions.css';
 import useScrollReveal from '../hooks/useScrollReveal';
+import useSEO from '../hooks/useSEO';
+import { useLanguage } from '../context/LanguageContext';
+import { mockApi } from '../utils/mockApi';
+import { useToast } from '../components/Common/Toaster';
 
 function Admissions() {
     const sectionRef = useScrollReveal({ threshold: 0.1 });
+    const { t, language } = useLanguage();
+    useSEO(t('admissions'), "Apply for admissions 2025-26 at Shri Jageshwar Memorial Educational Institute.");
     const [formData, setFormData] = useState({
         studentName: '',
         fatherName: '',
@@ -21,7 +27,9 @@ function Admissions() {
 
     const [submitted, setSubmitted] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+    const { addToast } = useToast();
 
     const validateForm = () => {
         let newErrors = {};
@@ -53,49 +61,45 @@ function Admissions() {
         e.preventDefault();
 
         if (!validateForm()) {
+            addToast("Please correct the errors in the form.", "error");
             return;
         }
 
+        setLoading(true);
         try {
-            const response = await fetch('http://localhost:5001/api/admissions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+            // Save to Mock Database
+            mockApi.submitAdmission(formData);
+            
+            setSubmitted(true);
+            setShowPayment(true);
+            addToast("Admission form submitted successfully!", "success");
 
-            if (response.ok) {
-                setSubmitted(true);
-                setShowPayment(true);
+            // Format message for WhatsApp
+            const message = `*New Admission Inquiry*\n\n` +
+                `*Student:* ${formData.studentName}\n` +
+                `*Father:* ${formData.fatherName}\n` +
+                `*Mother:* ${formData.motherName}\n` +
+                `*DOB:* ${formData.dob}\n` +
+                `*Gender:* ${formData.gender}\n` +
+                `*Aadhar:* ${formData.aadhar || 'N/A'}\n` +
+                `*Class:* ${formData.classApplied}\n` +
+                `*Phone:* ${formData.phone}\n` +
+                `*Address:* ${formData.address}`;
 
-                // Format message for WhatsApp
-                const message = `*New Admission Inquiry*\n\n` +
-                    `*Student:* ${formData.studentName}\n` +
-                    `*Father:* ${formData.fatherName}\n` +
-                    `*Mother:* ${formData.motherName}\n` +
-                    `*DOB:* ${formData.dob}\n` +
-                    `*Gender:* ${formData.gender}\n` +
-                    `*Aadhar:* ${formData.aadhar || 'N/A'}\n` +
-                    `*Class:* ${formData.classApplied}\n` +
-                    `*Phone:* ${formData.phone}\n` +
-                    `*Address:* ${formData.address}`;
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/918009799550?text=${encodedMessage}`;
 
-                const encodedMessage = encodeURIComponent(message);
-                const whatsappUrl = `https://wa.me/918009799550?text=${encodedMessage}`;
+            // Redirect to WhatsApp after a brief delay
+            setTimeout(() => {
+                window.open(whatsappUrl, '_blank');
+            }, 2000);
 
-                // Redirect to WhatsApp after a brief delay
-                setTimeout(() => {
-                    window.open(whatsappUrl, '_blank');
-                }, 1500);
-
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            } else {
-                alert("Failed to submit admission form to server.");
-            }
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         } catch (err) {
             console.error("Error submitting form:", err);
-            alert("An error occurred. Please try again later.");
+            addToast("An error occurred. Please try again later.", "error");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -238,8 +242,8 @@ function Admissions() {
                             <textarea name="address" value={formData.address} onChange={handleChange} placeholder="Enter complete address with pincode" rows="3" required></textarea>
                         </div>
 
-                        <button type="submit" className="adm-submit-btn">
-                            {submitted ? '✅ Form Submitted Successfully!' : '📤 Submit Admission Form'}
+                        <button type="submit" className="adm-submit-btn" disabled={loading || submitted}>
+                            {loading ? 'Submitting...' : submitted ? '✅ Form Submitted Successfully!' : '📤 Submit Admission Form'}
                         </button>
                     </form>
                 </div>

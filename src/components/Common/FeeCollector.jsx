@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useLanguage } from '../../context/LanguageContext';
+import { useToast } from '../Common/Toaster';
 
 const FeeCollector = ({ userRole, userName }) => {
     const { t, language } = useLanguage();
+    const { addToast } = useToast();
     const [students, setStudents] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState('');
     const [amount, setAmount] = useState('');
@@ -19,13 +21,21 @@ const FeeCollector = ({ userRole, userName }) => {
 
     const handleCollect = (e) => {
         e.preventDefault();
-        if (!selectedStudent || !amount) return;
+        const numAmount = parseFloat(amount);
+        if (!selectedStudent) {
+            addToast("Please select a student first.", "error");
+            return;
+        }
+        if (!numAmount || numAmount <= 0) {
+            addToast("Please enter a valid amount.", "error");
+            return;
+        }
 
         const student = students.find(s => s.id === selectedStudent);
         const newTxn = mockApi.recordFee(
             student.id, 
             student.name, 
-            amount, 
+            numAmount, 
             mode, 
             userRole, 
             userName
@@ -37,7 +47,7 @@ const FeeCollector = ({ userRole, userName }) => {
     };
 
     return (
-        <div className="fee-collector-system" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', padding: '20px' }}>
+        <div className="fee-collector-system" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px', padding: '20px' }}>
             <div className="glass-panel" style={{ padding: '40px', borderRadius: '32px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
                 <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '30px' }}>{t('collectFee')}</h2>
                 <form onSubmit={handleCollect}>

@@ -100,7 +100,20 @@ export const translations = {
         chairman_heading: "Chairman's Message",
         chairman_quote: "Education is the weapon which you can use to change the world.",
         chairman_text: "Welcome to Shri Jageshwar Memorial Educational Institute. Our institute is dedicated to the holistic development of children. We focus not only on academic excellence but also on moral values, discipline, and practical skills. Our goal is for every student to build their future with confidence and knowledge.",
-        read_more: "READ MORE"
+        read_more: "READ MORE",
+        searchPlaceholder: "Search records...",
+        noRecords: "No matching records found",
+        deleteConfirm: "Are you sure you want to permanently delete this record?",
+        purged: "Record purged successfully",
+        
+        // Academics & About
+        curriculum: "Academic Programs",
+        academicLevel: "Academic Level",
+        subjects: "Subjects",
+        facilities_title: "Our Facilities",
+        team_title: "Meet Our Visionary Team",
+        legacy: "Celebrating 13 Years of Educational Legacy",
+        chairman_msg: "Chairman's Message"
     },
     hi: {
         // Navigation
@@ -203,6 +216,19 @@ export const translations = {
         chairman_heading: "Chairman's Message",
         chairman_quote: "शिक्षा वह हथियार है जिससे आप दुनिया को बदल सकते हैं।",
         chairman_text: "प्रिय अभिभावकों और विद्यार्थियों, श्री जागेश्वर मेमोरियल एजुकेशनल इंस्टीट्यूट में आपका स्वागत है। हमारा संस्थान बच्चों के सर्वांगीण विकास के लिए समर्पित है। हम न केवल शैक्षणिक उत्कृष्टता पर ध्यान देते हैं, बल्कि नैतिक मूल्यों, अनुशासन और व्यावहारिक कौशल को भी बढ़ावा देते हैं। हमारा लक्ष्य है कि हर विद्यार्थी आत्मविश्वास और ज्ञान के साथ अपने भविष्य का निर्माण कर सके।",
-        read_more: "READ MORE"
+        read_more: "विवरण पढ़ें",
+        searchPlaceholder: "रिकॉर्ड खोजें...",
+        noRecords: "कोई रिकॉर्ड नहीं मिला",
+        deleteConfirm: "क्या आप वाकई इस रिकॉर्ड को स्थायी रूप से हटाना चाहते हैं?",
+        purged: "रिकॉर्ड सफलतापूर्वक हटा दिया गया",
+
+        // Academics & About
+        curriculum: "शैक्षणिक कार्यक्रम",
+        academicLevel: "शैक्षणिक स्तर",
+        subjects: "विषय",
+        facilities_title: "हमारी सुविधाएँ",
+        team_title: "हमारी दूरदर्शी टीम",
+        legacy: "शिक्षा के 13 वर्षों की विरासत",
+        chairman_msg: "अध्यक्ष का संदेश"
     }
 };

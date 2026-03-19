@@ -1,31 +1,36 @@
-import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useLanguage } from '../../context/LanguageContext';
+import { useToast } from '../Common/Toaster';
 
 const FacultyManagement = () => {
     const { t, language } = useLanguage();
+    const { addToast } = useToast();
     const [name, setName] = useState('');
     const [subject, setSubject] = useState('');
     const [recentFaculty, setRecentFaculty] = useState(null);
     const [facultyList, setFacultyList] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        setFacultyList(mockApi.loadData().facultyRegistry || []);
+        setFacultyList(mockApi.getDB().facultyRegistry || []);
     }, []);
 
-    const handleRegister = (e) => {
-        e.preventDefault();
-        if (!name || !subject) return;
-        
-        const newFaculty = mockApi.onboardFaculty(name, subject);
-        setRecentFaculty(newFaculty);
-        setFacultyList(prev => [...prev, newFaculty]);
-        setName('');
-        setSubject('');
+    const handleDelete = (id) => {
+        if (window.confirm("Are you sure you want to delete this faculty member?")) {
+            mockApi.deleteFaculty(id);
+            setFacultyList(prev => prev.filter(f => f.id !== id));
+            addToast("Faculty record removed.", "info");
+        }
     };
 
+    const filteredFaculty = facultyList.filter(f => 
+        f.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        f.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        f.id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <div className="faculty-management" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', padding: '20px' }}>
+        <div className="faculty-management" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px', padding: '20px' }}>
             <div className="glass-panel" style={{ padding: '40px', borderRadius: '32px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
                 <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '30px' }}>{t('registerFaculty')}</h2>
                 <form onSubmit={handleRegister}>
@@ -62,18 +67,38 @@ const FacultyManagement = () => {
                 )}
             </div>
 
-            <div className="glass-panel" style={{ padding: '40px', borderRadius: '32px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '20px' }}>Recently Registered</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {facultyList.slice().reverse().map(f => (
-                        <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)' }}>
+            <div className="glass-panel" style={{ padding: '40px', borderRadius: '32px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '20px' }}>Faculty Directory</h3>
+                
+                {/* Search Bar */}
+                <input 
+                    type="text" 
+                    placeholder="Search name, subject or ID..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: '#fff', marginBottom: '25px' }}
+                />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', overflowY: 'auto', maxHeight: '500px' }}>
+                    {filteredFaculty.length > 0 ? filteredFaculty.slice().reverse().map(f => (
+                        <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                             <div>
                                 <div style={{ fontWeight: '700' }}>{f.name}</div>
                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{f.subject}</div>
                             </div>
-                            <div style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--accent-blue)' }}>{f.id}</div>
+                            <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <div style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--accent-blue)' }}>{f.id}</div>
+                                <button 
+                                    onClick={() => handleDelete(f.id)}
+                                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef444450', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.8rem' }}
+                                >
+                                    🗑️
+                                </button>
+                            </div>
                         </div>
-                    ))}
+                    )) : (
+                        <div style={{ textAlign: 'center', padding: '40px', opacity: 0.5 }}>No faculty found matching your search.</div>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { mockApi } from '../../utils/mockApi';
+import { useAuth } from '../../context/AuthContext';
 import './DocumentVault.css';
 
 const DocumentVault = () => {
-    const documents = [
-        { id: 1, name: 'Academic Report Card - Term 1', type: 'PDF', date: 'Dec 2025', size: '1.2 MB' },
-        { id: 2, name: 'Character Certificate', type: 'PDF', date: 'Jan 2026', size: '0.8 MB' },
-        { id: 3, name: 'Fee Clearance Certificate', type: 'PDF', date: 'Feb 2026', size: '0.4 MB' },
-        { id: 4, name: 'School Admission Form', type: 'PDF', date: 'April 2025', size: '2.5 MB' }
-    ];
+    const { user } = useAuth();
+    const [documents, setDocuments] = useState([]);
+
+    useEffect(() => {
+        if (user?.id) {
+            setDocuments(mockApi.getDocuments(user.id));
+        }
+    }, [user]);
 
     const handleDownload = (name) => {
         alert(`Starting download for: ${name}\n\nThis is a simulation. Actual PDF files will be downloaded in the production environment.`);

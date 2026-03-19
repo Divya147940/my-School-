@@ -1,9 +1,18 @@
 import React from 'react';
 import useScrollReveal from '../hooks/useScrollReveal';
+import useSEO from '../hooks/useSEO';
+import { useLanguage } from '../context/LanguageContext';
 import './Academics.css';
 
 function Academics() {
     const sectionRef = useScrollReveal({ threshold: 0.1 });
+    const { t, language } = useLanguage();
+
+    useSEO(
+        t('academics'),
+        "Comprehensive Education from Nursery to Class 10 at Shri Jageshwar Memorial Educational Institute."
+    );
+
     const programs = [
         {
             level: 'Pre-Primary',
@@ -58,19 +67,18 @@ function Academics() {
 
             {/* Intro */}
             <div className="acad-intro reveal-on-scroll">
-                <h2>शैक्षणिक कार्यक्रम</h2>
+                <h2>{t('curriculum')}</h2>
                 <p>
-                    श्री जागेश्वर मेमोरियल एजुकेशनल इंस्टीट्यूट U.P. बोर्ड से मान्यता प्राप्त
-                    संस्थान है। हम Nursery से Class 10 तक गुणवत्तापूर्ण शिक्षा प्रदान करते हैं।
-                    हमारा पाठ्यक्रम शैक्षणिक उत्कृष्टता, व्यावहारिक ज्ञान और नैतिक मूल्यों
-                    का संतुलित मिश्रण है।
+                    {language === 'hi' 
+                        ? 'श्री जागेश्वर मेमोरियल एजुकेशनल इंस्टीट्यूट U.P. बोर्ड से मान्यता प्राप्त संस्थान है। हम Nursery से Class 10 तक गुणवत्तापूर्ण शिक्षा प्रदान करते हैं।' 
+                        : 'Shri Jageshwar Memorial Educational Institute is a U.P. Board recognized institution. We provide quality education from Nursery to Class 10.'}
                 </p>
             </div>
 
             {/* Programs */}
             <div className="acad-programs-section">
                 <div className="reveal-on-scroll">
-                    <h2 className="acad-section-title">कक्षा-वार पाठ्यक्रम</h2>
+                    <h2 className="acad-section-title">{language === 'hi' ? 'पाठ्यक्रम विवरण' : 'Curriculum Details'}</h2>
                     <span className="acad-section-sub">Class-wise Curriculum Overview</span>
                 </div>
 

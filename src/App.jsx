@@ -5,6 +5,9 @@ import { LanguageProvider } from './context/LanguageContext';
 import TopBar from './components/TopBar';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './components/Common/Toaster';
+import ProtectedRoute from './components/Common/ProtectedRoute';
 import Home from './pages/Home';
 import About from './pages/About';
 import Academics from './pages/Academics';
@@ -40,9 +43,13 @@ function App() {
     <ErrorBoundary>
       <LanguageProvider>
         <ThemeProvider>
-        <Router>
+          <ToastProvider>
+            <AuthProvider>
+              <Router>
           <div className="app">
-            <NewsTicker />
+            <ErrorBoundary fallback={null}>
+              <NewsTicker />
+            </ErrorBoundary>
             <TopBar />
             <Navbar />
 
@@ -62,10 +69,34 @@ function App() {
                 <Route path="/gallery" element={<GalleryPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/faculty-dashboard" element={<FacultyDashboard />} />
-                <Route path="/student-dashboard" element={<StudentDashboard />} />
-                <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                <Route path="/parent-dashboard" element={<ParentDashboard />} />
+                <Route path="/faculty-dashboard" element={
+                  <ProtectedRoute allowedRoles={['Faculty', 'Admin']}>
+                    <ErrorBoundary>
+                      <FacultyDashboard />
+                    </ErrorBoundary>
+                  </ProtectedRoute>
+                } />
+                <Route path="/student-dashboard" element={
+                  <ProtectedRoute allowedRoles={['Student', 'Admin']}>
+                    <ErrorBoundary>
+                      <StudentDashboard />
+                    </ErrorBoundary>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin-dashboard" element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <ErrorBoundary>
+                      <AdminDashboard />
+                    </ErrorBoundary>
+                  </ProtectedRoute>
+                } />
+                <Route path="/parent-dashboard" element={
+                  <ProtectedRoute allowedRoles={['Parent', 'Admin']}>
+                    <ErrorBoundary>
+                      <ParentDashboard />
+                    </ErrorBoundary>
+                  </ProtectedRoute>
+                } />
                 <Route path="/careers" element={<Careers />} />
                 <Route path="/chairman-message" element={<ChairmanMessagePage />} />
                 <Route path="/virtual-tour" element={<VirtualTour />} />
@@ -78,10 +109,16 @@ function App() {
 
             {/* Global Components */}
             <Footer />
-            <FloatingContact />
-            <AIAssistant />
+            <ErrorBoundary fallback={null}>
+              <FloatingContact />
+            </ErrorBoundary>
+            <ErrorBoundary fallback={null}>
+              <AIAssistant />
+            </ErrorBoundary>
           </div>
-        </Router>
+            </Router>
+            </AuthProvider>
+          </ToastProvider>
         </ThemeProvider>
       </LanguageProvider>
     </ErrorBoundary>

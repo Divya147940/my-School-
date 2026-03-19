@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { mockApi } from '../../utils/mockApi';
 
 const Library = () => {
-  const books = [
-    { id: 1, title: 'Higher Engineering Mathematics', author: 'B.S. Grewal', status: 'Available', shelf: 'A-1' },
-    { id: 2, title: 'Concept of Physics', author: 'H.C. Verma', status: 'Issued', borrower: 'Aman Gupta', returnDate: '2026-03-22' },
-    { id: 3, title: 'Organic Chemistry', author: 'Morrison Boyd', status: 'Available', shelf: 'B-4' },
-  ];
+  const [books, setBooks] = useState([]);
+
+  useEffect(() => {
+      setBooks(mockApi.getLibraryBooks());
+  }, []);
 
   return (
     <div className="library-module">

@@ -2,14 +2,16 @@ import React from 'react';
 import './About.css';
 import useScrollReveal from '../hooks/useScrollReveal';
 import useSEO from '../hooks/useSEO';
+import { useLanguage } from '../context/LanguageContext';
 import divyanshiImg from '../assets/faculty/divyanshi.png';
 import chairmanImg from '../assets/chairman.png';
 
 function About() {
     const sectionRef = useScrollReveal({ threshold: 0.1 });
+    const { t, language } = useLanguage();
     
     useSEO(
-        "About Us",
+        t('about'),
         "Learn about our 13-year legacy, our visionary team, and the modern facilities we offer at NSGI."
     );
     const facilities = [
@@ -54,12 +56,12 @@ function About() {
         <div className="about-page" ref={sectionRef}>
             {/* Hero */}
             <div className="about-hero reveal-on-scroll glass-panel" style={{ margin: '40px 20px', padding: '60px 20px' }}>
-                <h1 className="premium-gradient-text">About Our Institute</h1>
-                <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>Celebrating 13 Years of Educational Legacy</p>
+                <h1 className="premium-gradient-text">{language === 'hi' ? 'हमारे संस्थान के बारे में' : 'About Our Institute'}</h1>
+                <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>{t('legacy')}</p>
             </div>
 
             <div className="about-content reveal-on-scroll glass-panel" style={{ margin: '20px', padding: '40px' }}>
-                <h2 className="premium-gradient-text">Our Story & Legacy</h2>
+                <h2 className="premium-gradient-text">{language === 'hi' ? 'हमारी कहानी और विरासत' : 'Our Story & Legacy'}</h2>
                 <div style={{ lineHeight: '1.8', fontSize: '1.1rem' }}>
                     <p>
                         पिछले <strong>13 वर्षों</strong> से हमारा संस्थान गुणवत्तापूर्ण शिक्षा प्रदान करने के लिए
@@ -83,7 +85,7 @@ function About() {
                         </div>
                     </div>
                     <div className="chairman-msg-content">
-                        <h2>Chairman's Message</h2>
+                        <h2>{t('chairman_msg')}</h2>
                         <blockquote>
                             "शिक्षा वह हथियार है जिससे आप दुनिया को बदल सकते हैं।"
                         </blockquote>
@@ -112,7 +114,7 @@ function About() {
             {/* Facilities Section */}
             <div className="facilities-section">
                 <div className="reveal-on-scroll">
-                    <h2 className="facilities-heading">हमारी सुविधाएँ</h2>
+                    <h2 className="facilities-heading">{t('facilities_title')}</h2>
                     <span className="facilities-subtitle">Our Facilities & Infrastructure</span>
                 </div>
 
@@ -133,7 +135,7 @@ function About() {
 
             <div className="team-section">
                 <div className="reveal-on-scroll">
-                    <h2>Meet Our Visionary Team</h2>
+                    <h2>{t('team_title')}</h2>
                     <span className="team-subtitle">The Minds Behind Our Excellence</span>
                 </div>
 

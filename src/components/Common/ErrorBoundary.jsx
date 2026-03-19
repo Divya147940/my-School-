@@ -16,36 +16,23 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) return this.props.fallback;
+      
       return (
-        <div style={{ 
-          height: '100vh', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          background: '#0f172a', 
-          color: 'white',
-          fontFamily: 'sans-serif',
-          textAlign: 'center',
-          padding: '20px'
+        <div className="glass-panel" style={{ 
+          padding: '40px', 
+          textAlign: 'center', 
+          margin: '20px',
+          background: 'rgba(239, 68, 68, 0.05)',
+          border: '1px solid rgba(239, 68, 68, 0.2)'
         }}>
-          <h1 style={{ fontSize: '4rem', margin: 0 }}>Oops!</h1>
-          <p style={{ fontSize: '1.2rem', color: '#94a3b8', margin: '20px 0' }}>
-            Something went wrong. Don't worry, even the best systems need a reboot.
-          </p>
+          <h2 style={{ color: '#ef4444' }}>Component Error</h2>
+          <p style={{ color: 'var(--text-secondary)' }}>This section failed to load. Please try refreshing.</p>
           <button 
-            onClick={() => window.location.href = '/'}
-            style={{ 
-              padding: '12px 30px', 
-              background: '#3b82f6', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '12px', 
-              fontWeight: 'bold', 
-              cursor: 'pointer' 
-            }}
+            onClick={() => window.location.reload()}
+            style={{ marginTop: '15px', padding: '8px 20px', borderRadius: '10px', background: 'var(--accent-blue)', color: '#fff', border: 'none', cursor: 'pointer' }}
           >
-            Take Me Home
+            Refresh
           </button>
         </div>
       );

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
+import { useToast } from '../Common/Toaster';
 import './StudentLeave.css';
 
 const StudentLeave = () => {
+  const { addToast } = useToast();
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
@@ -16,13 +18,15 @@ const StudentLeave = () => {
     const req = { 
       name: 'Aman Gupta (Student)', 
       type: form.type, 
+      start: form.start,
+      end: form.end,
       duration: `${form.start} to ${form.end}`, 
       reason: form.reason 
     };
     mockApi.addLeaveRequest(req);
     setHistory(mockApi.getLeaves().filter(l => l.name.includes('Aman Gupta')));
     setForm({ type: 'Sick Leave', start: '', end: '', reason: '' });
-    alert('Leave request sent to Admin!');
+    addToast('Leave request sent to Admin!', 'success');
   };
 
   return (

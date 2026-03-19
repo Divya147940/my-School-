@@ -22,8 +22,9 @@ const defaultData = {
     ]
   },
   assignments: [
-    { id: 1, title: 'Trigonometry Homework', subject: 'Mathematics', dueDate: '2026-03-20', status: 'Pending', instructions: 'Complete Exercise 5.1 and 5.2' },
-    { id: 2, title: 'History Project', subject: 'Social Science', dueDate: '2026-03-25', status: 'Submitted', instructions: 'Write a 1000 word essay on the French Revolution.' },
+    { id: 1, title: 'Trigonometry Homework', subject: 'Mathematics', dueDate: '2026-03-20', status: 'Pending', instructions: 'Complete Exercise 5.1 and 5.2 from the textbook. Focus on sine and cosine rules.', teacher: 'Mr. Verma' },
+    { id: 2, title: 'History Project', subject: 'Social Science', dueDate: '2026-03-25', status: 'Completed', instructions: 'Write a 1000 word essay on the French Revolution. Include diagrams of the Bastille.', teacher: 'Mrs. Singh' },
+    { id: 3, title: 'Cell Structure Diagram', subject: 'Biology', dueDate: '2026-03-21', status: 'Pending', instructions: 'Draw and label the animal cell on an A4 sheet.', teacher: 'Professor Divyanshi' },
   ],
   attendance: {
     'Aman Gupta': [
@@ -107,6 +108,8 @@ const defaultData = {
     { id: 3, studentName: 'Rahul Verma', class: '10A', status: 'Absent', time: '-' },
     { id: 4, studentName: 'Sneha Kapoor', class: '10A', status: 'Pending', time: '-' },
   ],
+  admissions: [],
+  inquiries: [],
   facultyRegistry: [
     { id: 'TEA2026-01', name: 'Dr. Sharma', subject: 'Mathematics', role: 'faculty', contact: 'sharma@nsgi.edu' },
     { id: 'TEA2026-02', name: 'Professor Divyanshi', subject: 'Science', role: 'faculty', contact: '9876543210' },
@@ -143,8 +146,9 @@ const defaultData = {
     { id: 2, position: 'Physical Education Coach', department: 'Sports', status: 'Filled', date: '2026-02-10' },
   ],
   newsItems: [
-    { id: 1, date: 'Mar 2026', title: 'Teachers Written Exam Result' },
-    { id: 2, date: '24 Feb 2026', title: 'NSPS Lalganj First Entrance Test Result' },
+    { id: 1, title: 'Teachers Written Exam Result', en: 'Teachers Written Exam Result - Check Now', hi: 'शिक्षकों की लिखित परीक्षा का परिणाम - अभी देखें' },
+    { id: 2, title: 'First Entrance Test Result Published', en: 'First Entrance Test Result Published', hi: 'प्रथम प्रवेश परीक्षा परिणाम प्रकाशित' },
+    { id: 3, title: 'Admission open for session 2025-26', en: 'Admission open for session 2025-26. Limited seats available!', hi: 'सत्र 2025-26 के लिए प्रवेश खुले हैं। सीटें सीमित हैं!' }
   ],
   reviews: [
     { id: 1, name: "Rajesh Kumar", relation: "Father of Aryan (Class 8)", text: "The academic standards and personality development focus at Shri Jageshwar Memorial are truly commendable. My son has shown great improvement in his confidence and communication skills.", rating: 5 },
@@ -152,12 +156,51 @@ const defaultData = {
     { id: 3, name: "Amit Verma", relation: "Father of Sneha (Class 10)", text: "The way the school handled board exam preparations was excellent. The extra classes and regular mock tests helped my daughter score brilliantly in her 10th boards.", rating: 4 },
     { id: 4, name: "Anita Singh", relation: "Mother of Rahul (Class 12)", text: "A great institution for holistic development. Not just academics, but the sports and cultural activities are also given equal importance here.", rating: 5 },
     { id: 5, name: "Vikram Pratap", relation: "Father of Kavya (Class 7)", text: "Best school in the region! The management is very approachable and they actually listen to parents' suggestions for the betterment of the school.", rating: 5 }
+  ],
+  storeOrders: [],
+  healthRecords: {
+    'STU2026-001': {
+      bloodGroup: 'B+',
+      height: '142 cm',
+      weight: '38 kg',
+      vaccinations: [
+        { name: 'BCG', date: 'Done', type: 'Mandatory' },
+        { name: 'Hepatitis B', date: 'Done', type: 'Mandatory' },
+        { name: 'Covid-19', date: 'March 2022', type: 'Special' }
+      ],
+      allergies: ['Dust', 'Peanuts'],
+      emergencyContact: {
+        name: 'Mr. Gupta (Father)',
+        phone: '+91 98765 43210'
+      }
+    }
+  },
+  documents: {
+    'STU2026-001': [
+      { id: 1, name: 'Academic Report Card - Term 1', type: 'PDF', date: 'Dec 2025', size: '1.2 MB' },
+      { id: 2, name: 'Character Certificate', type: 'PDF', date: 'Jan 2026', size: '0.8 MB' },
+      { id: 3, name: 'Fee Clearance Certificate', type: 'PDF', date: 'Feb 2026', size: '0.4 MB' },
+      { id: 4, name: 'School Admission Form', type: 'PDF', date: 'April 2025', size: '2.5 MB' }
+    ]
+  },
+  libraryBooks: [
+    { id: 1, title: 'Higher Engineering Mathematics', author: 'B.S. Grewal', status: 'Available', shelf: 'A-1' },
+    { id: 2, title: 'Concept of Physics', author: 'H.C. Verma', status: 'Issued', borrower: 'Aman Gupta', returnDate: '2026-03-22' },
+    { id: 3, title: 'Organic Chemistry', author: 'Morrison Boyd', status: 'Available', shelf: 'B-4' },
   ]
 };
 
 const getDB = () => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : defaultData;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return defaultData;
+    const data = JSON.parse(saved);
+    // Merge defaultData with saved data to ensure transitions are smooth
+    return { ...defaultData, ...data };
+  } catch (error) {
+    console.error("Data corruption detected, resetting to default.", error);
+    return defaultData;
+  }
 };
 
 const saveDB = (data) => {
@@ -165,6 +208,10 @@ const saveDB = (data) => {
 };
 
 export const mockApi = {
+  // Compatibility Aliases (Prevents crashes in legacy components)
+  loadData: () => getDB(),
+  saveData: (data) => saveDB(data),
+
   // Assignments
   getAssignments: () => getDB().assignments,
   addAssignment: (asm) => {
@@ -175,7 +222,7 @@ export const mockApi = {
 
   // Attendance
   getAttendance: (studentName) => getDB().attendance[studentName] || [],
-  markAttendance: (studentName, date, status) => {
+  markAttendanceHub: (studentName, date, status) => {
     const db = getDB();
     if (!db.attendance[studentName]) db.attendance[studentName] = [];
     const existing = db.attendance[studentName].find(a => a.date === date);
@@ -319,7 +366,10 @@ export const mockApi = {
   },
 
   // News
-  getNews: () => getDB().newsItems || [],
+  getNews: () => {
+    const db = getDB();
+    return db.newsItems || [];
+  },
   addNews: (news) => {
     const db = getDB();
     db.newsItems.unshift({ id: Date.now(), ...news });
@@ -438,72 +488,128 @@ export const mockApi = {
     return "That's a great question! I'm currently in 'School-Sim' mode, but I've noted this for the administrator. Is there anything else I can help with?";
   },
 
+  submitAdmission: (data) => {
+    const db = getDB();
+    const newAdmission = { ...data, id: `ADM${Date.now()}`, submittedAt: new Date().toISOString() };
+    db.admissions.push(newAdmission);
+    saveDB(db);
+    return newAdmission;
+  },
+
+  submitInquiry: (data) => {
+    const db = getDB();
+    const newInquiry = { ...data, id: `INQ${Date.now()}`, submittedAt: new Date().toISOString() };
+    db.inquiries.push(newInquiry);
+    saveDB(db);
+    return newInquiry;
+  },
+
   getParentFees: () => {
-    const data = loadData();
-    return data.parentFees;
+    const data = getDB();
+    return data.parentFees || [];
   },
 
   payFee: (feeId) => {
-    const data = loadData();
+    const data = getDB();
     data.parentFees = data.parentFees.map(f => 
       f.id === feeId ? { ...f, status: 'Paid' } : f
     );
-    saveData(data);
+    saveDB(data);
     return { status: 'success' };
   },
 
   getAttendanceHub: () => {
-    const data = loadData();
-    return data.attendanceHub;
+    const data = getDB();
+    return data.attendanceHub || [];
   },
 
-  markAttendance: (studentName, status) => {
-    const data = loadData();
+  markAttendanceHub: (studentName, status) => {
+    const data = getDB();
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     data.attendanceHub = data.attendanceHub.map(record => 
       record.studentName === studentName ? { ...record, status, time: status === 'Present' ? now : '-' } : record
     );
-    saveData(data);
+    saveDB(data);
     return { status: 'success', time: now };
   },
 
   onboardFaculty: (name, subject) => {
-    const data = loadData();
-    const newId = `TEA2026-${data.facultyRegistry.length + 1}`;
+    const data = getDB();
+    if (!data.facultyRegistry) data.facultyRegistry = [];
+    
+    // Duplicate check
+    const exists = data.facultyRegistry.some(f => f.name.toLowerCase() === name.toLowerCase());
+    if (exists) throw new Error("A faculty member with this name is already registered.");
+
+    const newId = `TEA-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const newFaculty = { id: newId, name, subject, role: 'faculty' };
     data.facultyRegistry.push(newFaculty);
-    saveData(data);
+    saveDB(data);
     return newFaculty;
   },
 
   onboardStudent: (name, className, parentName) => {
-    const data = loadData();
+    const data = getDB();
+    if (!data.studentRegistry) data.studentRegistry = [];
+    if (!data.attendanceHub) data.attendanceHub = [];
+    
+    // Duplicate check
+    const exists = data.studentRegistry.some(s => s.name.toLowerCase() === name.toLowerCase() && s.class === className);
+    if (exists) throw new Error("This student is already registered in the selected class.");
+
+    const studentId = `STU-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const classStudents = data.studentRegistry.filter(s => s.class === className);
-    const newId = `STU2026-${data.studentRegistry.length + 100}`;
     const newRoll = classStudents.length + 1;
-    const newStudent = { id: newId, name, class: className, rollNo: newRoll, role: 'student', parentName };
+    const newStudent = { id: studentId, name, class: className, rollNo: newRoll, role: 'student', parentName };
     data.studentRegistry.push(newStudent);
     
     // Also add to attendance hub
-    data.attendanceHub.push({ id: data.attendanceHub.length + 1, studentName: name, class: className, status: 'Pending', time: '-' });
+    data.attendanceHub.push({ id: `ATT-${Date.now()}`, studentName: name, class: className, status: 'Pending', time: '-' });
     
-    saveData(data);
+    saveDB(data);
     return newStudent;
   },
 
+  deleteStudent: (studentId) => {
+    const data = getDB();
+    const student = data.studentRegistry.find(s => s.id === studentId);
+    if (!student) return { status: 'error', message: 'Student not found' };
+
+    const studentName = student.name;
+    const studentClass = student.class;
+
+    // 1. Remove from registry
+    data.studentRegistry = data.studentRegistry.filter(s => s.id !== studentId);
+    // 2. Remove from attendance hub
+    data.attendanceHub = data.attendanceHub.filter(a => !(a.studentName === studentName && a.class === studentClass));
+    // 3. Remove from fee ledger (optional, usually kept for audit, but let's clean for mock)
+    data.feeLedger = (data.feeLedger || []).filter(f => f.studentId !== studentId);
+    
+    saveDB(data);
+    return { status: 'success' };
+  },
+
+  deleteFaculty: (facultyId) => {
+    const data = getDB();
+    data.facultyRegistry = (data.facultyRegistry || []).filter(f => f.id !== facultyId);
+    saveDB(data);
+    return { status: 'success' };
+  },
+
   enrollFace: (studentId) => {
-    const data = loadData();
+    const data = getDB();
     const student = data.studentRegistry.find(s => s.id === studentId);
     if (student) {
       student.isFaceEnrolled = true;
-      saveData(data);
+      saveDB(data);
       return { status: 'success' };
     }
     return { status: 'error' };
   },
 
   logLesson: (teacherId, teacherName, subject, topic, summary) => {
-    const data = loadData();
+    const data = getDB();
+    if (!data.lessonLogs) data.lessonLogs = [];
     const newLog = {
       id: `LOG${100 + data.lessonLogs.length + 1}`,
       date: new Date().toISOString().split('T')[0],
@@ -514,13 +620,14 @@ export const mockApi = {
       summary
     };
     data.lessonLogs.push(newLog);
-    saveData(data);
+    saveDB(data);
     return newLog;
   },
 
   recordFee: (studentId, studentName, amount, mode, collectorRole, collectorName) => {
-    const data = loadData();
-    const txnId = `TXN${1000 + data.feeLedger.length + 1}`;
+    const data = getDB();
+    if (!data.feeLedger) data.feeLedger = [];
+    const txnId = `TXN-${Date.now()}`;
     const newEntry = {
       id: txnId,
       studentId,
@@ -535,24 +642,144 @@ export const mockApi = {
     
     // Update parentFees if it exists for this student
     if (data.parentFees) {
-      const feeIndex = data.parentFees.findIndex(f => f.status === 'Pending' || f.studentName === studentName);
+      const feeIndex = data.parentFees.findIndex(f => f.status === 'Pending' && f.studentName === studentName);
       if (feeIndex !== -1) {
         data.parentFees[feeIndex].status = 'Paid';
       }
     }
     
-    saveData(data);
+    saveDB(data);
     return newEntry;
   },
 
   recoverId: (info) => {
-    const data = loadData();
-    const faculty = data.facultyRegistry.find(f => f.contact === info);
+    const data = getDB();
+    const faculty = (data.facultyRegistry || []).find(f => f.contact === info);
     if (faculty) return { type: 'Faculty', id: faculty.id, name: faculty.name };
     
-    const student = data.studentRegistry.find(s => s.contact === info);
+    const student = (data.studentRegistry || []).find(s => s.contact === info);
     if (student) return { type: 'Student', id: student.id, name: student.name, rollNo: student.rollNo };
     
     return null;
+  },
+
+  getDocuments: (studentId) => getDB().documents[studentId] || [],
+  getLibraryBooks: () => getDB().libraryBooks || [],
+
+  // Reset System (For development only)
+  getOrders: () => getDB().storeOrders || [],
+  recordOrder: (order) => {
+    const data = getDB();
+    const newOrder = { ...order, id: `ORD-${Date.now()}`, timestamp: new Date().toISOString() };
+    data.storeOrders.push(newOrder);
+    saveDB(data);
+    return newOrder;
+  },
+
+  getHealthRecord: (studentId) => {
+    const record = getDB().healthRecords[studentId];
+    if (record) return record;
+    // Default safe record if none exists
+    return {
+      bloodGroup: 'Unknown',
+      height: 'N/A',
+      weight: 'N/A',
+      vaccinations: [],
+      allergies: [],
+      emergencyContact: { name: 'Not Set', phone: 'N/A' }
+    };
+  },
+
+  updateHealthRecord: (studentId, record) => {
+    const data = getDB();
+    data.healthRecords[studentId] = record;
+    saveDB(data);
+    return record;
+  },
+
+  // Assignments & Diary
+  getAssignments: () => getDB().assignments || [],
+  addAssignment: (assignment) => {
+    const data = getDB();
+    const newAssignment = { 
+      ...assignment, 
+      id: Date.now(), 
+      status: 'Active', 
+      submissions: 0,
+      totalStudents: 30, // Mock class size
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) 
+    };
+    data.assignments.unshift(newAssignment);
+    saveDB(data);
+    return newAssignment;
+  },
+  removeAssignment: (id) => {
+    const data = getDB();
+    data.assignments = data.assignments.filter(a => a.id !== id);
+    saveDB(data);
+  },
+  updateAssignmentStatus: (id, status) => {
+    const data = getDB();
+    const index = data.assignments.findIndex(a => a.id === id);
+    if (index !== -1) {
+      data.assignments[index].status = status;
+      saveDB(data);
+    }
+    return data.assignments[index];
+  },
+  submitWork: (assignmentId, studentName) => {
+    const data = getDB();
+    const index = data.assignments.findIndex(a => a.id === assignmentId);
+    if (index !== -1) {
+      data.assignments[index].submissions = (data.assignments[index].submissions || 0) + 1;
+      // Also mark as completed in student's local view if we had a per-student assignment table
+      // For now we simulate by updating the global assignment status for this demo's simplicity
+      data.assignments[index].status = 'Completed'; 
+      saveDB(data);
+    }
+    return true;
+  },
+  getDiaryEntries: () => getDB().diaryEntries || [],
+  getDiary: () => getDB().diaryEntries || [], // Alias
+  postDiaryEntry: (entry) => {
+    const data = getDB();
+    const newEntry = { 
+      ...entry, 
+      id: Date.now(), 
+      date: new Date().toLocaleDateString('en-GB') 
+    };
+    data.diaryEntries.unshift(newEntry);
+    saveDB(data);
+    return newEntry;
+  },
+  logLesson: (teacherId, teacherName, subject, topic, summary) => {
+    const data = getDB();
+    const newLog = {
+        id: Date.now(),
+        teacherId,
+        teacherName,
+        subject,
+        topic,
+        summary,
+        date: new Date().toLocaleDateString('en-GB')
+    };
+    if (!data.lessonLogs) data.lessonLogs = [];
+    data.lessonLogs.unshift(newLog);
+    // Also add to diary entries for students to see
+    if (!data.diaryEntries) data.diaryEntries = [];
+    data.diaryEntries.unshift({
+        id: Date.now() + 1,
+        topic: topic,
+        date: new Date().toLocaleDateString('en-GB'),
+        progress: 100,
+        remarks: summary
+    });
+    saveDB(data);
+    return newLog;
+  },
+
+  clearDB: () => {
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
   }
 };

@@ -1,45 +1,60 @@
 import React, { useState } from 'react';
 import './ContactPage.css';
 import useScrollReveal from '../hooks/useScrollReveal';
+import { useToast } from '../components/Common/Toaster';
+import { mockApi } from '../utils/mockApi';
 
 function ContactPage() {
     const sectionRef = useScrollReveal({ threshold: 0.1 });
     const [form, setForm] = useState({ name: '', phone: '', email: '', subject: '', message: '' });
     const [sent, setSent] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const { addToast } = useToast();
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
         // Validation
         if (form.phone.length !== 10) {
-            alert('Please enter a valid 10-digit phone number.');
+            addToast('Please enter a valid 10-digit phone number.', 'error');
             return;
         }
 
         if (form.message.length < 10) {
-            alert('Message is too short. Please provide more details.');
+            addToast('Message is too short. Please provide more details.', 'warning');
             return;
         }
 
-        setSent(true);
+        setLoading(true);
+        try {
+            // Save to Mock Database
+            mockApi.submitInquiry(form);
 
-        // Format message for WhatsApp
-        const message = `*New Contact Inquiry*\n\n` +
-            `*Name:* ${form.name}\n` +
-            `*Phone:* ${form.phone}\n` +
-            `*Email:* ${form.email || 'N/A'}\n` +
-            `*Subject:* ${form.subject}\n` +
-            `*Message:* ${form.message}`;
+            setSent(true);
+            addToast("Your inquiry has been sent!", "success");
 
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/919792799550?text=${encodedMessage}`;
+            // Format message for WhatsApp
+            const message = `*New Contact Inquiry*\n\n` +
+                `*Name:* ${form.name}\n` +
+                `*Phone:* ${form.phone}\n` +
+                `*Email:* ${form.email || 'N/A'}\n` +
+                `*Subject:* ${form.subject}\n` +
+                `*Message:* ${form.message}`;
 
-        // Redirect to WhatsApp after a brief delay
-        setTimeout(() => {
-            window.open(whatsappUrl, '_blank');
-        }, 1500);
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/919792799550?text=${encodedMessage}`;
+
+            // Redirect to WhatsApp after a brief delay
+            setTimeout(() => {
+                window.open(whatsappUrl, '_blank');
+            }, 2000);
+        } catch (err) {
+            addToast("Failed to send message. Please try again.", "error");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCall = () => {
@@ -129,7 +144,9 @@ function ContactPage() {
                                     <label>Message / संदेश *</label>
                                     <textarea name="message" value={form.message} onChange={handleChange} placeholder="Write your message here..." rows="5" required></textarea>
                                 </div>
-                                <button type="submit" className="cp-submit-btn">📤 Send Message</button>
+                                <button type="submit" className="cp-submit-btn" disabled={loading}>
+                                    {loading ? 'Sending...' : '📤 Send Message'}
+                                </button>
                             </form>
                         )}
                     </div>

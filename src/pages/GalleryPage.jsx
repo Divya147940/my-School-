@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { mockApi } from '../utils/mockApi';
 import useScrollReveal from '../hooks/useScrollReveal';
+import useSEO from '../hooks/useSEO';
+import { useLanguage } from '../context/LanguageContext';
 import './GalleryPage.css';
 
 function GalleryPage() {
     const sectionRef = useScrollReveal({ threshold: 0.1 });
+    const { t } = useLanguage();
+    useSEO(t('gallery'), "Browse photos of our school events, campus, and student activities.");
     const [galleryItems, setGalleryItems] = useState(mockApi.getGallery());
     const [activeFilter, setActiveFilter] = useState('all');
     const [lightbox, setLightbox] = useState(null);
