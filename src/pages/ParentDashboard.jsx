@@ -189,8 +189,6 @@ const ParentDashboard = () => {
         return <div className="feature-section"><SchoolCalendar /></div>;
       case 'Ward Digital ID':
         return <div className="feature-section"><IDCard studentData={{ name: 'Aman Gupta', class: '10A', rollNo: '2026001', dob: '15/08/2010', bloodGroup: 'B+' }} /></div>;
-      case 'Hall of Fame':
-        return <div className="feature-section"><HallOfFame /></div>;
       case 'Digital Diary':
         return <div className="feature-section"><h3 className="section-title">Daily Teaching Updates</h3><StudentDiary /></div>;
       case 'Library':
