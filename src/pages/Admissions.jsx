@@ -5,6 +5,7 @@ import useSEO from '../hooks/useSEO';
 import { useLanguage } from '../context/LanguageContext';
 import { mockApi } from '../utils/mockApi';
 import { useToast } from '../components/Common/Toaster';
+import AdmissionRoadmap from '../components/Admission/AdmissionRoadmap';
 
 function Admissions() {
     const sectionRef = useScrollReveal({ threshold: 0.1 });
@@ -116,6 +117,10 @@ function Admissions() {
             <div className="adm-hero reveal-on-scroll">
                 <h1>Admissions Open 2025-26</h1>
                 <p>प्रवेश प्रारंभ — Secure Your Child's Future Today</p>
+            </div>
+
+            <div className="reveal-on-scroll" style={{ background: 'rgba(255,255,255,0.02)', padding: '40px 0' }}>
+                <AdmissionRoadmap />
             </div>
 
             <div className="adm-main">

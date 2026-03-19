@@ -13,6 +13,7 @@ import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
 import AttendanceControl from '../components/Admin/AttendanceControl';
 import ReviewManager from '../components/Admin/ReviewManager';
 import FacultyManagement from '../components/Admin/FacultyManagement';
+import InquiryTracker from '../components/Admin/InquiryTracker';
 import FeeCollector from '../components/Common/FeeCollector';
 import LessonDiary from '../components/Common/LessonDiary';
 import CommandPalette from '../components/CommandPalette';
@@ -40,6 +41,7 @@ const AdminDashboard = () => {
   const navItems = [
     { name: 'Overview', icon: '💎' },
     { name: 'Fee management', icon: '💰' },
+    { name: 'Leads & Inquiries', icon: '📥' },
     { name: 'Staff Payroll', icon: '💳' },
     { name: 'ID Cards', icon: '🪪' },
     { name: 'Elite Controls', icon: '🌟' },
@@ -130,6 +132,8 @@ const AdminDashboard = () => {
         );
       case 'Fee management':
         return <div className="feature-box"><FeeManagement /></div>;
+      case 'Leads & Inquiries':
+        return <div className="feature-box"><InquiryTracker /></div>;
       case 'Staff Payroll':
         return <div className="feature-box"><StaffPayroll /></div>;
       case 'ID Cards':

@@ -5,6 +5,7 @@ import useSEO from '../hooks/useSEO';
 import { useLanguage } from '../context/LanguageContext';
 import divyanshiImg from '../assets/faculty/divyanshi.png';
 import chairmanImg from '../assets/chairman.png';
+import FacultyShowcase from '../components/Home/FacultyShowcase';
 
 function About() {
     const sectionRef = useScrollReveal({ threshold: 0.1 });
@@ -133,45 +134,8 @@ function About() {
                 </div>
             </div>
 
-            <div className="team-section">
-                <div className="reveal-on-scroll">
-                    <h2>{t('team_title')}</h2>
-                    <span className="team-subtitle">The Minds Behind Our Excellence</span>
-                </div>
-
-                <div className="team-container">
-                    {/* Husbun Jahan - MBA, HR & IT */}
-                    <div className="team-card reveal-on-scroll" style={{ transitionDelay: '0.1s' }}>
-                        <div className="team-img-box">
-                            <div className="team-avatar" style={{ background: 'linear-gradient(135deg, #1a1a6e, #3a3aae)' }}>
-                                <span>HJ</span>
-                            </div>
-                        </div>
-                        <div className="team-info">
-                            <h3 className="team-name">Husbun Jahan</h3>
-                            <p className="team-role">MBA | HR & IT Head</p>
-                            <p className="faculty-desc" style={{ marginTop: '15px' }}>
-                                Expert in Human Resource Management and Information Technology.
-                                Manages institutional operations, staff coordination, and IT infrastructure.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Divyanshi Verma */}
-                    <div className="team-card reveal-on-scroll" style={{ transitionDelay: '0.2s' }}>
-                        <div className="team-img-box">
-                            <img src={divyanshiImg} alt="Divyanshi Verma" className="team-img" />
-                        </div>
-                        <div className="team-info">
-                            <h3 className="team-name">Divyanshi Verma</h3>
-                            <p className="team-role">AI Engineer & Technical Coordinator</p>
-                            <p className="faculty-desc" style={{ marginTop: '15px' }}>
-                                Specializing in Advanced Agentic Coding and AI integration to
-                                modernize the educational landscape.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+            <div className="reveal-on-scroll">
+                <FacultyShowcase />
             </div>
         </div>
     );

@@ -1,0 +1,177 @@
+.receipt-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem;
+}
+
+.receipt-modal {
+    width: 100%;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.receipt-actions {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    display: flex;
+    gap: 1rem;
+    z-index: 10;
+}
+
+.btn-print {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 100px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+
+.btn-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.receipt-paper {
+    background: white;
+    color: #1e293b;
+    padding: 2rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.receipt-border {
+    border: 3px double #1e293b;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.school-info h1 { font-size: 2rem; font-weight: 900; margin: 0; color: #1e3a8a; letter-spacing: -1px; }
+.school-info h2 { font-size: 1.2rem; font-weight: 700; margin: 0; color: #3b82f6; }
+.school-info p { margin: 5px 0 0; font-size: 0.8rem; color: #64748b; font-weight: 600; }
+
+.receipt-badge {
+    display: inline-block;
+    background: #1e3a8a;
+    color: white;
+    padding: 4px 20px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    margin-top: 15px;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.detail-item label { display: block; font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
+.detail-item span { font-size: 1rem; font-weight: 800; }
+
+.student-profile-receipt {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.student-profile-receipt h3 { font-size: 0.85rem; color: #1e3a8a; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+
+.receipt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.grid-item label { font-size: 0.7rem; color: #64748b; display: block; }
+.grid-item span { font-size: 0.9rem; font-weight: 600; }
+.val-bold { color: #1e293b; font-weight: 800 !important; }
+
+.receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.receipt-table th { text-align: left; padding: 12px; background: #f1f5f9; font-size: 0.75rem; color: #64748b; }
+.receipt-table td { padding: 15px 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; font-weight: 700; }
+
+.total-row td { background: #f1f5f9; font-size: 1.1rem; color: #1e3a8a; font-weight: 900; }
+.text-right { text-align: right !important; }
+
+.payment-info-box {
+    margin-bottom: 3rem;
+    font-size: 0.8rem;
+    color: #475569;
+}
+
+.receipt-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+}
+
+.signature-box {
+    text-align: center;
+}
+
+.sig-line { width: 180px; height: 1px; background: #64748b; margin-bottom: 10px; }
+.signature-box p { font-size: 0.75rem; font-weight: 700; color: #64748b; }
+
+.paid-stamp {
+    font-size: 4rem;
+    font-weight: 950;
+    color: #10b981;
+    opacity: 0.1;
+    transform: rotate(-15deg);
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    border: 10px solid #10b981;
+    padding: 10px 30px;
+    pointer-events: none;
+}
+
+.computer-generated {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+@keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+@media print {
+    .receipt-overlay { background: none; padding: 0; }
+    .receipt-actions { display: none; }
+    .receipt-modal { box-shadow: none; border: none; max-height: none; overflow: visible; }
+    .glass-panel { background: white !important; }
+}

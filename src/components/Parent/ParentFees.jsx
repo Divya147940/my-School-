@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useLanguage } from '../../context/LanguageContext';
+import FeeReceipt from './FeeReceipt';
 
 const ParentFees = () => {
     const { t, language } = useLanguage();
@@ -8,6 +9,8 @@ const ParentFees = () => {
     const [loading, setLoading] = useState(true);
     const [paymentState, setPaymentState] = useState('idle'); // idle, processing, success
     const [selectedFee, setSelectedFee] = useState(null);
+    const [showReceipt, setShowReceipt] = useState(false);
+    const [selectedTxn, setSelectedTxn] = useState(null);
     const [transactionId, setTransactionId] = useState('');
     const [history, setHistory] = useState([]);
 
@@ -157,7 +160,13 @@ const ParentFees = () => {
                                         </td>
                                         <td style={{ padding: '20px' }}>
                                             {fee.status === 'Paid' ? (
-                                                <button style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)', padding: '8px 15px', borderRadius: '10px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '700' }}>
+                                                <button 
+                                                    onClick={() => {
+                                                        setSelectedTxn({ ...fee, id: `FEE-${fee.id}` });
+                                                        setShowReceipt(true);
+                                                    }}
+                                                    style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)', padding: '8px 15px', borderRadius: '10px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '700' }}
+                                                >
                                                     RECEIPT 📥
                                                 </button>
                                             ) : (
@@ -207,6 +216,13 @@ const ParentFees = () => {
                     .fees-layout { grid-template-columns: 1fr !important; }
                 }
             `}</style>
+
+            {showReceipt && (
+                <FeeReceipt 
+                    txn={selectedTxn} 
+                    onClose={() => setShowReceipt(false)} 
+                />
+            )}
         </div>
     );
 };

@@ -9,6 +9,13 @@ import GalleryVideo from '../components/GalleryVideo';
 import OurStrength from '../components/OurStrength';
 import ParentReviews from '../components/ParentReviews';
 import ContactInfo from '../components/ContactInfo';
+import WallOfStars from '../components/Home/WallOfStars';
+import EventCountdown from '../components/Home/EventCountdown';
+import AlumniHallOfFame from '../components/Home/AlumniHallOfFame';
+import QuickInquiry from '../components/Home/QuickInquiry';
+import HomeInquirySection from '../components/Home/HomeInquirySection';
+import LegacyTimeline from '../components/Home/LegacyTimeline';
+import FacultyShowcase from '../components/Home/FacultyShowcase';
 
 function Home() {
     const { t } = useLanguage();
@@ -24,9 +31,29 @@ function Home() {
             <div className="reveal-on-scroll glass-panel" style={{ margin: '20px', overflow: 'hidden' }}>
                 <Gallery />
             </div>
+
+            <div className="reveal-on-scroll">
+                <EventCountdown />
+            </div>
             
             <div className="reveal-on-scroll delay-1 glass-panel" style={{ margin: '20px', padding: '20px' }}>
                 <ChairmanMessage />
+            </div>
+
+            <div className="reveal-on-scroll">
+                <AlumniHallOfFame />
+            </div>
+
+            <div className="reveal-on-scroll">
+                <LegacyTimeline />
+            </div>
+
+            <div className="reveal-on-scroll">
+                <FacultyShowcase />
+            </div>
+
+            <div className="reveal-on-scroll">
+                <WallOfStars />
             </div>
 
             <div className="reveal-on-scroll">
@@ -50,8 +77,14 @@ function Home() {
             </div>
 
             <div className="reveal-on-scroll">
+                <HomeInquirySection />
+            </div>
+
+            <div className="reveal-on-scroll">
                 <ContactInfo />
             </div>
+
+            <QuickInquiry />
         </div>
     );
 }
