@@ -50,7 +50,23 @@ const Login = () => {
 
   const handleRecover = () => {
     setError('');
-    const user = mockApi.recoverId(contactInfo);
+    
+    // Validation
+    const trimmedContact = contactInfo.trim();
+    if (!trimmedContact) {
+      setError(language === 'hi' ? 'कृपया जानकारी दर्ज करें' : 'Please enter contact info');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{10}$/;
+
+    if (!emailRegex.test(trimmedContact) && !phoneRegex.test(trimmedContact)) {
+      setError(language === 'hi' ? 'मान्य ईमेल या 10-अंकों का नंबर दर्ज करें' : 'Enter valid email or 10-digit number');
+      return;
+    }
+
+    const user = mockApi.recoverId(trimmedContact);
     if (user) {
       setRecoveredUser(user);
     } else {

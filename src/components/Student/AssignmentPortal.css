@@ -1,0 +1,119 @@
+.assignment-gateway {
+  padding: 20px;
+}
+
+.assignment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 25px;
+}
+
+.assignment-card {
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.assignment-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--accent-blue);
+  box-shadow: var(--shadow-premium);
+}
+
+.subject-tag {
+  font-weight: 700;
+  font-size: 0.75rem;
+  background: var(--accent-blue);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 30px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-badge.pending { background: #f59e0b20; color: #f59e0b; }
+.status-badge.submitted { background: #10b98120; color: #10b981; }
+
+.asm-title {
+  margin: 20px 0 10px 0;
+  font-size: 1.4rem;
+  color: #fff;
+}
+
+.asm-desc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.asm-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 20px;
+}
+
+.due-date {
+  color: #ef4444;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.submit-btn {
+  padding: 10px 25px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.submit-btn:hover {
+  background: #2563eb;
+  transform: scale(1.05);
+}
+
+/* Submission Form Style */
+.submission-form {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 16px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.file-input-wrapper {
+  border: 2px dashed rgba(255,255,255,0.2);
+  padding: 20px;
+  text-align: center;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.file-input-wrapper:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}

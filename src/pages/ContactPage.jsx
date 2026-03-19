@@ -11,6 +11,18 @@ function ContactPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // Validation
+        if (form.phone.length !== 10) {
+            alert('Please enter a valid 10-digit phone number.');
+            return;
+        }
+
+        if (form.message.length < 10) {
+            alert('Message is too short. Please provide more details.');
+            return;
+        }
+
         setSent(true);
 
         // Format message for WhatsApp

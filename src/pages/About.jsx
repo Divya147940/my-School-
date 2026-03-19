@@ -1,11 +1,17 @@
 import React from 'react';
 import './About.css';
 import useScrollReveal from '../hooks/useScrollReveal';
+import useSEO from '../hooks/useSEO';
 import divyanshiImg from '../assets/faculty/divyanshi.png';
 import chairmanImg from '../assets/chairman.png';
 
 function About() {
     const sectionRef = useScrollReveal({ threshold: 0.1 });
+    
+    useSEO(
+        "About Us",
+        "Learn about our 13-year legacy, our visionary team, and the modern facilities we offer at NSGI."
+    );
     const facilities = [
         {
             icon: '🧠',
@@ -47,23 +53,23 @@ function About() {
     return (
         <div className="about-page" ref={sectionRef}>
             {/* Hero */}
-            <div className="about-hero reveal-on-scroll">
-                <h1>About Our Institute</h1>
-                <p>Celebrating 13 Years of Educational Legacy</p>
+            <div className="about-hero reveal-on-scroll glass-panel" style={{ margin: '40px 20px', padding: '60px 20px' }}>
+                <h1 className="premium-gradient-text">About Our Institute</h1>
+                <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>Celebrating 13 Years of Educational Legacy</p>
             </div>
 
-            <div className="about-content reveal-on-scroll">
-                <h2>Our Story & Legacy</h2>
-                <p>
-                    पिछले <strong>13 वर्षों</strong> से हमारा संस्थान गुणवत्तापूर्ण शिक्षा प्रदान करने के लिए
-                    समर्पित है। हम शिक्षा के क्षेत्र में एक प्रकाशस्तंभ के रूप में खड़े हैं,
-                    जहाँ हर विद्यार्थी अपनी पूरी क्षमता को पहचान सकता है।
-                </p>
-                <p>
-                    हम सर्वांगीण विकास में विश्वास करते हैं — शैक्षणिक कठोरता के साथ कलात्मक,
-                    खेल और सामाजिक विकास का संयोजन। हमारा परिसर आधुनिक सुविधाओं से सुसज्जित है
-                    ताकि हर बच्चे की शिक्षा यात्रा सुरक्षित और सहायक हो।
-                </p>
+            <div className="about-content reveal-on-scroll glass-panel" style={{ margin: '20px', padding: '40px' }}>
+                <h2 className="premium-gradient-text">Our Story & Legacy</h2>
+                <div style={{ lineHeight: '1.8', fontSize: '1.1rem' }}>
+                    <p>
+                        पिछले <strong>13 वर्षों</strong> से हमारा संस्थान गुणवत्तापूर्ण शिक्षा प्रदान करने के लिए
+                        समर्पित है। हम शिक्षा के क्षेत्र में एक प्रकाशस्तंभ के रूप में खड़े हैं।
+                    </p>
+                    <p>
+                        हम सर्वांगीण विकास में विश्वास करते हैं — शैक्षणिक कठोरता के साथ कलात्मक,
+                        खेल और सामाजिक विकास का संयोजन।
+                    </p>
+                </div>
             </div>
 
             {/* Chairman's Message Section */}

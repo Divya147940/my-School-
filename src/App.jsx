@@ -29,59 +29,62 @@ import Careers from './pages/Careers';
 import ChairmanMessagePage from './pages/ChairmanMessagePage';
 import VirtualTour from './pages/VirtualTour';
 import SchoolMapPage from './pages/SchoolMapPage';
-import SchoolBot from './components/Common/SchoolBot';
-import AnnouncementTicker from './components/Common/AnnouncementTicker';
+import AIAssistant from './components/Common/AIAssistant';
+import NewsTicker from './components/Common/NewsTicker';
 import FloatingContact from './components/Common/FloatingContact';
 import './App.css';
+import ErrorBoundary from './components/Common/ErrorBoundary';
 
 function App() {
   return (
-    <LanguageProvider>
-      <ThemeProvider>
-      <Router>
-        <div className="app">
-          <AnnouncementTicker />
-          <TopBar />
-          <Navbar />
+    <ErrorBoundary>
+      <LanguageProvider>
+        <ThemeProvider>
+        <Router>
+          <div className="app">
+            <NewsTicker />
+            <TopBar />
+            <Navbar />
 
-          {/* Main Content Area */}
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/vision-mission" element={<VisionMission />} />
-              <Route path="/facilities" element={<Facilities />} />
-              <Route path="/achievements" element={<Achievements />} />
-              <Route path="/social-work" element={<SocialWork />} />
-              <Route path="/academics" element={<Academics />} />
-              <Route path="/admissions" element={<Admissions />} />
-              <Route path="/faculty" element={<Faculty />} />
-              <Route path="/attendance" element={<Attendance />} />
-              <Route path="/gallery" element={<GalleryPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/faculty-dashboard" element={<FacultyDashboard />} />
-              <Route path="/student-dashboard" element={<StudentDashboard />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/parent-dashboard" element={<ParentDashboard />} />
-              <Route path="/careers" element={<Careers />} />
-              <Route path="/chairman-message" element={<ChairmanMessagePage />} />
-              <Route path="/virtual-tour" element={<VirtualTour />} />
-              <Route path="/school-map" element={<SchoolMapPage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-conditions" element={<TermsConditions />} />
-              <Route path="/user-data-deletion" element={<UserDataDeletion />} />
-            </Routes>
-          </main>
+            {/* Main Content Area */}
+            <main className="main-content">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/vision-mission" element={<VisionMission />} />
+                <Route path="/facilities" element={<Facilities />} />
+                <Route path="/achievements" element={<Achievements />} />
+                <Route path="/social-work" element={<SocialWork />} />
+                <Route path="/academics" element={<Academics />} />
+                <Route path="/admissions" element={<Admissions />} />
+                <Route path="/faculty" element={<Faculty />} />
+                <Route path="/attendance" element={<Attendance />} />
+                <Route path="/gallery" element={<GalleryPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/faculty-dashboard" element={<FacultyDashboard />} />
+                <Route path="/student-dashboard" element={<StudentDashboard />} />
+                <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                <Route path="/parent-dashboard" element={<ParentDashboard />} />
+                <Route path="/careers" element={<Careers />} />
+                <Route path="/chairman-message" element={<ChairmanMessagePage />} />
+                <Route path="/virtual-tour" element={<VirtualTour />} />
+                <Route path="/school-map" element={<SchoolMapPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-conditions" element={<TermsConditions />} />
+                <Route path="/user-data-deletion" element={<UserDataDeletion />} />
+              </Routes>
+            </main>
 
-          {/* Global Components */}
-          <Footer />
-          <FloatingContact />
-          <SchoolBot />
-        </div>
-      </Router>
-      </ThemeProvider>
-    </LanguageProvider>
+            {/* Global Components */}
+            <Footer />
+            <FloatingContact />
+            <AIAssistant />
+          </div>
+        </Router>
+        </ThemeProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -44,27 +44,27 @@ const Navbar = () => {
                             {t('about')} <span className="arrow-icon">▼</span>
                         </Link>
                         <ul className="dropdown-menu">
-                            <li><Link to="/about" onClick={closeMenu}>{language === 'hi' ? 'एनएसजीआई के बारे में' : 'About NSGI'}</Link></li>
-                            <li><Link to="/about" onClick={closeMenu}>{language === 'hi' ? 'अध्यक्ष का संदेश' : 'Chairman Message'}</Link></li>
-                            <li><Link to="/vision-mission" onClick={closeMenu}>{language === 'hi' ? 'दृष्टि एवं लक्ष्य' : 'Vision & Mission'}</Link></li>
+                            <li><Link to="/about" onClick={closeMenu}>{t('about_menu')}</Link></li>
+                            <li><Link to="/about" onClick={closeMenu}>{t('chairman_menu')}</Link></li>
+                            <li><Link to="/vision-mission" onClick={closeMenu}>{t('visionMission')}</Link></li>
                             <li><Link to="/facilities" onClick={closeMenu}>{t('facilities')}</Link></li>
-                            <li><Link to="/achievements" onClick={closeMenu}>{language === 'hi' ? 'उपलब्धियां' : 'Achievements'}</Link></li>
-                            <li><Link to="/social-work" onClick={closeMenu}>{language === 'hi' ? 'सामाजिक कार्य' : 'Social Work'}</Link></li>
+                            <li><Link to="/achievements" onClick={closeMenu}>{t('achievements_menu')}</Link></li>
+                            <li><Link to="/social-work" onClick={closeMenu}>{t('socialWork')}</Link></li>
                         </ul>
                     </li>
 
                     <li><Link to="/academics" className={`nav-link ${isActive('/academics') ? 'active-link' : ''}`} onClick={closeMenu}>{t('academics')}</Link></li>
-                    <li><Link to="/admissions" className={`nav-link ${isActive('/admissions') ? 'active-link' : ''}`} onClick={closeMenu}>{language === 'hi' ? 'प्रवेश' : 'Admissions'}</Link></li>
-                    <li><Link to="/faculty" className={`nav-link ${isActive('/faculty') ? 'active-link' : ''}`} onClick={closeMenu}>{language === 'hi' ? 'शिक्षक' : 'Faculty'}</Link></li>
+                    <li><Link to="/admissions" className={`nav-link ${isActive('/admissions') ? 'active-link' : ''}`} onClick={closeMenu}>{t('admissions')}</Link></li>
+                    <li><Link to="/faculty" className={`nav-link ${isActive('/faculty') ? 'active-link' : ''}`} onClick={closeMenu}>{t('faculty')}</Link></li>
                     <li><Link to="/gallery" className={`nav-link ${isActive('/gallery') ? 'active-link' : ''}`} onClick={closeMenu}>{t('gallery')}</Link></li>
                     
                     <li className="nav-item dropdown">
                         <a href="#" className={`nav-link dropdown-toggle ${isActive('/virtual-tour') || isActive('/school-map') ? 'active-link' : ''}`} onClick={(e) => { e.preventDefault(); }}>
-                            {language === 'hi' ? 'एक्सप्लोर' : 'Explore'} <span className="arrow-icon">▼</span>
+                            {t('explore')} <span className="arrow-icon">▼</span>
                         </a>
                         <ul className="dropdown-menu">
-                            <li><Link to="/virtual-tour" onClick={closeMenu}>{language === 'hi' ? '360° वर्चुअल टूर' : '360° Virtual Tour'}</Link></li>
-                            <li><Link to="/school-map" onClick={closeMenu}>{language === 'hi' ? 'कैंपस मैप' : 'Campus Map'}</Link></li>
+                            <li><Link to="/virtual-tour" onClick={closeMenu}>{t('virtualTour')}</Link></li>
+                            <li><Link to="/school-map" onClick={closeMenu}>{t('campusMap')}</Link></li>
                         </ul>
                     </li>
 
