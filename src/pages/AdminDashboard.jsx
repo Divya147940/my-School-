@@ -43,7 +43,7 @@ const AdminDashboard = () => {
     { name: 'Fee management', icon: '💰' },
     { name: 'Leads & Inquiries', icon: '📥' },
     { name: 'Staff Payroll', icon: '💳' },
-    { name: 'ID Cards', icon: '🪪' },
+    { name: 'ID Cards', icon: '🆔' },
     { name: 'Elite Controls', icon: '🌟' },
     { name: 'Leave Approvals', icon: '✅' },
     { name: 'Student Records', icon: '📁' },
@@ -53,7 +53,7 @@ const AdminDashboard = () => {
     { name: 'Review Manager', icon: '✍️' },
     { name: 'Report Cards', icon: '📜' },
     { name: 'Attendance Ops', icon: '⏲️' },
-    { name: 'Manage Faculty', icon: '👨‍🏫' },
+    { name: 'Manage Mentors', icon: '👨‍🏫' },
     { name: 'Fee Ledger', icon: '📑' },
     { name: 'Activity Tracker', icon: '🕵️' },
     { name: 'System Backup', icon: '🛡️' },
@@ -182,7 +182,7 @@ const AdminDashboard = () => {
         return <div className="feature-box"><AttendanceControl /></div>;
       case 'Review Manager':
         return <div className="feature-section"><ReviewManager /></div>;
-      case 'Manage Faculty':
+      case 'Manage Mentors':
         return <div className="feature-box"><FacultyManagement /></div>;
       case 'Fee Ledger':
         return <div className="feature-box"><FeeCollector userRole="admin" userName="Principal Admin" /></div>;

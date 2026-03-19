@@ -1,45 +1,13 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { mockApi } from '../../utils/mockApi';
 import './AchievementGallery.css';
 
 const AchievementGallery = () => {
-    const achievements = [
-        {
-            id: 1,
-            name: 'Aman Gupta',
-            class: '10A',
-            achievement: '1st Prize in Inter-School Science Fair',
-            type: 'Science',
-            image: '🏆',
-            date: 'March 2026'
-        },
-        {
-            id: 2,
-            name: 'Priya Singh',
-            class: '9B',
-            achievement: 'District Level Badminton Champion',
-            type: 'Sports',
-            image: '🏸',
-            date: 'February 2026'
-        },
-        {
-            id: 3,
-            name: 'Kabir Khan',
-            class: '12C',
-            achievement: '98% in CBSE Board Pre-Mock',
-            type: 'Academic',
-            image: '📜',
-            date: 'March 2026'
-        },
-        {
-            id: 4,
-            name: 'Sara Verma',
-            class: '8A',
-            achievement: 'National Talent Search Finalist',
-            type: 'Academic',
-            image: '🌟',
-            date: 'Jan 2026'
-        }
-    ];
+    const [achievements, setAchievements] = useState([]);
+
+    useEffect(() => {
+        setAchievements(mockApi.getAchievers());
+    }, []);
 
     return (
         <div className="gallery-container">
@@ -52,7 +20,12 @@ const AchievementGallery = () => {
                 {achievements.map((item) => (
                     <div className="achievement-card" key={item.id}>
                         <div className="achievement-icon-box" data-type={item.type}>
-                            <span className="ach-icon">{item.image}</span>
+                            <span className="ach-icon">
+                                {item.image && (item.image.startsWith('http') || item.image.startsWith('data:')) ? 
+                                    <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : 
+                                    item.image || '🏆'
+                                }
+                            </span>
                         </div>
                         <div className="achievement-info">
                             <span className="ach-type-badge">{item.type}</span>

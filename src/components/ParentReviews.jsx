@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { mockApi } from '../utils/mockApi';
 import { useTheme } from '../context/ThemeContext';
+import ReviewForm from './Common/ReviewForm';
 import './ParentReviews.css';
 
 const ParentReviews = () => {
     const { theme } = useTheme();
     const [reviews, setReviews] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+
+    const loadReviews = () => {
+        setReviews(mockApi.getReviews());
+    };
 
     useEffect(() => {
-        setReviews(mockApi.getReviews());
+        loadReviews();
     }, []);
 
     useEffect(() => {
@@ -48,7 +54,7 @@ const ParentReviews = () => {
                                 <div className="review-footer">
                                     <div className="reviewer-info">
                                         <h4 className="reviewer-name">{review.name}</h4>
-                                        <p className="reviewer-relation">{review.relation}</p>
+                                        <p className="reviewer-relation">{review.relation} • {review.date || 'Review'}</p>
                                     </div>
                                     <div className="stars">
                                         {[...Array(review.rating)].map((_, i) => (
@@ -71,20 +77,45 @@ const ParentReviews = () => {
                             />
                         ))}
                     </div>
-                    
-                    <a 
-                        href="https://wa.me/919999999999?text=Hi, I would like to submit a review for NSGI School: " 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="submit-whatsapp-review"
+                </div>
+
+                <div className="submit-review-container" style={{ marginTop: '40px' }}>
+                    <button 
+                        onClick={() => setIsFormOpen(true)}
+                        className="submit-custom-review-btn"
+                        style={{
+                            background: 'transparent',
+                            color: 'white',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            padding: '10px 20px',
+                            borderRadius: '30px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '0.95rem',
+                            transition: 'all 0.3s',
+                            letterSpacing: '0.5px'
+                        }}
                     >
-                        <span>Submit Review via WhatsApp</span>
-                        <svg className="wa-icon" viewBox="0 0 24 24" width="20" height="20">
-                            <path fill="currentColor" d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.978 3.149.978 3.182 0 5.769-2.587 5.769-5.766 0-3.178-2.587-5.765-5.769-5.765zm3.377 8.272c-.14.393-.82.723-1.123.766-.303.041-.652.067-.932.067-.28 0-.573-.033-.865-.101-.367-.091-.715-.221-1.016-.385a4.846 4.846 0 0 1-1.637-1.428c-.466-.632-.821-1.353-1.066-2.128-.21-.663-.3-1.35-.3-2.031 0-.68.093-1.341.282-1.996.068-.236.195-.453.364-.633.169-.18.375-.327.606-.432h.564c.159 0 .31.063.421.173.111.11.173.262.174.421v1.171c0 .159-.063.311-.173.422-.11.11-.262.173-.421.173h-.211c-.159 0-.311.063-.422.173-.11.11-.173.262-.173.421a1.866 1.866 0 0 0 .504 1.22c.162.181.357.332.573.447l.154.081c.216.113.456.171.699.171h.211c.159 0 .31.063.421.174.111.11.173.262.173.421v1.171z"/>
+                        <span>Submit Review & Feedback</span>
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/>
                         </svg>
-                    </a>
+                    </button>
+                    <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>
+                        Review will be sent to Admin for approval.
+                    </p>
                 </div>
             </div>
+
+            {isFormOpen && (
+                <ReviewForm 
+                    onClose={() => setIsFormOpen(false)} 
+                    onSuccess={loadReviews}
+                />
+            )}
         </section>
     );
 };

@@ -61,26 +61,26 @@ const FacultyDashboard = () => {
   }, [addToast, user]);
 
   const navItems = [
-    { name: t('overview'), icon: '🏠' },
-    { name: language === 'hi' ? 'ई-उपस्थिति' : 'E-Attendance', icon: '📲' },
-    { name: t('faceScan'), icon: '👤' },
-    { name: t('attendance'), icon: '📝' },
-    { name: language === 'hi' ? 'लाइव क्लास' : 'Live Classes', icon: '🎥' },
-    { name: t('calendar'), icon: '📅' },
-    { name: language === 'hi' ? 'परीक्षा' : 'Examinations', icon: '✍️' },
-    { name: language === 'hi' ? 'रिर्पोट कार्ड जनरेटर' : 'Report Card Generator', icon: '📊' },
-    { name: language === 'hi' ? 'क्विज़ बनाएँ' : 'Create Quizzes', icon: '🧠' },
-    { name: language === 'hi' ? 'समय सारणी' : 'Timetable', icon: '📅' },
-    { name: language === 'hi' ? 'सैलरी स्लिप' : 'Salary Slips', icon: '💳' },
-    { name: language === 'hi' ? 'ई-लर्निंग (अपलोड)' : 'E-Learning (Upload)', icon: '🎥' },
-    { name: language === 'hi' ? 'होमवर्क' : 'Homework', icon: '📚' },
-    { name: language === 'hi' ? 'छुट्टी आवेदन' : 'Leave Request', icon: '✉️' },
-    { name: language === 'hi' ? 'डिजिटल डायरी' : 'Digital Diary', icon: '📓' },
-    { name: t('registerStudent'), icon: '🪪' },
-    { name: t('collectFee'), icon: '💰' },
-    { name: t('lessonDiary'), icon: '📝' },
-    { name: language === 'hi' ? 'शिक्षक संसाधन केंद्र' : 'Teacher Resource Center', icon: '📁' },
-    { name: language === 'hi' ? 'सेटिंग्स' : 'Settings', icon: '⚙️' }
+    { id: 'Overview', name: t('overview'), icon: '🏠' },
+    { id: 'E-Attendance', name: language === 'hi' ? 'ई-उपस्थिति' : 'E-Attendance', icon: '📲' },
+    { id: 'Face Attendance', name: t('faceScan'), icon: '👤' },
+    { id: 'Attendance', name: t('attendance'), icon: '📝' },
+    { id: 'Live Classes', name: language === 'hi' ? 'लाइव क्लास' : 'Live Classes', icon: '🎥' },
+    { id: 'Calendar', name: t('calendar'), icon: '📅' },
+    { id: 'Examinations', name: language === 'hi' ? 'परीक्षा' : 'Examinations', icon: '✍️' },
+    { id: 'Report Card Generator', name: language === 'hi' ? 'रिर्पोट कार्ड जनरेटर' : 'Report Card Generator', icon: '📊' },
+    { id: 'Create Quizzes', name: language === 'hi' ? 'क्विज़ बनाएँ' : 'Create Quizzes', icon: '🧠' },
+    { id: 'Timetable', name: language === 'hi' ? 'समय सारणी' : 'Timetable', icon: '📅' },
+    { id: 'Salary Slips', name: language === 'hi' ? 'सैलरी स्लिप' : 'Salary Slips', icon: '💳' },
+    { id: 'E-Learning (Upload)', name: language === 'hi' ? 'ई-लर्निंग (अपलोड)' : 'E-Learning (Upload)', icon: '🎥' },
+    { id: 'Homework', name: language === 'hi' ? 'होमवर्क' : 'Homework', icon: '📚' },
+    { id: 'Leave Request', name: language === 'hi' ? 'छुट्टी आवेदन' : 'Leave Request', icon: '✉️' },
+    { id: 'Digital Diary', name: language === 'hi' ? 'डिजिटल डायरी' : 'Digital Diary', icon: '📓' },
+    { id: 'Register New Student', name: t('registerStudent'), icon: '👤' },
+    { id: 'Collect Student Fees', name: t('collectFee'), icon: '💰' },
+    { id: 'Daily Lesson Diary', name: t('lessonDiary'), icon: '📝' },
+    { id: 'Teacher Resource Center', name: language === 'hi' ? 'शिक्षक संसाधन केंद्र' : 'Teacher Resource Center', icon: '📁' },
+    { id: 'Settings', name: language === 'hi' ? 'सेटिंग्स' : 'Settings', icon: '⚙️' }
   ];
 
   const stats = [
@@ -216,7 +216,6 @@ const FacultyDashboard = () => {
       case 'E-Attendance':
         return <div className="feature-section"><QRAttendance user={{ name: 'Professor Divyanshi', role: 'faculty' }} /></div>;
       case 'Face Attendance':
-      case 'फेस अटेंडेंस':
         return <div className="feature-section"><AttendanceOps /></div>;
       case 'Attendance':
         return (
@@ -277,18 +276,14 @@ const FacultyDashboard = () => {
           </div>
         );
       case 'Register New Student':
-      case 'नया छात्र पंजीकृत करें':
         return <div className="feature-section"><StudentManagement /></div>;
       case 'Collect Student Fees':
-      case 'छात्र शुल्क जमा करें':
         return <div className="feature-section"><FeeCollector userRole="faculty" userName="Professor Divyanshi" /></div>;
       case 'Daily Lesson Diary':
-      case 'दैनिक पाठ डायरी':
         return <div className="feature-section"><LessonDiary mode="faculty" teacherId="TEA2026-02" teacherName="Professor Divyanshi" /></div>;
       case 'Teacher Resource Center':
-      case 'शिक्षक संसाधन केंद्र':
         return <div className="feature-section"><TeacherResourceCenter /></div>;
-      case 'School Calendar':
+      case 'Calendar':
         return <div className="feature-section"><SchoolCalendar /></div>;
       case 'Settings':
         return (
@@ -321,11 +316,11 @@ const FacultyDashboard = () => {
         </div>
         <ul className="nav-menu">
           {navItems.map((item) => (
-            <li key={item.name} className="nav-item">
+            <li key={item.id} className="nav-item">
               <a
                 href="#"
-                className={`nav-link ${activeTab === item.name ? 'active' : ''}`}
-                onClick={(e) => { e.preventDefault(); setActiveTab(item.name); }}
+                className={`nav-link ${activeTab === item.id ? 'active' : ''}`}
+                onClick={(e) => { e.preventDefault(); setActiveTab(item.id); }}
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-text">{item.name}</span>
@@ -365,7 +360,7 @@ const FacultyDashboard = () => {
         portalName="Faculty"
         navItems={navItems.map(item => ({
           ...item,
-          action: () => setActiveTab(item.name)
+          action: () => setActiveTab(item.id)
         }))}
       />
     </div>

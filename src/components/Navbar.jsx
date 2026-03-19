@@ -65,6 +65,8 @@ const Navbar = () => {
                         <ul className="dropdown-menu">
                             <li><Link to="/virtual-tour" onClick={closeMenu}>{t('virtualTour')}</Link></li>
                             <li><Link to="/school-map" onClick={closeMenu}>{t('campusMap')}</Link></li>
+                            <li><Link to="/transport" onClick={closeMenu}>{language === 'hi' ? 'परिवहन' : 'Transport'}</Link></li>
+                            <li><Link to="/fees" onClick={closeMenu}>{language === 'hi' ? 'शुल्क' : 'Fees'}</Link></li>
                         </ul>
                     </li>
 

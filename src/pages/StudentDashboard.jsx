@@ -92,7 +92,7 @@ const StudentDashboard = () => {
     { name: 'Results', icon: '🏆' },
     { name: 'Online Quizzes', icon: '🧠' },
     { name: 'School Calendar', icon: '📅' },
-    { name: 'Digital ID', icon: '🪪' },
+    { name: 'Digital ID', icon: '🆔' },
     { name: 'Hall of Fame', icon: '🌟' },
     { name: 'Achievement Awards', icon: '📜' },
     { name: 'Smart Store', icon: '🛒' },

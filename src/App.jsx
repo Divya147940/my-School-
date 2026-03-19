@@ -32,6 +32,8 @@ import Careers from './pages/Careers';
 import ChairmanMessagePage from './pages/ChairmanMessagePage';
 import VirtualTour from './pages/VirtualTour';
 import SchoolMapPage from './pages/SchoolMapPage';
+import Transport from './pages/Transport';
+import Fees from './pages/Fees';
 import AIAssistant from './components/Common/AIAssistant';
 import NewsTicker from './components/Common/NewsTicker';
 import FloatingContact from './components/Common/FloatingContact';
@@ -101,6 +103,8 @@ function App() {
                 <Route path="/chairman-message" element={<ChairmanMessagePage />} />
                 <Route path="/virtual-tour" element={<VirtualTour />} />
                 <Route path="/school-map" element={<SchoolMapPage />} />
+                <Route path="/transport" element={<Transport />} />
+                <Route path="/fees" element={<Fees />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-conditions" element={<TermsConditions />} />
                 <Route path="/user-data-deletion" element={<UserDataDeletion />} />

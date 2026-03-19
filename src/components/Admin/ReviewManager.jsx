@@ -98,20 +98,30 @@ const ReviewManager = () => {
                     <table className="admin-table">
                         <thead>
                             <tr>
+                                <th>Date</th>
                                 <th>Name</th>
-                                <th>Relation</th>
-                                <th>Preview</th>
+                                <th>Location/Relation</th>
+                                <th>Review Text</th>
+                                <th>Rating</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {reviews.map(r => (
                                 <tr key={r.id}>
-                                    <td>{r.name}</td>
-                                    <td>{r.relation}</td>
-                                    <td className="truncate">{r.text}</td>
+                                    <td style={{ color: 'var(--accent-blue)', fontWeight: 'bold' }}>{r.date || 'New Submission'}</td>
+                                    <td><strong>{r.name}</strong></td>
+                                    <td style={{ fontStyle: 'italic' }}>{r.relation}</td>
+                                    <td className="truncate-text" title={r.text}>{r.text}</td>
                                     <td>
-                                        <button className="del-btn" onClick={() => handleDelete(r.id)}>🗑️</button>
+                                        <div className="admin-stars">
+                                            {[...Array(r.rating || 5)].map((_, i) => (
+                                                <span key={i} style={{ color: '#f59e0b' }}>★</span>
+                                            ))}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button className="del-btn" onClick={() => handleDelete(r.id)} title="Delete Review">🗑️</button>
                                     </td>
                                 </tr>
                             ))}

@@ -49,9 +49,11 @@ const StudentManagement = () => {
         }
     };
 
-    const filteredStudents = studentList.filter(s => {
-        const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.id.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesClass = filterClass === 'All' || s.class === filterClass;
+    const filteredStudents = (studentList || []).filter(s => {
+        const name = s?.name || '';
+        const id = s?.id || '';
+        const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || id.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesClass = filterClass === 'All' || s?.class === filterClass;
         return matchesSearch && matchesClass;
     });
 
@@ -93,7 +95,7 @@ const StudentManagement = () => {
                         />
                     </div>
                     <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer', fontSize: '1.1rem' }}>
-                        SIGN STUDENT ID 🪪
+                        SIGN STUDENT ID 👤
                     </button>
                 </form>
 

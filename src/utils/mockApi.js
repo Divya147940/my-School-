@@ -126,16 +126,35 @@ const defaultData = {
   ],
   qrAttendanceLogs: [],
   faculty: [
+    { id: 1, name: 'Dr. Aruna Singh', designation: 'Principal', qualification: 'Ph.D, M.Sc', description: 'Visionary leader with 20+ years of educational experience.' },
+    { id: 2, name: 'Mr. Vivek Mishra', designation: 'Vice Principal', qualification: 'M.A, B.Ed', description: 'Expert in administrative management and student welfare.' },
+    { id: 3, name: 'Ms. Shalini Gupta', designation: 'HOD Science', qualification: 'M.Sc Physics', description: 'Committed to excellence in science education.' },
+  ],
+  mentors: [
     {
       id: 1,
-      name: "Divyanshi Verma",
-      designation: "Principal",
-      qualification: "M.Sc, B.Ed (Physics)",
-      experience: "12 Years",
-      description: "Dedicated to providing quality education and fostering an environment of excellence.",
-      image: null, // Will use avatar if null
-      avatarBg: "linear-gradient(135deg, #1a1a6e, #3a3aae)"
-    }
+      name: 'Dr. Aruna Singh',
+      role: { en: 'Principal', hi: 'प्रधानाचार्य' },
+      edu: 'Ph.D in Education, M.Sc',
+      exp: '20+ Years',
+      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200'
+    },
+    {
+      id: 2,
+      name: 'Mr. Vivek Mishra',
+      role: { en: 'Vice Principal', hi: 'उप-प्रधानाचार्य' },
+      edu: 'M.A (English), B.Ed',
+      exp: '15 Years',
+      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+    },
+    {
+      id: 3,
+      name: 'Ms. Shalini Gupta',
+      role: { en: 'HOD Science', hi: 'विभागाध्यक्ष (विज्ञान)' },
+      edu: 'M.Sc Physics, B.Ed',
+      exp: '12 Years',
+      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200'
+    },
   ],
   gallery: [
     { id: 1, type: 'image', url: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d', title: 'Annual Day 2025' },
@@ -156,6 +175,16 @@ const defaultData = {
     { id: 3, name: "Amit Verma", relation: "Father of Sneha (Class 10)", text: "The way the school handled board exam preparations was excellent. The extra classes and regular mock tests helped my daughter score brilliantly in her 10th boards.", rating: 4 },
     { id: 4, name: "Anita Singh", relation: "Mother of Rahul (Class 12)", text: "A great institution for holistic development. Not just academics, but the sports and cultural activities are also given equal importance here.", rating: 5 },
     { id: 5, name: "Vikram Pratap", relation: "Father of Kavya (Class 7)", text: "Best school in the region! The management is very approachable and they actually listen to parents' suggestions for the betterment of the school.", rating: 5 }
+  ],
+  alumni: [
+    { id: 1, name: 'Aarav Sharma', batch: 'Class 12', position: '1st Rank (Boards)', achievement: 'Excellence is not an act, but a habit.', image: '👨‍🎓' },
+    { id: 2, name: 'Sanya Patel', batch: 'Class 10', position: 'Sports Star', achievement: 'Perseverance transforms dreams into reality.', image: '🏃‍♀️' },
+    { id: 3, name: 'Ishaan Singh', batch: 'Class 11', position: 'National Quiz Winner', achievement: 'Knowledge is the real power.', image: '🧠' }
+  ],
+  achievers: [
+    { id: 1, name: 'Aman Gupta', class: '10A', achievement: '1st Prize in Inter-School Science Fair', type: 'Science', image: '🏆', date: 'March 2026' },
+    { id: 2, name: 'Priya Singh', class: '9B', achievement: 'District Level Badminton Champion', type: 'Sports', image: '🏸', date: 'February 2026' },
+    { id: 3, name: 'Kabir Khan', class: '12C', achievement: '98% in CBSE Board Pre-Mock', type: 'Academic', image: '📜', date: 'March 2026' }
   ],
   storeOrders: [],
   healthRecords: {
@@ -187,7 +216,14 @@ const defaultData = {
     { id: 1, title: 'Higher Engineering Mathematics', author: 'B.S. Grewal', status: 'Available', shelf: 'A-1' },
     { id: 2, title: 'Concept of Physics', author: 'H.C. Verma', status: 'Issued', borrower: 'Aman Gupta', returnDate: '2026-03-22' },
     { id: 3, title: 'Organic Chemistry', author: 'Morrison Boyd', status: 'Available', shelf: 'B-4' },
-  ]
+  ],
+  studentSpotlight: {
+    name: 'Aman Gupta',
+    title: 'Star of the Month',
+    description: 'Aman has shown exceptional performance in the National Science Olympiad and maintains a 100% attendance record. His dedication to both academics and co-curricular activities is an inspiration to all students.',
+    photo: 'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=400',
+    achievements: ['Gold Medalist - Science Olympiad', '100% Attendance', 'Class 10-A Topper']
+  }
 };
 
 const getDB = () => {
@@ -211,6 +247,17 @@ export const mockApi = {
   // Compatibility Aliases (Prevents crashes in legacy components)
   loadData: () => getDB(),
   saveData: (data) => saveDB(data),
+  getDB: () => getDB(),
+  markAttendance: (studentName, status) => {
+    const data = getDB();
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (!data.attendanceHub) data.attendanceHub = [];
+    data.attendanceHub = data.attendanceHub.map(record => 
+      record.studentName === studentName ? { ...record, status, time: status === 'Present' ? now : '-' } : record
+    );
+    saveDB(data);
+    return { status: 'success', time: now };
+  },
 
   // Assignments
   getAssignments: () => getDB().assignments,
@@ -425,25 +472,69 @@ export const mockApi = {
     return userLog;
   },
 
-  // Faculty Management
+  // Home Page Mentors (Star Cards)
+  getMentors: () => {
+    const data = getDB().mentors;
+    return (Array.isArray(data) && data.length > 0) ? data : defaultData.mentors;
+  },
+  addMentor: (mentor) => {
+    const db = getDB();
+    if (!Array.isArray(db.mentors)) db.mentors = [];
+    const newMentor = { id: Date.now(), ...mentor };
+    db.mentors.push(newMentor);
+    saveDB(db);
+    return newMentor;
+  },
+  deleteMentor: (id) => {
+    const db = getDB();
+    db.mentors = (db.mentors || []).filter(m => m.id !== id);
+    saveDB(db);
+    return { status: 'success' };
+  },
+  
+  // Achievers
+  getAchievers: () => {
+    const data = getDB().achievers;
+    return (Array.isArray(data) && data.length > 0) ? data : defaultData.achievers;
+  },
+  addAchiever: (person) => {
+    const db = getDB();
+    if (!Array.isArray(db.achievers)) db.achievers = [];
+    const newPerson = { ...person, id: Date.now() };
+    db.achievers.push(newPerson);
+    saveDB(db);
+    return newPerson;
+  },
+  deleteAchiever: (id) => {
+    const db = getDB();
+    db.achievers = (db.achievers || []).filter(a => a.id !== id);
+    saveDB(db);
+    return { status: 'success' };
+  },
+
+  // Full School Faculty (Faculty Page)
   getFaculty: () => {
-    return getDB().faculty || [];
+    const data = getDB().faculty;
+    return (Array.isArray(data) && data.length > 0) ? data : defaultData.faculty;
   },
   addFaculty: (faculty) => {
     const db = getDB();
+    if (!Array.isArray(db.faculty)) db.faculty = [];
     const newFaculty = { id: Date.now(), ...faculty };
     db.faculty.push(newFaculty);
     saveDB(db);
     return newFaculty;
   },
+  deleteFaculty: (id) => {
+    const db = getDB();
+    db.faculty = (db.faculty || []).filter(f => f.id !== id);
+    saveDB(db);
+    return { status: 'success' };
+  },
+
   updateFaculty: (id, updatedData) => {
     const db = getDB();
     db.faculty = db.faculty.map(f => f.id === id ? { ...f, ...updatedData } : f);
-    saveDB(db);
-  },
-  deleteFaculty: (id) => {
-    const db = getDB();
-    db.faculty = db.faculty.filter(f => f.id !== id);
     saveDB(db);
   },
 
@@ -451,13 +542,20 @@ export const mockApi = {
   getReviews: () => getDB().reviews || [],
   addReview: (review) => {
     const db = getDB();
-    db.reviews.unshift({ id: Date.now(), ...review });
+    const newReview = { 
+      id: Date.now(), 
+      date: new Date().toLocaleDateString('en-GB'),
+      ...review 
+    };
+    db.reviews.unshift(newReview);
     saveDB(db);
+    return newReview;
   },
   deleteReview: (id) => {
     const db = getDB();
     db.reviews = db.reviews.filter(r => r.id !== id);
     saveDB(db);
+    return { status: 'success' };
   },
 
   // Leaderboard (Hall of Fame)
@@ -589,12 +687,6 @@ export const mockApi = {
     return { status: 'success' };
   },
 
-  deleteFaculty: (facultyId) => {
-    const data = getDB();
-    data.facultyRegistry = (data.facultyRegistry || []).filter(f => f.id !== facultyId);
-    saveDB(data);
-    return { status: 'success' };
-  },
 
   enrollFace: (studentId) => {
     const data = getDB();
@@ -776,6 +868,31 @@ export const mockApi = {
     });
     saveDB(data);
     return newLog;
+  },
+
+  getSpotlight: () => getDB().studentSpotlight || {},
+  updateSpotlight: (data) => {
+    const db = getDB();
+    db.studentSpotlight = { ...db.studentSpotlight, ...data };
+    saveDB(db);
+    return db.studentSpotlight;
+  },
+
+  // Alumni
+  getAlumni: () => {
+    const data = getDB().alumni;
+    return (Array.isArray(data) && data.length > 0) ? data : defaultData.alumni;
+  },
+  addAlumni: (person) => {
+    const db = getDB();
+    if (!Array.isArray(db.alumni)) db.alumni = [];
+    db.alumni.unshift({ id: Date.now(), ...person });
+    saveDB(db);
+  },
+  deleteAlumni: (id) => {
+    const db = getDB();
+    db.alumni = db.alumni.filter(a => a.id !== id);
+    saveDB(db);
   },
 
   clearDB: () => {

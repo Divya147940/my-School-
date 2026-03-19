@@ -16,9 +16,10 @@ const AttendanceOps = () => {
         setStudents(mockApi.getAttendanceHub());
     };
 
-    const filteredStudents = students.filter(s => 
-        s.studentName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredStudents = (students || []).filter(s => {
+        const name = s?.studentName || '';
+        return name.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     return (
         <div className="attendance-ops" style={{ padding: '20px' }}>

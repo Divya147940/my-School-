@@ -9,8 +9,7 @@ import GalleryVideo from '../components/GalleryVideo';
 import OurStrength from '../components/OurStrength';
 import ParentReviews from '../components/ParentReviews';
 import ContactInfo from '../components/ContactInfo';
-import WallOfStars from '../components/Home/WallOfStars';
-import EventCountdown from '../components/Home/EventCountdown';
+import StudentSpotlight from '../components/Home/StudentSpotlight';
 import AlumniHallOfFame from '../components/Home/AlumniHallOfFame';
 import QuickInquiry from '../components/Home/QuickInquiry';
 import HomeInquirySection from '../components/Home/HomeInquirySection';
@@ -33,16 +32,14 @@ function Home() {
             </div>
 
             <div className="reveal-on-scroll">
-                <EventCountdown />
+                <StudentSpotlight />
             </div>
             
             <div className="reveal-on-scroll delay-1 glass-panel" style={{ margin: '20px', padding: '20px' }}>
                 <ChairmanMessage />
             </div>
 
-            <div className="reveal-on-scroll">
-                <AlumniHallOfFame />
-            </div>
+            <AlumniHallOfFame />
 
             <div className="reveal-on-scroll">
                 <LegacyTimeline />
@@ -52,9 +49,6 @@ function Home() {
                 <FacultyShowcase />
             </div>
 
-            <div className="reveal-on-scroll">
-                <WallOfStars />
-            </div>
 
             <div className="reveal-on-scroll">
                 <AchievementGallery />

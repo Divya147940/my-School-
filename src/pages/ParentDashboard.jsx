@@ -59,7 +59,7 @@ const ParentDashboard = () => {
     { name: t('fees'), icon: '💰' },
     { name: language === 'hi' ? 'पीटीएम शेड्यूलर' : 'PTM Scheduler', icon: '🗓️' },
     { name: t('calendar'), icon: '📅' },
-    { name: t('idcard'), icon: '🪪' },
+    { name: t('idcard'), icon: '🆔' },
     { name: t('results'), icon: '🏆' },
     { name: t('halloffame'), icon: '🌟' },
     { name: language === 'hi' ? 'स्मार्ट स्टोर' : 'Smart Store', icon: '🛒' },
@@ -140,8 +140,19 @@ const ParentDashboard = () => {
                   <div style={{ fontSize: '1.5rem', fontWeight: '900', margin: '5px 0' }}>Term 2 Discussion</div>
                   <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>02:30 PM - Room 102</div>
                 </div>
-                <button className="glass-panel" style={{ width: '100%', marginTop: '15px', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontWeight: '700' }}>Set Reminder</button>
+                <button className="glass-panel" style={{ width: '100%', marginTop: '15px', padding: '12px', borderRadius: '12px', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontWeight: '700' }}>{language === 'hi' ? 'रिमाइंडर सेट करें' : 'Set Reminder'}</button>
               </div>
+            </div>
+
+            <div className="parent-stats-grid" style={{ marginTop: '30px' }}>
+              <Link to="/transport" className="parent-card glass-panel card-vibe" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+                <div className="card-title">🚌 {language === 'hi' ? 'लाइव बस ट्रैक करें' : 'Track Live Bus'}</div>
+                <div className="card-value" style={{ fontSize: '1rem', marginTop: '10px' }}>{language === 'hi' ? 'अभी देखें' : 'View Now'} →</div>
+              </Link>
+              <Link to="/fees" className="parent-card glass-panel card-vibe" style={{ textDecoration: 'none', cursor: 'pointer' }}>
+                <div className="card-title">💰 {language === 'hi' ? 'फीस और रसीदें' : 'Fees & Receipts'}</div>
+                <div className="card-value" style={{ fontSize: '1rem', marginTop: '10px' }}>{language === 'hi' ? 'विवरण देखें' : 'View Details'} →</div>
+              </Link>
             </div>
           </div>
         );
