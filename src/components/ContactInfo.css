@@ -71,6 +71,7 @@
     font-size: 1.1rem;
     line-height: 1.7;
     color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .contact-info-content p {

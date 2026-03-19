@@ -26,6 +26,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ParentDashboard from './pages/ParentDashboard';
 import Careers from './pages/Careers';
+import ChairmanMessagePage from './pages/ChairmanMessagePage';
 import SchoolBot from './components/Common/SchoolBot';
 import AnnouncementTicker from './components/Common/AnnouncementTicker';
 import FloatingContact from './components/Common/FloatingContact';
@@ -62,6 +63,7 @@ function App() {
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="/parent-dashboard" element={<ParentDashboard />} />
               <Route path="/careers" element={<Careers />} />
+              <Route path="/chairman-message" element={<ChairmanMessagePage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-conditions" element={<TermsConditions />} />
               <Route path="/user-data-deletion" element={<UserDataDeletion />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import './Gallery.css';
 
 import hero1 from '../assets/hero/hero1.png';
@@ -130,17 +131,6 @@ const Gallery = () => {
         startAutoPlay();
     };
 
-    const handlePrev = () => {
-        goToPrev();
-        stopAutoPlay();
-        startAutoPlay();
-    };
-
-    const handleNext = () => {
-        goToNext();
-        stopAutoPlay();
-        startAutoPlay();
-    };
 
     return (
         <section className="hero-slider" id="home">
@@ -168,12 +158,12 @@ const Gallery = () => {
                                     </h1>
                                     <p className="slider-subtitle">{slide.subtitle}</p>
                                     <div className="slider-actions">
-                                        <button className="slider-cta primary" onClick={() => document.getElementById('admissions')?.scrollIntoView({ behavior: 'smooth' })}>
+                                        <Link to="/admissions" className="slider-cta primary">
                                             Apply Now
-                                        </button>
-                                        <button className="slider-cta secondary" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>
+                                        </Link>
+                                        <Link to="/about" className="slider-cta secondary">
                                             Learn More
-                                        </button>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
@@ -181,26 +171,6 @@ const Gallery = () => {
                     </div>
                 ))}
 
-                {/* Navigation Controls */}
-                <div className="slider-nav">
-                    <button className="slider-arrow prev" onClick={handlePrev} aria-label="Previous slide">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                        </svg>
-                    </button>
-                    <button className="slider-arrow next" onClick={handleNext} aria-label="Next slide">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-                        </svg>
-                    </button>
-                </div>
-
-                {/* Scroll Down Hint */}
-                <div className="slider-scroll-hint">
-                    <div className="mouse">
-                        <div className="wheel"></div>
-                    </div>
-                </div>
             </div>
         </section>
     );

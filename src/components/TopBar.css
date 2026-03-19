@@ -221,7 +221,7 @@
 }
 
 .node-icon {
-    color: #101050;
+    color: var(--accent-blue);
     width: 24px;
     height: 24px;
     opacity: 0.7;
@@ -242,7 +242,7 @@
 .detail-label {
     font-size: 10px;
     font-weight: 800;
-    color: #999;
+    color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 2px;
@@ -250,7 +250,7 @@
 
 .detail-value {
     font-size: 14px;
-    color: #101050;
+    color: #f8fafc;
     font-weight: 700;
     text-decoration: none;
     font-style: normal;

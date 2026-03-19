@@ -24,7 +24,7 @@ export const translations = {
         notifications: "Notifications",
         profile: "My Profile",
         logout: "Logout",
-        askbot: "Ask NSGI",
+        askbot: "Ask Shri Jageshwar Memorial Educational Institute",
         paySecurely: "PAY SECURELY",
         processingPayment: "Processing Payment...",
         paymentSuccess: "Payment Successful!",
@@ -79,9 +79,13 @@ export const translations = {
         
         // Titles
         welcome: "Welcome back",
-        studentPortal: "Student Digital Portal",
-        parentPortal: "Parent Engagement Portal",
-        facultyPortal: "Faculty Management Hub"
+        studentPortal: "Shri Jageshwar Memorial Educational Institute Digital Portal",
+        parentPortal: "Shri Jageshwar Memorial Educational Institute Engagement Portal",
+        facultyPortal: "Shri Jageshwar Memorial Educational Institute Management Hub",
+        chairman_heading: "Chairman's Message",
+        chairman_quote: "Education is the weapon which you can use to change the world.",
+        chairman_text: "Welcome to Shri Jageshwar Memorial Educational Institute. Our institute is dedicated to the holistic development of children. We focus not only on academic excellence but also on moral values, discipline, and practical skills. Our goal is for every student to build their future with confidence and knowledge.",
+        read_more: "READ MORE"
     },
     hi: {
         // Navigation
@@ -163,8 +167,12 @@ export const translations = {
         
         // Titles
         welcome: "आपका स्वागत है",
-        studentPortal: "छात्र डिजिटल पोर्टल",
-        parentPortal: "अभिभावक सहभागिता पोर्टल",
-        facultyPortal: "शिक्षक प्रबंधन हब"
+        studentPortal: "Shri Jageshwar Memorial Educational Institute डिजिटल पोर्टल",
+        parentPortal: "Shri Jageshwar Memorial Educational Institute सहभागिता पोर्टल",
+        facultyPortal: "Shri Jageshwar Memorial Educational Institute प्रबंधन हब",
+        chairman_heading: "Chairman's Message",
+        chairman_quote: "शिक्षा वह हथियार है जिससे आप दुनिया को बदल सकते हैं।",
+        chairman_text: "प्रिय अभिभावकों और विद्यार्थियों, श्री जागेश्वर मेमोरियल एजुकेशनल इंस्टीट्यूट में आपका स्वागत है। हमारा संस्थान बच्चों के सर्वांगीण विकास के लिए समर्पित है। हम न केवल शैक्षणिक उत्कृष्टता पर ध्यान देते हैं, बल्कि नैतिक मूल्यों, अनुशासन और व्यावहारिक कौशल को भी बढ़ावा देते हैं। हमारा लक्ष्य है कि हर विद्यार्थी आत्मविश्वास और ज्ञान के साथ अपने भविष्य का निर्माण कर सके।",
+        read_more: "READ MORE"
     }
 };

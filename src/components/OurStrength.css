@@ -46,10 +46,11 @@
 
 .strength-subtitle {
     font-size: 18px;
-    color: var(--text-secondary);
+    color: #cbd5e1;
     line-height: 1.7;
     max-width: 600px;
     margin: 0 auto;
+    font-weight: 500;
 }
 
 /* Grid */
@@ -133,7 +134,7 @@
 
 .strength-label {
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--text-secondary);
     letter-spacing: 2px;
     text-transform: uppercase;
