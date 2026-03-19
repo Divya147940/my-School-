@@ -25,6 +25,7 @@ import AttendanceOps from '../components/Faculty/AttendanceOps';
 import StudentManagement from '../components/Faculty/StudentManagement';
 import FeeCollector from '../components/Common/FeeCollector';
 import LessonDiary from '../components/Common/LessonDiary';
+import TeacherResourceCenter from '../components/Faculty/TeacherResourceCenter';
 import './FacultyDashboard.css';
 
 const classPerformanceData = [
@@ -64,6 +65,7 @@ const FacultyDashboard = () => {
     { name: t('registerStudent'), icon: '🪪' },
     { name: t('collectFee'), icon: '💰' },
     { name: t('lessonDiary'), icon: '📝' },
+    { name: language === 'hi' ? 'शिक्षक संसाधन केंद्र' : 'Teacher Resource Center', icon: '📁' },
     { name: language === 'hi' ? 'सेटिंग्स' : 'Settings', icon: '⚙️' }
   ];
 
@@ -251,6 +253,9 @@ const FacultyDashboard = () => {
       case 'Daily Lesson Diary':
       case 'दैनिक पाठ डायरी':
         return <div className="feature-section"><LessonDiary mode="faculty" teacherId="TEA2026-02" teacherName="Professor Divyanshi" /></div>;
+      case 'Teacher Resource Center':
+      case 'शिक्षक संसाधन केंद्र':
+        return <div className="feature-section"><TeacherResourceCenter /></div>;
       case 'School Calendar':
         return <div className="feature-section"><SchoolCalendar /></div>;
       case 'Settings':

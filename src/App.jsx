@@ -27,6 +27,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import ParentDashboard from './pages/ParentDashboard';
 import Careers from './pages/Careers';
 import ChairmanMessagePage from './pages/ChairmanMessagePage';
+import VirtualTour from './pages/VirtualTour';
+import SchoolMapPage from './pages/SchoolMapPage';
 import SchoolBot from './components/Common/SchoolBot';
 import AnnouncementTicker from './components/Common/AnnouncementTicker';
 import FloatingContact from './components/Common/FloatingContact';
@@ -64,6 +66,8 @@ function App() {
               <Route path="/parent-dashboard" element={<ParentDashboard />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/chairman-message" element={<ChairmanMessagePage />} />
+              <Route path="/virtual-tour" element={<VirtualTour />} />
+              <Route path="/school-map" element={<SchoolMapPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-conditions" element={<TermsConditions />} />
               <Route path="/user-data-deletion" element={<UserDataDeletion />} />

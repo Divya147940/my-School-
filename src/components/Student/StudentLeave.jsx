@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
+import './StudentLeave.css';
 
 const StudentLeave = () => {
   const [history, setHistory] = useState([]);
@@ -25,55 +26,83 @@ const StudentLeave = () => {
   };
 
   return (
-    <div className="student-leave">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-        <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '25px', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <h3 style={{ marginTop: 0, marginBottom: '20px' }}>Request Leave</h3>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <input 
-              type="text" placeholder="Type of Leave" required 
-              value={form.type} onChange={e => setForm({...form, type: e.target.value})}
-              style={{ padding: '12px', borderRadius: '10px', background: '#1e293b', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-            />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input 
-                type="date" required 
-                value={form.start} onChange={e => setForm({...form, start: e.target.value})}
-                style={{ flex: 1, padding: '12px', borderRadius: '10px', background: '#1e293b', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-              />
-              <input 
-                type="date" required 
-                value={form.end} onChange={e => setForm({...form, end: e.target.value})}
-                style={{ flex: 1, padding: '12px', borderRadius: '10px', background: '#1e293b', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+    <div className="student-leave-container">
+      <div className="leave-grid">
+        <div className="leave-form-card glass-panel">
+          <h3 className="section-title">✨ Request New Leave</h3>
+          <form onSubmit={handleSubmit} className="premium-form">
+            <div className="form-group">
+              <label>Leave Type</label>
+              <select 
+                value={form.type} 
+                onChange={e => setForm({...form, type: e.target.value})}
+                className="premium-input"
+              >
+                <option>Sick Leave</option>
+                <option>Casual Leave</option>
+                <option>Emergency</option>
+                <option>Other</option>
+              </select>
+            </div>
+            
+            <div className="form-row">
+              <div className="form-group">
+                <label>From Date</label>
+                <input 
+                  type="date" required 
+                  value={form.start} onChange={e => setForm({...form, start: e.target.value})}
+                  className="premium-input"
+                />
+              </div>
+              <div className="form-group">
+                <label>To Date</label>
+                <input 
+                  type="date" required 
+                  value={form.end} onChange={e => setForm({...form, end: e.target.value})}
+                  className="premium-input"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Reason for Leave</label>
+              <textarea 
+                placeholder="Explain why you need leave..." required 
+                value={form.reason} onChange={e => setForm({...form, reason: e.target.value})}
+                className="premium-input text-area"
               />
             </div>
-            <textarea 
-              placeholder="Reason for leave" required 
-              value={form.reason} onChange={e => setForm({...form, reason: e.target.value})}
-              style={{ padding: '12px', borderRadius: '10px', background: '#1e293b', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.1)', minHeight: '100px' }}
-            />
-            <button type="submit" style={{ padding: '12px', borderRadius: '10px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 'bold' }}>
-              Submit Request
+
+            <button type="submit" className="submit-btn-glow">
+              🚀 Submit Leave Request
             </button>
           </form>
         </div>
 
-        <div>
-          <h3 style={{ marginTop: 0, marginBottom: '20px' }}>History</h3>
-          {history.map(item => (
-            <div key={item.id} style={{ background: 'rgba(30, 41, 59, 0.5)', padding: '20px', borderRadius: '15px', border: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '15px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontWeight: 'bold' }}>{item.type}</span>
-                <span style={{ 
-                  padding: '3px 10px', borderRadius: '8px', fontSize: '0.8rem',
-                  background: item.status === 'Approved' ? '#10b98120' : '#f59e0b20',
-                  color: item.status === 'Approved' ? '#10b981' : '#f59e0b'
-                }}>{item.status}</span>
-              </div>
-              <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '10px' }}>{item.start} to {item.end}</div>
-              <p style={{ margin: '10px 0 0 0', fontSize: '0.9rem' }}>{item.reason}</p>
-            </div>
-          ))}
+        <div className="leave-history-section">
+          <h3 className="section-title">📋 Application History</h3>
+          <div className="history-list">
+            {history.length > 0 ? (
+              history.map(item => (
+                <div key={item.id} className="history-card glass-panel">
+                  <div className="history-header">
+                    <span className="leave-badge">{item.type}</span>
+                    <span className={`status-pill ${item.status.toLowerCase()}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <div className="leave-dates">
+                    <span>📅 {item.start}</span>
+                    <span className="date-arrow">→</span>
+                    <span>📅 {item.end}</span>
+                  </div>
+                  <p className="leave-reason">"{item.reason}"</p>
+                </div>
+              ))
+            ) : (
+              <div className="no-history">No previous records found.</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

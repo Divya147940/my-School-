@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
-  BarChart, Bar, Cell
+  BarChart, Bar, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  ComposedChart, Legend
 } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -26,6 +27,7 @@ import StudentIdCard from '../components/Student/StudentIdCard';
 import HallOfFame from '../components/Common/HallOfFame';
 import BusTracker from '../components/Common/BusTracker';
 import FaceAttendance from '../components/Student/FaceAttendance';
+import CertificateGenerator from '../components/Common/CertificateGenerator';
 import './StudentDashboard.css';
 
 const performanceData = [
@@ -42,6 +44,22 @@ const gradeDistribution = [
   { subject: 'English', score: 95, color: '#14b8a6' },
   { subject: 'History', score: 84, color: '#f59e0b' },
   { subject: 'Sanskrit', score: 98, color: '#ef4444' },
+];
+
+const skillData = [
+  { subject: 'Logic', A: 120, B: 110, fullMark: 150 },
+  { subject: 'Creativity', A: 98, B: 130, fullMark: 150 },
+  { subject: 'Sports', A: 86, B: 130, fullMark: 150 },
+  { subject: 'Civics', A: 99, B: 100, fullMark: 150 },
+  { subject: 'Literacy', A: 85, B: 90, fullMark: 150 },
+  { subject: 'Tech', A: 65, B: 85, fullMark: 150 },
+];
+
+const termProgressData = [
+  { name: 'Term 1', marks: 450, total: 500, attendance: 95 },
+  { name: 'Term 2', marks: 420, total: 500, attendance: 92 },
+  { name: 'Term 3', marks: 480, total: 500, attendance: 98 },
+  { name: 'Final', marks: 490, total: 500, attendance: 99 },
 ];
 
 const StudentDashboard = () => {
@@ -62,6 +80,7 @@ const StudentDashboard = () => {
     { name: 'School Calendar', icon: '📅' },
     { name: 'Digital ID', icon: '🪪' },
     { name: 'Hall of Fame', icon: '🌟' },
+    { name: 'Achievement Awards', icon: '📜' },
     { name: 'Smart Store', icon: '🛒' },
     { name: 'Health Record', icon: '🏥' },
     { name: 'Doc Vault', icon: '📂' },
@@ -69,6 +88,7 @@ const StudentDashboard = () => {
     { name: 'E-Learning', icon: '🎥' },
     { name: 'Live Bus', icon: '🚌' },
     { name: 'Digital Diary', icon: '📝' },
+    { name: 'Performance Analytics', icon: '📈' },
     { name: 'Leave', icon: '✉️' },
     { name: 'Extra Resources', icon: '💡' }
   ];
@@ -197,6 +217,8 @@ const StudentDashboard = () => {
         return <div className="feature-section"><StudentIdCard /></div>;
       case 'Hall of Fame':
         return <div className="feature-section"><HallOfFame /></div>;
+      case 'Achievement Awards':
+        return <div className="feature-section"><CertificateGenerator studentName={studentInfo.name} /></div>;
       case 'Smart Store':
         return <div className="feature-section"><SmartStore /></div>;
       case 'Health Record':
@@ -211,6 +233,49 @@ const StudentDashboard = () => {
         return <div className="feature-section"><BusTracker /></div>;
       case 'Digital Diary':
         return <div className="feature-section"><StudentDiary /></div>;
+      case 'Performance Analytics':
+        return (
+          <div className="overview-content">
+            <div className="analytics-grid">
+               <div className="analytics-card glass-panel">
+                <h3 className="section-title">Academic Skill Map</h3>
+                <div style={{ width: '100%', height: 350 }}>
+                  <ResponsiveContainer>
+                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillData}>
+                      <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                      <PolarAngleAxis dataKey="subject" stroke="var(--text-secondary)" />
+                      <PolarRadiusAxis stroke="var(--text-secondary)" />
+                      <Radar name="Aman Gupta" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                      <Tooltip contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '8px' }} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="analytics-card glass-panel">
+                <h3 className="section-title">Term-wise Progression</h3>
+                <div style={{ width: '100%', height: 350 }}>
+                  <ResponsiveContainer>
+                    <ComposedChart data={termProgressData}>
+                      <CartesianGrid stroke="#f5f5f5" strokeOpacity={0.1} />
+                      <XAxis dataKey="name" scale="band" stroke="var(--text-secondary)" />
+                      <YAxis stroke="var(--text-secondary)" />
+                      <Tooltip contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '8px' }} />
+                      <Legend />
+                      <Bar dataKey="marks" barSize={40} fill="#413ea0" radius={[10, 10, 0, 0]} />
+                      <Line type="monotone" dataKey="attendance" stroke="#ff7300" strokeWidth={3} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+            <div className="feature-section glass-panel">
+               <h3 className="section-title">AI Insight</h3>
+               <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontStyle: 'italic' }}>
+                 "Great job, Aman! Your performance in Sanskrit and Mathematics is exceptional. Consider focusing more on Tech skills to balance your profile."
+               </p>
+            </div>
+          </div>
+        );
       case 'Leave':
         return <div className="feature-section"><StudentLeave /></div>;
       case 'Extra Resources':

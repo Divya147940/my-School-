@@ -1,0 +1,136 @@
+.school-map-container {
+  padding: 80px 20px 40px;
+  background-color: var(--bg-secondary, #f8fafc);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.school-map-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.school-map-header h1 {
+  font-size: 2.5rem;
+  color: var(--primary-color, #1a365d);
+  margin-bottom: 10px;
+}
+
+.school-map-header p {
+  color: var(--text-secondary, #64748b);
+  font-size: 1.1rem;
+}
+
+.map-wrapper {
+  position: relative;
+  max-width: 1000px;
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  padding: 20px;
+}
+
+.map-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+}
+
+.map-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+  pointer-events: none;
+}
+
+.map-zone {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+  background: rgba(30, 64, 175, 0.1);
+  border: 2px dashed rgba(30, 64, 175, 0.3);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-zone:hover {
+  background: rgba(30, 64, 175, 0.2);
+  border-color: rgba(30, 64, 175, 0.6);
+  transform: scale(1.02);
+}
+
+.zone-label {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e40af;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.map-zone:hover .zone-label {
+  opacity: 1;
+}
+
+/* Specific Zone Positions (Relative to 1000x1000 grid for simplicity) */
+.zone-admin { top: 35%; left: 35%; width: 25%; height: 20%; }
+.zone-library { top: 20%; left: 15%; width: 20%; height: 15%; }
+.zone-science { top: 15%; left: 60%; width: 20%; height: 18%; }
+.zone-sports { top: 60%; left: 10%; width: 40%; height: 25%; }
+.zone-canteen { top: 65%; left: 65%; width: 15%; height: 15%; }
+.zone-art { top: 40%; left: 75%; width: 15%; height: 15%; }
+
+.map-details {
+  margin-top: 40px;
+  width: 100%;
+  max-width: 1000px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.detail-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border-left: 5px solid #3b82f6;
+  transition: transform 0.3s ease;
+}
+
+.detail-card:hover {
+  transform: translateY(-5px);
+}
+
+.detail-card h3 {
+  color: #1a365d;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-card p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .school-map-header h1 { font-size: 2rem; }
+  .map-wrapper { padding: 10px; }
+  .zone-label { font-size: 0.6rem; padding: 2px 6px; }
+}
