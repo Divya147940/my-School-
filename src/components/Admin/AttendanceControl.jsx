@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
+import { useToast } from '../Common/Toaster';
 
 const AttendanceControl = () => {
+    const { addToast } = useToast();
     const [settings, setSettings] = useState(mockApi.getQRSettings());
     const [logs, setLogs] = useState(mockApi.getQRAttendance());
     const [isEditing, setIsEditing] = useState(false);
@@ -9,7 +11,7 @@ const AttendanceControl = () => {
     const handleSave = () => {
         mockApi.updateQRSettings(settings);
         setIsEditing(false);
-        alert('Attendance Settings Updated!');
+        addToast('Attendance Settings Updated Successfully!', 'success');
     };
 
     const getCurrentLocation = () => {

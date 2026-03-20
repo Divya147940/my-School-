@@ -646,7 +646,7 @@ export const mockApi = {
     return newFaculty;
   },
 
-  onboardStudent: (name, className, parentName) => {
+  onboardStudent: (name, className, parentName, dob) => {
     const data = getDB();
     if (!data.studentRegistry) data.studentRegistry = [];
     if (!data.attendanceHub) data.attendanceHub = [];
@@ -655,10 +655,22 @@ export const mockApi = {
     const exists = data.studentRegistry.some(s => s.name.toLowerCase() === name.toLowerCase() && s.class === className);
     if (exists) throw new Error("This student is already registered in the selected class.");
 
-    const studentId = `STU-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    // Generate Unique ID: First 3 letters of Parent Name + Year of Birth
+    const parentPrefix = (parentName || "PAR").substring(0, 3).toUpperCase();
+    const birthYear = dob ? new Date(dob).getFullYear() : "2026";
+    const studentId = `${parentPrefix}${birthYear}`;
+    
+    // Check for ID collision (optional but good practice)
+    let finalId = studentId;
+    let counter = 1;
+    while (data.studentRegistry.some(s => s.id === finalId)) {
+      finalId = `${studentId}-${counter}`;
+      counter++;
+    }
+
     const classStudents = data.studentRegistry.filter(s => s.class === className);
     const newRoll = classStudents.length + 1;
-    const newStudent = { id: studentId, name, class: className, rollNo: newRoll, role: 'student', parentName };
+    const newStudent = { id: finalId, name, class: className, rollNo: newRoll, role: 'student', parentName, dob };
     data.studentRegistry.push(newStudent);
     
     // Also add to attendance hub

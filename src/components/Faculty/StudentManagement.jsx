@@ -9,6 +9,7 @@ const StudentManagement = () => {
     const [name, setName] = useState('');
     const [className, setClassName] = useState('10A');
     const [parentName, setParentName] = useState('');
+    const [dob, setDob] = useState('');
     const [recentStudent, setRecentStudent] = useState(null);
     const [studentList, setStudentList] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -36,13 +37,18 @@ const StudentManagement = () => {
             addToast("Parent name is required.", "error");
             return;
         }
+        if (!dob) {
+            addToast("Date of Birth is required.", "error");
+            return;
+        }
         
         try {
-            const newStudent = mockApi.onboardStudent(name, className, parentName);
+            const newStudent = mockApi.onboardStudent(name, className, parentName, dob);
             setRecentStudent(newStudent);
             setStudentList(prev => [...prev, newStudent]);
             setName('');
             setParentName('');
+            setDob('');
             addToast(`Student ID Signed: ${newStudent.id}`, "success");
         } catch (err) {
             addToast(err.message, "error");
@@ -83,6 +89,15 @@ const StudentManagement = () => {
                             <option value="9B">9B</option>
                             <option value="11C">11C</option>
                         </select>
+                    </div>
+                    <div style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '10px' }}>Date of Birth</label>
+                        <input 
+                            type="date" 
+                            value={dob}
+                            onChange={(e) => setDob(e.target.value)}
+                            style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: '#fff' }}
+                        />
                     </div>
                     <div style={{ marginBottom: '30px' }}>
                         <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '10px' }}>{t('parentName')}</label>
