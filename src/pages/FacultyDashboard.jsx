@@ -216,7 +216,7 @@ const FacultyDashboard = () => {
       case 'E-Attendance':
         return <div className="feature-section"><QRAttendance user={{ name: 'Professor Divyanshi', role: 'faculty' }} /></div>;
       case 'Face Attendance':
-        return <div className="feature-section"><AttendanceOps /></div>;
+        return <div className="feature-section"><FaceAttendance mode="faculty" /></div>;
       case 'Attendance':
         return (
           <div className="feature-section">

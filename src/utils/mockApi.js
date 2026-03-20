@@ -108,6 +108,8 @@ const defaultData = {
     { id: 3, studentName: 'Rahul Verma', class: '10A', status: 'Absent', time: '-' },
     { id: 4, studentName: 'Sneha Kapoor', class: '10A', status: 'Pending', time: '-' },
   ],
+  isOnline: true,
+  offlineQueue: [],
   admissions: [],
   inquiries: [],
   facultyRegistry: [
@@ -251,12 +253,53 @@ export const mockApi = {
   markAttendance: (studentName, status) => {
     const data = getDB();
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    if (!data.isOnline) {
+      // Offline mode: Queue the request
+      const offlineEntry = { 
+        studentName, 
+        status, 
+        time: status === 'Present' ? now : '-',
+        timestamp: Date.now()
+      };
+      if (!data.offlineQueue) data.offlineQueue = [];
+      data.offlineQueue.push(offlineEntry);
+      saveDB(data);
+      return { status: 'offline_queued', entry: offlineEntry };
+    }
+
+    // Online mode: Regular update
     if (!data.attendanceHub) data.attendanceHub = [];
     data.attendanceHub = data.attendanceHub.map(record => 
       record.studentName === studentName ? { ...record, status, time: status === 'Present' ? now : '-' } : record
     );
     saveDB(data);
     return { status: 'success', time: now };
+  },
+
+  getNetworkStatus: () => getDB().isOnline,
+  
+  toggleNetwork: () => {
+    const data = getDB();
+    data.isOnline = !data.isOnline;
+    saveDB(data);
+    return data.isOnline;
+  },
+
+  syncOfflineData: () => {
+    const data = getDB();
+    if (!data.isOnline || !data.offlineQueue || data.offlineQueue.length === 0) return 0;
+    
+    const count = data.offlineQueue.length;
+    data.offlineQueue.forEach(item => {
+      data.attendanceHub = data.attendanceHub.map(record => 
+        record.studentName === item.studentName ? { ...record, status: item.status, time: item.time } : record
+      );
+    });
+    
+    data.offlineQueue = [];
+    saveDB(data);
+    return count;
   },
 
   // Assignments
@@ -646,7 +689,7 @@ export const mockApi = {
     return newFaculty;
   },
 
-  onboardStudent: (name, className, parentName, dob) => {
+  onboardStudent: (name, className, parentName, dob, faceImage = null) => {
     const data = getDB();
     if (!data.studentRegistry) data.studentRegistry = [];
     if (!data.attendanceHub) data.attendanceHub = [];
@@ -670,7 +713,17 @@ export const mockApi = {
 
     const classStudents = data.studentRegistry.filter(s => s.class === className);
     const newRoll = classStudents.length + 1;
-    const newStudent = { id: finalId, name, class: className, rollNo: newRoll, role: 'student', parentName, dob };
+    const newStudent = { 
+      id: finalId, 
+      name, 
+      class: className, 
+      rollNo: newRoll, 
+      role: 'student', 
+      parentName, 
+      dob,
+      faceImage,
+      isFaceEnrolled: !!faceImage
+    };
     data.studentRegistry.push(newStudent);
     
     // Also add to attendance hub
@@ -709,6 +762,41 @@ export const mockApi = {
       return { status: 'success' };
     }
     return { status: 'error' };
+  },
+
+  verifyFace: (studentId, capturedImage) => {
+    const data = getDB();
+    const student = data.studentRegistry.find(s => s.id === studentId);
+    if (!student) return { success: false, message: "Student not found" };
+    if (!student.faceImage) return { success: false, message: "No face registered for this student" };
+    
+    if (capturedImage && student.faceImage) {
+      return { success: true, message: "Face Match Successful!" };
+    }
+    
+    return { success: false, message: "Face does not match record" };
+  },
+
+  matchFaceAcrossAllStudents: (capturedImage) => {
+    const data = getDB();
+    const enrolledStudents = data.studentRegistry.filter(s => s.isFaceEnrolled || s.faceImage);
+    
+    if (enrolledStudents.length > 0) {
+        const pendingStudents = (data.attendanceHub || []).filter(a => a.status === 'Pending');
+        const match = enrolledStudents.find(s => pendingStudents.some(p => p.studentName === s.name)) || enrolledStudents[0];
+        
+        // Simulate a confidence score
+        const confidence = 0.6 + (Math.random() * 0.35); // 0.6 to 0.95
+        
+        return { 
+            success: true, 
+            student: match,
+            confidence: confidence,
+            message: `Match Found: ${match.name} (${(confidence * 100).toFixed(1)}%)` 
+        };
+    }
+    
+    return { success: false, message: "No matching student found in database" };
   },
 
   logLesson: (teacherId, teacherName, subject, topic, summary) => {

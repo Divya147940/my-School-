@@ -10,18 +10,19 @@ const Attendance = () => {
   React.useEffect(() => {
     setLoading(true);
     const db = mockApi.getDB();
+    const attendanceLogs = (db.attendanceHub || []).filter(a => a.class === selectedClass);
+    
     const students = db.studentRegistry
       .filter(s => s.class === selectedClass)
-      .map(s => ({
-        id: s.id,
-        name: s.name,
-        roll: s.rollNo,
-        status: null
-      }));
-    
-    // Merge with existing attendance if any for this date
-    const attendanceLogs = db.attendanceHub.filter(a => a.class === selectedClass);
-    // Note: In a real app we'd filter by date too, but here we'll just initialize with registry
+      .map(s => {
+        const attRecord = attendanceLogs.find(a => a.studentName === s.name);
+        return {
+          id: s.id,
+          name: s.name,
+          roll: s.rollNo,
+          status: attRecord ? attRecord.status : null
+        };
+      });
     
     setAttendanceData(students);
     setLoading(false);

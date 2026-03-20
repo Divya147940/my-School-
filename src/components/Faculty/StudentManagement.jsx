@@ -10,8 +10,13 @@ const StudentManagement = () => {
     const [className, setClassName] = useState('10A');
     const [parentName, setParentName] = useState('');
     const [dob, setDob] = useState('');
+    const [capturedImage, setCapturedImage] = useState(null);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [recentStudent, setRecentStudent] = useState(null);
     const [studentList, setStudentList] = useState([]);
+    
+    const videoRef = React.useRef(null);
+    const canvasRef = React.useRef(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterClass, setFilterClass] = useState('All');
 
@@ -43,15 +48,53 @@ const StudentManagement = () => {
         }
         
         try {
-            const newStudent = mockApi.onboardStudent(name, className, parentName, dob);
+            const newStudent = mockApi.onboardStudent(name, className, parentName, dob, capturedImage);
             setRecentStudent(newStudent);
             setStudentList(prev => [...prev, newStudent]);
             setName('');
             setParentName('');
             setDob('');
+            setCapturedImage(null);
             addToast(`Student ID Signed: ${newStudent.id}`, "success");
         } catch (err) {
             addToast(err.message, "error");
+        }
+    };
+
+    const startCamera = async () => {
+        setIsCameraOpen(true);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            addToast("Could not access camera. Please check permissions.", "error");
+            setIsCameraOpen(false);
+        }
+    };
+
+    const stopCamera = () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            const tracks = videoRef.current.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+            videoRef.current.srcObject = null;
+        }
+        setIsCameraOpen(false);
+    };
+
+    const capturePhoto = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            setCapturedImage(dataUrl);
+            stopCamera();
         }
     };
 
@@ -109,8 +152,78 @@ const StudentManagement = () => {
                             style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: '#fff' }}
                         />
                     </div>
-                    <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer', fontSize: '1.1rem' }}>
-                        SIGN STUDENT ID 👤
+
+                    {/* Face Capture Section */}
+                    <div style={{ marginBottom: '30px', padding: '20px', borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--glass-border)' }}>
+                        <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '15px', fontWeight: '700' }}>Student Face Capture / छात्र का चेहरा</label>
+                        
+                        {!isCameraOpen && !capturedImage && (
+                            <button 
+                                type="button"
+                                onClick={startCamera}
+                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)', border: '1px solid var(--accent-blue)', cursor: 'pointer', fontWeight: '700' }}
+                            >
+                                📷 Open Camera
+                            </button>
+                        )}
+
+                        {isCameraOpen && (
+                            <div style={{ position: 'relative', width: '100%', borderRadius: '12px', overflow: 'hidden', background: '#000' }}>
+                                <video 
+                                    ref={videoRef} 
+                                    autoPlay 
+                                    playsInline 
+                                    style={{ width: '100%', display: 'block' }}
+                                />
+                                <div style={{ position: 'absolute', bottom: '15px', left: '0', right: '0', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                    <button 
+                                        type="button" 
+                                        onClick={capturePhoto}
+                                        style={{ padding: '10px 20px', borderRadius: '30px', background: '#fff', color: '#000', border: 'none', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}
+                                    >
+                                        📸 CAPTURE
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onClick={stopCamera}
+                                        style={{ padding: '10px 20px', borderRadius: '30px', background: 'rgba(239, 68, 68, 0.8)', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer' }}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {capturedImage && (
+                            <div style={{ textAlign: 'center' }}>
+                                <img 
+                                    src={capturedImage} 
+                                    alt="Captured Student" 
+                                    style={{ width: '100%', maxWidth: '200px', borderRadius: '15px', border: '3px solid var(--accent-blue)', marginBottom: '10px' }} 
+                                />
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => { setCapturedImage(null); startCamera(); }}
+                                        style={{ padding: '8px 15px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--glass-border)', cursor: 'pointer', fontSize: '0.8rem' }}
+                                    >
+                                        🔄 Retake
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setCapturedImage(null)}
+                                        style={{ padding: '8px 15px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer', fontSize: '0.8rem' }}
+                                    >
+                                        🗑️ Remove
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        <canvas ref={canvasRef} style={{ display: 'none' }} />
+                    </div>
+
+                    <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '16px', background: capturedImage ? 'var(--accent-blue)' : 'rgba(59, 130, 246, 0.5)', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer', fontSize: '1.1rem' }}>
+                        SIGN STUDENT ID {capturedImage ? '✅' : '👤'}
                     </button>
                 </form>
 
@@ -158,9 +271,16 @@ const StudentManagement = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', overflowY: 'auto', maxHeight: '500px' }}>
                     {filteredStudents.length > 0 ? filteredStudents.slice().reverse().map(s => (
                         <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div>
-                                <div style={{ fontWeight: '700' }}>{s.name}</div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Class {s.class} • Roll {s.rollNo}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                {s.faceImage ? (
+                                    <img src={s.faceImage} alt={s.name} style={{ width: '45px', height: '45px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--accent-blue)' }} />
+                                ) : (
+                                    <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', color: 'var(--text-secondary)' }}>👤</div>
+                                )}
+                                <div>
+                                    <div style={{ fontWeight: '700' }}>{s.name}</div>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Class {s.class} • Roll {s.rollNo}</div>
+                                </div>
                             </div>
                             <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <div>

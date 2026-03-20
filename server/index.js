@@ -6,11 +6,19 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cron from 'node-cron';
+import { runBackup } from './backup.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '.env') });
+
+// Schedule Backup: Everyday at 00:00 (Midnight)
+cron.schedule('0 0 * * *', () => {
+    console.log('Running daily backup task...');
+    runBackup();
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
