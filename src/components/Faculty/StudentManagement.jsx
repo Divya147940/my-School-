@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../Common/Toaster';
@@ -13,12 +13,15 @@ const StudentManagement = () => {
     const [capturedImage, setCapturedImage] = useState(null);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [recentStudent, setRecentStudent] = useState(null);
+    const [isVirtualStream, setIsVirtualStream] = useState(false);
     const [studentList, setStudentList] = useState([]);
-    
-    const videoRef = React.useRef(null);
-    const canvasRef = React.useRef(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterClass, setFilterClass] = useState('All');
+    
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    
+    const TEST_ID_PHOTO = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop"; // Schematic hybrid avatar
 
     useEffect(() => {
         setStudentList(mockApi.getDB().studentRegistry || []);
@@ -63,15 +66,15 @@ const StudentManagement = () => {
 
     const startCamera = async () => {
         setIsCameraOpen(true);
+        setIsVirtualStream(false);
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
         } catch (err) {
-            console.error("Error accessing camera:", err);
-            addToast("Could not access camera. Please check permissions.", "error");
-            setIsCameraOpen(false);
+            console.warn("Camera busy/denied. Using Biometric Simulation Mode.");
+            setIsVirtualStream(true);
         }
     };
 
@@ -222,7 +225,7 @@ const StudentManagement = () => {
                         <canvas ref={canvasRef} style={{ display: 'none' }} />
                     </div>
 
-                    <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '16px', background: capturedImage ? 'var(--accent-blue)' : 'rgba(59, 130, 246, 0.5)', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer', fontSize: '1.1rem' }}>
+                    <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '16px', background: capturedImage ? '#3b82f6' : 'rgba(59, 130, 246, 0.5)', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer', fontSize: '1.1rem' }}>
                         SIGN STUDENT ID {capturedImage ? '✅' : '👤'}
                     </button>
                 </form>

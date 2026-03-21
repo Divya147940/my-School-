@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const LiveClasses = () => {
+  const { secureApi } = useAuth();
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,7 +12,7 @@ const LiveClasses = () => {
   const fetchClasses = async () => {
     try {
       // Using 'Class 10' for demo
-      const response = await fetch('http://localhost:5001/api/live-classes/Class%2010');
+      const response = await secureApi('http://localhost:5001/api/live-classes/Class%2010');
       const data = await response.json();
       setClasses(data);
     } catch (err) {

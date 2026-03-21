@@ -8,20 +8,41 @@ export const AuthProvider = ({ children }) => {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('NSGI_AUTH_USER', JSON.stringify(userData));
+  const [token, setToken] = useState(() => localStorage.getItem('NSGI_AUTH_TOKEN'));
+
+  const login = (userData, userToken) => {
+    // Role Normalization: Always ensure role is Title Case (e.g. 'Student', 'Faculty')
+    const normalizedUser = userData ? {
+        ...userData,
+        role: userData.role ? (userData.role.charAt(0).toUpperCase() + userData.role.slice(1).toLowerCase()) : 'Student'
+    } : null;
+
+    setUser(normalizedUser);
+    setToken(userToken);
+    localStorage.setItem('NSGI_AUTH_USER', JSON.stringify(normalizedUser));
+    localStorage.setItem('NSGI_AUTH_TOKEN', userToken);
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('NSGI_AUTH_USER');
+    localStorage.removeItem('NSGI_AUTH_TOKEN');
+  };
+
+  const secureApi = async (url, options = {}) => {
+    const headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+    return fetch(url, { ...options, headers });
   };
 
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated, secureApi }}>
       {children}
     </AuthContext.Provider>
   );

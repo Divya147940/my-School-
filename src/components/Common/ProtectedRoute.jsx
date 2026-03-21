@@ -19,7 +19,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       'Student': '/student-dashboard',
       'Parent': '/parent-dashboard'
     };
-    return <Navigate to={rolePaths[user.role] || "/"} replace />;
+    
+    // Fallback: If role is defined but not in map, log and go Home
+    const targetPath = rolePaths[user.role] || "/";
+    console.warn(`Protected Route: Access Denied for role [${user.role}]. Redirecting to [${targetPath}].`);
+    return <Navigate to={targetPath} replace />;
   }
 
   return children;

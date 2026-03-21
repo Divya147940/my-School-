@@ -77,9 +77,8 @@ const StaffPayroll = () => {
             <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', marginBottom: '20px' }}>
               <p><b>Staff Name:</b> {selectedStaff.name}</p>
               <p><b>Designation:</b> {selectedStaff.role}</p>
-              <p><b>Month:</b> March 2026</p>
+              <p><b>Month:</b> {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '20px', borderRadius: '12px', marginBottom: '30px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <span>Basic Pay</span>
                 <span>₹{Math.round(selectedStaff.salary * 0.7)}</span>
@@ -92,7 +91,6 @@ const StaffPayroll = () => {
                 <span>Net Payable</span>
                 <span style={{ color: '#10b981' }}>₹{selectedStaff.salary}</span>
               </div>
-            </div>
             <button style={{ width: '100%', padding: '15px', borderRadius: '12px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>
               Download PDF Receipt
             </button>

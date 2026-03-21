@@ -1,7 +1,7 @@
 /* ===== Login Page - Cinematic Dark Glassmorphism ===== */
 .login-page {
     min-height: 100vh;
-    background: #050510;
+    background: linear-gradient(135deg, #5c2d15 0%, #b85c2c 50%, #5c2d15 100%);
     font-family: 'Outfit', sans-serif;
     position: relative;
     overflow: hidden;
@@ -13,7 +13,7 @@
 .login-overlay-bg {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1), transparent 70%);
+    background: radial-gradient(circle at 50% 50%, rgba(255, 136, 0, 0.15), transparent 70%);
 }
 
 .login-content {

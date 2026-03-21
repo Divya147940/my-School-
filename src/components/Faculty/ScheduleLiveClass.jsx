@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const ScheduleLiveClass = () => {
+  const { secureApi } = useAuth();
   const [formData, setFormData] = useState({
     teacher_id: 1, // Demo teacher ID
     class_name: 'Class 10',
@@ -13,7 +14,7 @@ const ScheduleLiveClass = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5001/api/live-classes', {
+      const response = await secureApi('http://localhost:5001/api/live-classes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

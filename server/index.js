@@ -2,15 +2,41 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './db.js';
+import fs from 'fs';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cron from 'node-cron';
 import { runBackup } from './backup.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const JWT_SECRET = process.env.JWT_SECRET || 'nsgi-super-secret-key-2026';
+
+// --- SECURITY AUDIT LOGGING ---
+const AUDIT_FILE = path.join(__dirname, 'security_audit.json');
+const logSecurityAction = (action) => {
+    let logs = [];
+    try {
+        if (fs.existsSync(AUDIT_FILE)) {
+            logs = JSON.parse(fs.readFileSync(AUDIT_FILE, 'utf8'));
+        }
+    } catch (e) { console.error('Audit read error', e); }
+
+    logs.unshift({
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        ...action
+    });
+
+    fs.writeFileSync(AUDIT_FILE, JSON.stringify(logs.slice(0, 50), null, 2));
+};
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
@@ -21,10 +47,45 @@ cron.schedule('0 0 * * *', () => {
 });
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
-app.use(cors());
+// --- ADVANCED SECURITY MIDDLEWARE ---
+app.use(helmet()); // Security headers
+app.use(cookieParser()); // Parse cookies
 app.use(express.json());
+
+// Rate Limiter for Auth Routes
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 requests per window
+    message: { status: 'error', message: 'Too many login attempts, please try again after 15 minutes' }
+});
+
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true
+}));
+
+// --- RBAC MIDDLEWARE ---
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1] || req.cookies?.token;
+    if (!token) return res.status(401).json({ status: 'error', message: 'Access Denied: No Token Provided' });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.status(401).json({ status: 'error', message: 'Invalid or Expired Token' });
+    }
+};
+
+const checkRole = (roles) => (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+        return res.status(403).json({ status: 'error', message: 'Forbidden: Insufficient Permissions' });
+    }
+    next();
+};
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -102,8 +163,46 @@ app.get('/api/students', async (req, res) => {
     }
 });
 
+// --- AUTHENTICATION ENDPOINTS ---
+app.post('/api/auth/login', authLimiter, async (req, res) => {
+    const { id, role } = req.body;
+    
+    try {
+        const token = jwt.sign({ id, role }, JWT_SECRET, { expiresIn: '8h' });
+        
+        logSecurityAction({
+            type: 'LOGIN_SUCCESS',
+            user: id,
+            role: role,
+            ip: req.ip || '127.0.0.1',
+            details: `Successful login as ${role}`
+        });
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 8 * 60 * 60 * 1000
+        });
+
+        res.json({
+            status: 'success',
+            token,
+            user: { id, role, name: role === 'Admin' ? 'Admin User' : 'Authorized User' }
+        });
+    } catch (err) {
+        logSecurityAction({
+            type: 'LOGIN_FAILURE',
+            user: id,
+            ip: req.ip || '127.0.0.1',
+            error: err.message
+        });
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+});
+
 // Attendance API
-app.get('/api/attendance', async (req, res) => {
+app.get('/api/attendance', verifyToken, async (req, res) => {
     const { date, class_name } = req.query;
     try {
         const result = await pool.query(
@@ -117,7 +216,7 @@ app.get('/api/attendance', async (req, res) => {
     }
 });
 
-app.post('/api/attendance', async (req, res) => {
+app.post('/api/attendance', verifyToken, async (req, res) => {
     const { student_id, status, marked_by, date } = req.body;
     try {
         const result = await pool.query(
@@ -142,7 +241,7 @@ app.get('/api/assignments', async (req, res) => {
     }
 });
 
-app.post('/api/assignments', async (req, res) => {
+app.post('/api/assignments', verifyToken, checkRole(['Faculty', 'Admin']), async (req, res) => {
     const { title, description, class_name, subject, teacher_id, due_date } = req.body;
     try {
         const result = await pool.query(
@@ -180,7 +279,7 @@ app.get('/api/marks/:examId', async (req, res) => {
     }
 });
 
-app.post('/api/marks', async (req, res) => {
+app.post('/api/marks', verifyToken, checkRole(['Faculty', 'Admin']), async (req, res) => {
     const { exam_id, student_id, marks_obtained, remarks } = req.body;
     try {
         const result = await pool.query(
@@ -222,7 +321,7 @@ app.get('/api/diary/:teacherId', async (req, res) => {
     }
 });
 
-app.post('/api/diary', async (req, res) => {
+app.post('/api/diary', verifyToken, async (req, res) => {
     const { teacher_id, date, lesson_plan, progress_percentage, remarks } = req.body;
     try {
         const result = await pool.query(
@@ -318,7 +417,7 @@ app.get('/api/live-classes/:className', async (req, res) => {
     }
 });
 
-app.post('/api/live-classes', async (req, res) => {
+app.post('/api/live-classes', verifyToken, checkRole(['Faculty', 'Admin']), async (req, res) => {
     const { teacher_id, class_name, subject, meeting_link, start_time, topic } = req.body;
     try {
         const result = await pool.query(
@@ -329,6 +428,43 @@ app.post('/api/live-classes', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to schedule live class' });
+    }
+});
+
+// Backup Admin API
+app.get('/api/admin/security-logs', verifyToken, checkRole(['Admin']), async (req, res) => {
+    try {
+        if (fs.existsSync(AUDIT_FILE)) {
+            const data = fs.readFileSync(AUDIT_FILE, 'utf8');
+            res.json(JSON.parse(data));
+        } else {
+            res.json([]);
+        }
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: 'Failed to fetch security logs' });
+    }
+});
+
+app.get('/api/admin/backup-history', verifyToken, checkRole(['Admin']), async (req, res) => {
+    try {
+        const historyFile = path.join(__dirname, 'backup_history.json');
+        if (fs.existsSync(historyFile)) {
+            const data = fs.readFileSync(historyFile, 'utf8');
+            res.json(JSON.parse(data));
+        } else {
+            res.json([]);
+        }
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: 'Failed to fetch backup history' });
+    }
+});
+
+app.post('/api/admin/run-backup', verifyToken, checkRole(['Admin']), async (req, res) => {
+    try {
+        const result = await runBackup();
+        res.json({ status: 'success', message: 'Backup completed successfully', file: path.basename(result) });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
     }
 });
 
