@@ -101,6 +101,8 @@ const Login = () => {
   const [hardwareLocked, setHardwareLocked] = useState(false);
   const TEST_ID_PHOTO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
   const [isScanning, setIsScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanMessage, setScanMessage] = useState('ALIGN FACE IN FRAME');
   const [loginId, setLoginId] = useState('');
   const videoRef = React.useRef(null);
   const canvasRef = React.useRef(null);
@@ -169,42 +171,65 @@ const Login = () => {
   };
 
   const handleBiometricLogin = async () => {
+    if (!loginId) {
+        alert("Please enter your Unique ID first.");
+        return;
+    }
+
     setIsScanning(true);
-    if (videoRef.current && canvasRef.current) {
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        const image = canvas.toDataURL('image/jpeg');
+    setScanProgress(0);
+    setScanMessage("ALIGN FACE IN FRAME...");
 
-        // Check against database based on role
-        if (!loginId) {
-            alert("Please enter your Unique ID first.");
-            setIsScanning(false);
-            return;
-        }
+    // AI Face Analysis Sequence (Purely Face Focused)
+    setTimeout(() => { setScanProgress(30); setScanMessage("SCANNING FACE..."); }, 500);
+    setTimeout(() => { setScanProgress(60); setScanMessage("ANALYZING FEATURES..."); }, 1000);
+    setTimeout(() => { setScanProgress(90); setScanMessage("IDENTIFYING..."); }, 1500);
+    setTimeout(() => { setScanProgress(100); setScanMessage("MATCHING BIOMETRICS..."); }, 2000);
 
-        const result = activePortal.type === 'Faculty' 
-            ? mockApi.verifyFacultyBiometricLogin(loginId, image)
-            : mockApi.verifyStudentBiometricLogin(loginId, image);
-        
-        setTimeout(() => {
-            if (result.success) {
-                // Stop camera before navigating
+    setTimeout(async () => {
+        if (videoRef.current && canvasRef.current) {
+            try {
+                const video = videoRef.current;
+                const canvas = canvasRef.current;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                const image = canvas.toDataURL('image/jpeg');
+
+                const result = activePortal.type === 'Faculty' 
+                    ? await mockApi.verifyFacultyBiometricLogin(loginId, image)
+                    : await mockApi.verifyStudentBiometricLogin(loginId, image);
+                
+                // Stop camera ALWAYS after the AI processing is done
                 if (videoRef.current?.srcObject) {
                     videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+                    videoRef.current.srcObject = null;
                 }
-                const authenticatedUser = result.faculty || result.student;
-                login(authenticatedUser, "MOCK_JWT_TOKEN");
-                navigate(activePortal.path);
-            } else {
-                alert(result.message);
+
+                if (result.success) {
+                    const authenticatedUser = result.faculty || result.student;
+                    login(authenticatedUser, "MOCK_JWT_TOKEN");
+                    navigate(activePortal.path);
+                } else {
+                    alert(result.message);
+                    setIsScanning(false);
+                    setScanProgress(0);
+                }
+            } catch (err) {
+                console.error("Biometric Check Failed:", err);
+                // Ensure camera is released even on error
+                if (videoRef.current?.srcObject) {
+                    videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+                    videoRef.current.srcObject = null;
+                }
+                alert(`AI Scan Error: ${err.message || 'Unknown Error'}\n\n1. Check your internet connection.\n2. Ensure your face is clearly visible.`);
                 setIsScanning(false);
+                setScanProgress(0);
             }
-        }, 2000); // Simulate processing time
-    }
+        }
+    }, 2500); 
   };
+
 
   const handlePortalLogin = async (portal) => {
     if (portal.type === 'Faculty' || portal.type === 'Student') {
@@ -290,7 +315,7 @@ const Login = () => {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div className="glass-panel" style={{ background: '#0f172a', padding: '40px', borderRadius: '40px', maxWidth: '500px', width: '100%', textAlign: 'center', border: '1px solid rgba(59, 130, 246, 0.3)', boxShadow: '0 0 50px rgba(59, 130, 246, 0.2)' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>
-                {isScanning ? '🔍 ANALYZING BIOMETRICS...' : `🔐 ${activePortal?.type} IDENTITY LATCH`}
+                {isScanning ? `🔍 ${scanProgress}% SCANNED` : `🔐 ${activePortal?.type} IDENTITY LATCH`}
             </h2>
             <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Enter your Unique ID and look into the camera.</p>
 
@@ -325,7 +350,12 @@ const Login = () => {
                 }}></div>
 
                 {isScanning && (
-                    <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '100%', background: 'linear-gradient(transparent, rgba(59, 130, 246, 0.5), transparent)', animation: 'scannerSweep 2s infinite linear' }}></div>
+                    <div style={{ position: 'absolute', bottom: '20px', left: '10%', right: '10%', background: 'rgba(0,0,0,0.8)', padding: '15px', borderRadius: '15px', border: `1px solid ${scanProgress === 100 ? '#10b981' : '#3b82f6'}`, zIndex: 10 }}>
+                        <div style={{ color: scanProgress === 100 ? '#10b981' : '#3b82f6', fontSize: '0.9rem', fontWeight: '800', marginBottom: '8px', letterSpacing: '1px' }}>{scanMessage}</div>
+                        <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.2)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ width: `${scanProgress}%`, height: '100%', background: scanProgress === 100 ? '#10b981' : '#3b82f6', transition: 'width 0.5s ease, background 0.3s' }}></div>
+                        </div>
+                    </div>
                 )}
             </div>
 

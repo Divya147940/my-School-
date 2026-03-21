@@ -6,8 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 const FaceAttendance = ({ mode }) => {
     const { t, language } = useLanguage();
     const { user } = useAuth();
-    const [scanStatus, setScanStatus] = useState('idle'); // idle, liveness, matching, success, failed
-    const [livenessAction, setLivenessAction] = useState(null);
+    const [scanStatus, setScanStatus] = useState('idle'); // idle, matching, success, failed
     const [progress, setProgress] = useState(0);
     const [isEnrolled, setIsEnrolled] = useState(true);
     const [isEnrolling, setIsEnrolling] = useState(false);
@@ -26,11 +25,8 @@ const FaceAttendance = ({ mode }) => {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
-    const livenessActions = [
-        { id: 'left', label: 'Turn Head Left', hi: 'अपना सिर बाईं ओर घुमाएं' },
-        { id: 'right', label: 'Turn Head Right', hi: 'अपना सिर दाईं ओर घुमाएं' },
-        { id: 'blink', label: 'Blink Your Eyes', hi: 'अपनी आँखें झपकाएं' }
-    ];
+    // Removed livenessActions per user request to focus strictly on face detection
+
 
     useEffect(() => {
         const isFaculty = user && (user.role === 'Faculty' || user.role === 'Admin' || mode === 'faculty');
@@ -126,7 +122,7 @@ const FaceAttendance = ({ mode }) => {
         }, 100);
     };
 
-    const performVerification = (isFallback = false) => {
+    const performVerification = async (isFallback = false) => {
         if (isFallback || (videoRef.current && canvasRef.current)) {
             let photo = capturedImage;
             if (!isFallback) {
@@ -140,8 +136,8 @@ const FaceAttendance = ({ mode }) => {
                 setCapturedImage(photo);
             }
             
-            // Use general matcher
-            const result = mockApi.matchFaceAcrossAllStudents(photo);
+            // Use general matcher with Strict AI Euclidean Distances (0.40)
+            const result = await mockApi.matchFaceAcrossAllStudents(photo);
             
             if (result.success) {
                 setVerifiedStudent(result.student);
@@ -385,17 +381,7 @@ const FaceAttendance = ({ mode }) => {
                         </div>
                     )}
 
-                    {scanStatus === 'liveness' && (
-                        <div style={{ animation: 'pulse 1.5s infinite' }}>
-                            <div style={{ color: '#f59e0b', fontWeight: '800', fontSize: '1.4rem', textTransform: 'uppercase', marginBottom: '10px' }}>
-                                🛡️ Liveness Check
-                            </div>
-                            <div style={{ color: '#fff', fontWeight: '700', fontSize: '1.2rem', background: 'rgba(245, 158, 11, 0.2)', padding: '10px 20px', borderRadius: '12px', border: '1px solid #f59e0b' }}>
-                                {language === 'hi' ? livenessAction.hi : livenessAction.label}
-                            </div>
-                            <div style={{ marginTop: '15px', color: 'var(--text-secondary)' }}>Detecting movement... {progress}%</div>
-                        </div>
-                    )}
+
 
                     {scanStatus === 'matching' && (
                         <div style={{ color: 'var(--accent-blue)', fontWeight: '700', fontSize: '1.2rem' }}>

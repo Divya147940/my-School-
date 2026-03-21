@@ -49,6 +49,25 @@ cron.schedule('0 0 * * *', () => {
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// --- Initialize DB Schema Upgrades ---
+const initDB = async () => {
+    try {
+        await pool.query(`
+            ALTER TABLE faculty ADD COLUMN IF NOT EXISTS face_descriptor TEXT;
+            ALTER TABLE faculty ADD COLUMN IF NOT EXISTS face_image TEXT;
+            ALTER TABLE faculty ADD COLUMN IF NOT EXISTS is_face_enrolled BOOLEAN DEFAULT FALSE;
+            
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS face_descriptor TEXT;
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS face_image TEXT;
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS is_face_enrolled BOOLEAN DEFAULT FALSE;
+        `);
+        console.log("Database schema updated for biometrics (Status + Descriptors).");
+    } catch (e) {
+        console.error("DB Init Error:", e.message);
+    }
+};
+initDB();
+
 // --- ADVANCED SECURITY MIDDLEWARE ---
 app.use(helmet()); // Security headers
 app.use(cookieParser()); // Parse cookies
@@ -114,6 +133,43 @@ app.get('/api/faculty', async (req, res) => {
     }
 });
 
+app.post('/api/faculty', async (req, res) => {
+    const { name, designation, description, faceImage, faceDescriptor } = req.body;
+    try {
+        const query = `
+            INSERT INTO faculty (name, designation, description, face_image, face_descriptor, is_face_enrolled) 
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+        `;
+        const result = await pool.query(query, [
+            name, 
+            designation || 'Teacher', 
+            description || '', 
+            faceImage, 
+            faceDescriptor,
+            !!faceDescriptor
+        ]);
+        res.status(201).json({ status: 'success', data: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to save faculty' });
+    }
+});
+
+// Specific Lookup for Biometric Login
+app.get('/api/faculty/search/:id', async (req, res) => {
+    try {
+        const searchId = req.params.id.toUpperCase().replace(/[^0-9]/g, ''); // Extract numbers
+        // Search by name (if full name is entered) OR by numeric ID (if T015/TEA015 etc is entered)
+        const result = await pool.query(
+            'SELECT * FROM faculty WHERE UPPER(name) = $1 OR CAST(id AS TEXT) = $2 OR CAST(id AS TEXT) = $3 LIMIT 1',
+            [req.params.id.toUpperCase(), req.params.id.toUpperCase(), searchId]
+        );
+        res.json(result.rows[0] || null);
+    } catch (err) {
+        res.status(500).json({ status: 'error' });
+    }
+});
+
 // Admissions API
 app.get('/api/admissions', async (req, res) => {
     try {
@@ -160,6 +216,18 @@ app.get('/api/students', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
+    }
+});
+
+app.get('/api/students/search/:id', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM students WHERE UPPER(name) = $1 OR UPPER(roll_no) = $1 LIMIT 1',
+            [req.params.id.toUpperCase()]
+        );
+        res.json(result.rows[0] || null);
+    } catch (err) {
+        res.status(500).json({ status: 'error' });
     }
 });
 

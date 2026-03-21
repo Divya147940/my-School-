@@ -25,6 +25,14 @@ const StudentManagement = () => {
 
     useEffect(() => {
         setStudentList(mockApi.getDB().studentRegistry || []);
+
+        // Cleanup camera on component unmount
+        return () => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const tracks = videoRef.current.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+        };
     }, []);
 
     const handleDelete = (id) => {
@@ -35,7 +43,7 @@ const StudentManagement = () => {
         }
     };
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         if (!name) {
             addToast("Student name is required.", "error");
@@ -51,7 +59,7 @@ const StudentManagement = () => {
         }
         
         try {
-            const newStudent = mockApi.onboardStudent(name, className, parentName, dob, capturedImage);
+            const newStudent = await mockApi.onboardStudent(name, className, parentName, dob, capturedImage);
             setRecentStudent(newStudent);
             setStudentList(prev => [...prev, newStudent]);
             setName('');
@@ -65,6 +73,12 @@ const StudentManagement = () => {
     };
 
     const startCamera = async () => {
+        // Stop any existing tracks first to release the camera lock
+        if (videoRef.current && videoRef.current.srcObject) {
+            const tracks = videoRef.current.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+        
         setIsCameraOpen(true);
         setIsVirtualStream(false);
         try {

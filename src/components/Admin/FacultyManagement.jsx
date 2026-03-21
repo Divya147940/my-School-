@@ -16,6 +16,8 @@ const FacultyManagement = () => {
     const [hardwareLocked, setHardwareLocked] = useState(false);
     const [recentFaculty, setRecentFaculty] = useState(null);
     const [isVirtualStream, setIsVirtualStream] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisProgress, setAnalysisProgress] = useState(0);
     
     const TEST_ID_PHOTO = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop"; // Schematic Male/Female hybrid avatar
 
@@ -39,6 +41,13 @@ const FacultyManagement = () => {
 
     useEffect(() => {
         setFacultyList(mockApi.getDB().facultyRegistry || []);
+
+        // Cleanup camera on component unmount
+        return () => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            }
+        };
     }, []);
 
 
@@ -128,7 +137,7 @@ const FacultyManagement = () => {
         }
     };
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         if (!name || !subject || !dob || !parentName) {
             addToast("All fields are required", "error");
@@ -139,19 +148,47 @@ const FacultyManagement = () => {
             return;
         }
         try {
-            // Duplicate check removed per user request: Same names are allowed for Faculty
+            setIsAnalyzing(true);
+            setAnalysisProgress(0);
+            
+            // AI Face Analysis Sequence (Purely Face Focused)
+            const steps = [
+                { p: 20, m: "SCANNING FACE..." },
+                { p: 50, m: "ANALYZING FEATURES..." },
+                { p: 80, m: "GENERATING VECTOR..." },
+                { p: 100, m: "SAVING FACE..." }
+            ];
 
-            const faculty = mockApi.onboardFaculty(name, subject, dob, parentName, capturedImage);
-            setRecentFaculty(faculty);
-            setFacultyList(prev => [...prev, faculty]);
-            setName('');
-            setSubject('');
-            setParentName('');
-            setDob('');
-            setCapturedImage(null);
-            setEnrollmentSource(null);
-            addToast("Faculty registered successfully!", "success");
+            let currentStep = 0;
+            const interval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    setAnalysisProgress(steps[currentStep].p);
+                    currentStep++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 300);
+
+            const faculty = await mockApi.onboardFaculty(name, subject, dob, parentName, capturedImage);
+            
+            clearInterval(interval);
+            setAnalysisProgress(100);
+            
+            setTimeout(() => {
+                setRecentFaculty(faculty);
+                setFacultyList(prev => [...prev, faculty]);
+                setName('');
+                setSubject('');
+                setParentName('');
+                setDob('');
+                setCapturedImage(null);
+                setEnrollmentSource(null);
+                setIsAnalyzing(false);
+                addToast("Faculty registered successfully with secure Biometrics!", "success");
+            }, 500);
+
         } catch (err) {
+            setIsAnalyzing(false);
             addToast(err.message, "error");
         }
     };
@@ -308,8 +345,34 @@ const FacultyManagement = () => {
                         <canvas ref={canvasRef} style={{ display: 'none' }} />
                     </div>
 
-                    <button type="submit" style={{ width: '100%', padding: '18px', borderRadius: '16px', background: capturedImage ? '#10b981' : '#3b82f6', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer', fontSize: '1.1rem', transition: '0.3s' }}>
-                        REGISTER FACULTY {capturedImage ? '✓' : '👨‍🏫'}
+                    <button 
+                        type="submit" 
+                        disabled={isAnalyzing}
+                        style={{ 
+                            width: '100%', 
+                            padding: '18px', 
+                            borderRadius: '16px', 
+                            background: isAnalyzing ? 'rgba(59, 130, 246, 0.5)' : (capturedImage ? '#10b981' : '#3b82f6'), 
+                            color: '#fff', 
+                            border: 'none', 
+                            fontWeight: '800', 
+                            cursor: isAnalyzing ? 'wait' : 'pointer', 
+                            fontSize: '1.1rem', 
+                            transition: '0.3s',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {isAnalyzing ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                                <span>🔍 AI ANALYZING FACE ({analysisProgress}%)</span>
+                            </div>
+                        ) : (
+                            <>REGISTER FACULTY {capturedImage ? '✓' : '👨‍🏫'}</>
+                        )}
+                        {isAnalyzing && (
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, height: '4px', background: '#fff', width: `${analysisProgress}%`, transition: 'width 0.3s' }}></div>
+                        )}
                     </button>
                 </form>
                     </>
