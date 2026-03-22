@@ -25,6 +25,8 @@ import HallOfFame from '../components/Common/HallOfFame';
 import BusTracker from '../components/Common/BusTracker';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Common/Toaster';
+import FaceAttendance from '../components/Student/FaceAttendance';
+import StudentAttendanceAudit from '../components/Common/StudentAttendanceAudit';
 import Skeleton from '../components/Common/Skeleton';
 import './ParentDashboard.css';
 
@@ -157,7 +159,7 @@ const ParentDashboard = () => {
           </div>
         );
       case 'Attendance':
-        return <div className="feature-section"><h3 className="section-title">Ward Attendance Record</h3><StudentAttendance /></div>;
+        return <div className="feature-section"><h3 className="section-title">Ward Attendance Record</h3><StudentAttendanceAudit initialStudentId="STU2026-001" viewMode="parent" /></div>;
       case 'Fees & Receipts':
         return (
           <div className="feature-section">

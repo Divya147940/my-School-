@@ -27,6 +27,7 @@ import StudentIdCard from '../components/Student/StudentIdCard';
 import HallOfFame from '../components/Common/HallOfFame';
 import BusTracker from '../components/Common/BusTracker';
 import FaceAttendance from '../components/Student/FaceAttendance';
+import StudentAttendanceAudit from '../components/Common/StudentAttendanceAudit';
 import CertificateGenerator from '../components/Common/CertificateGenerator';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Common/Toaster';
@@ -236,7 +237,7 @@ const StudentDashboard = () => {
       case 'Live Classes':
         return <div className="feature-section"><LiveClasses /></div>;
       case 'Attendance':
-        return <div className="feature-section"><StudentAttendance /></div>;
+        return <div className="feature-section"><StudentAttendanceAudit initialStudentId={user?.id || 'STU2026-001'} viewMode="student" /></div>;
       case 'Assignments':
         return <div className="feature-section"><StudentAssignments /></div>;
       case 'Results':

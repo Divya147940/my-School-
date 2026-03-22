@@ -19,6 +19,7 @@ import QuizSystem from '../components/QuizSystem';
 import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
 import QRAttendance from '../components/Common/QRAttendance';
 import ScheduleLiveClass from '../components/Faculty/ScheduleLiveClass';
+import FaceAttendance from '../components/Student/FaceAttendance';
 import CommandPalette from '../components/CommandPalette';
 import SchoolCalendar from '../components/Common/SchoolCalendar';
 import AttendanceOps from '../components/Faculty/AttendanceOps';
@@ -26,6 +27,7 @@ import StudentManagement from '../components/Faculty/StudentManagement';
 import FeeCollector from '../components/Common/FeeCollector';
 import LessonDiary from '../components/Common/LessonDiary';
 import TeacherResourceCenter from '../components/Faculty/TeacherResourceCenter';
+import StudentAttendanceAudit from '../components/Common/StudentAttendanceAudit';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Common/Toaster';
 import Skeleton from '../components/Common/Skeleton';
@@ -63,8 +65,9 @@ const FacultyDashboard = () => {
   const navItems = [
     { id: 'Overview', name: t('overview'), icon: '🏠' },
     { id: 'E-Attendance', name: language === 'hi' ? 'ई-उपस्थिति' : 'E-Attendance', icon: '📲' },
-    { id: 'Face Attendance', name: t('faceScan'), icon: '👤' },
+
     { id: 'Attendance', name: t('attendance'), icon: '📝' },
+    { id: 'Attendance Audit', name: language === 'hi' ? 'उपस्थिति ऑडिट' : 'Attendance Audit', icon: '📊' },
     { id: 'Live Classes', name: language === 'hi' ? 'लाइव क्लास' : 'Live Classes', icon: '🎥' },
     { id: 'Calendar', name: t('calendar'), icon: '📅' },
     { id: 'Examinations', name: language === 'hi' ? 'परीक्षा' : 'Examinations', icon: '✍️' },
@@ -215,15 +218,18 @@ const FacultyDashboard = () => {
         );
       case 'E-Attendance':
         return <div className="feature-section"><QRAttendance user={{ name: 'Professor Divyanshi', role: 'faculty' }} /></div>;
-      case 'Face Attendance':
-        return <div className="feature-section"><FaceAttendance mode="faculty" /></div>;
       case 'Attendance':
         return (
-          <div className="feature-section">
-            <h3 className="section-title">Digital Attendance Register</h3>
-            <Attendance />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px', alignItems: 'start' }}>
+            <FaceAttendance mode="faculty" />
+            <div className="feature-section" style={{ margin: 0 }}>
+              <h3 className="section-title">Manual Attendance Register</h3>
+              <Attendance />
+            </div>
           </div>
         );
+      case 'Attendance Audit':
+        return <div className="feature-section"><StudentAttendanceAudit /></div>;
       case 'Live Classes':
         return (
           <div className="feature-section">

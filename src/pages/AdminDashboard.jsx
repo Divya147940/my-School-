@@ -16,7 +16,9 @@ import ReviewManager from '../components/Admin/ReviewManager';
 import FacultyManagement from '../components/Admin/FacultyManagement';
 import InquiryTracker from '../components/Admin/InquiryTracker';
 import FeeCollector from '../components/Common/FeeCollector';
+import StudentFeeLedger from '../components/Admin/StudentFeeLedger';
 import LessonDiary from '../components/Common/LessonDiary';
+import StudentAttendanceAudit from '../components/Common/StudentAttendanceAudit';
 import CommandPalette from '../components/CommandPalette';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Common/Toaster';
@@ -78,9 +80,7 @@ const AdminDashboard = () => {
     { name: 'Fee management', icon: '💰' },
     { name: 'Leads & Inquiries', icon: '📥' },
     { name: 'Staff Payroll', icon: '💳' },
-    { name: 'ID Cards', icon: '🆔' },
     { name: 'Elite Controls', icon: '🌟' },
-    { name: 'Leave Approvals', icon: '✅' },
     { name: 'Student Records', icon: '📁' },
     { name: 'Notifications', icon: '📢' },
     { name: 'Bulk Send', icon: '🚀' },
@@ -90,6 +90,8 @@ const AdminDashboard = () => {
     { name: 'Attendance Ops', icon: '⏲️' },
     { name: 'Manage Faculty', icon: '👨‍🏫' },
     { name: 'Fee Ledger', icon: '📑' },
+    { name: 'Student Fee Audit', icon: '🔍' },
+    { name: 'Attendance Audit', icon: '📊' },
     { name: 'Activity Tracker', icon: '🕵️' },
     { name: 'Security Audit', icon: '🚨' },
     { name: 'System Backup', icon: '🛡️' },
@@ -167,38 +169,27 @@ const AdminDashboard = () => {
         return <div className="feature-box"><InquiryTracker /></div>;
       case 'Staff Payroll':
         return <div className="feature-box"><StaffPayroll /></div>;
-      case 'ID Cards':
-        return <div className="feature-box"><IDCardGenerator /></div>;
       case 'Elite Controls':
         return (
           <div className="feature-box">
             <h3 className="box-title">Super-Elite Module Management</h3>
-            <div className="elite-controls-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px' }}>
-                    <h4>📣 Announcement Ticker</h4>
-                    <input type="text" defaultValue="🚀 ADMISSIONS OPEN 2026-27..." style={{ width: '100%', padding: '10px', marginTop: '10px' }} />
-                    <button style={{ marginTop: '10px', padding: '8px 15px', background: '#3b82f6', border: 'none', color: '#fff', borderRadius: '5px' }}>Update Ticker</button>
-                </div>
-                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px' }}>
-                    <h4>🛒 Smart Store Inventory</h4>
-                    <p>Manage uniforms and books catalog.</p>
-                    <button style={{ padding: '8px 15px', background: '#10b981', border: 'none', color: '#fff', borderRadius: '5px' }}>Manage Catalog</button>
-                </div>
-                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px' }}>
-                    <h4>🏥 Health Records</h4>
-                    <p>Verified medical entries for students.</p>
-                    <button style={{ padding: '8px 15px', background: '#f59e0b', border: 'none', color: '#fff', borderRadius: '5px' }}>Verify Records</button>
-                </div>
-                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '15px' }}>
-                    <h4>📂 Document Vault</h4>
-                    <p>Upload official certificates and reports.</p>
-                    <button style={{ padding: '8px 15px', background: '#6366f1', border: 'none', color: '#fff', borderRadius: '5px' }}>Upload Docs</button>
+            <div className="elite-controls-list" style={{ maxWidth: '600px' }}>
+                <div className="control-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h4 style={{ fontSize: '1.2rem', marginBottom: '15px' }}>📣 Announcement Ticker</h4>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '15px', fontSize: '0.9rem' }}>Update the scrolling announcement text on the school website.</p>
+                    <input 
+                      type="text" 
+                      defaultValue="🚀 ADMISSIONS OPEN 2026-27..." 
+                      placeholder="Enter announcement text..."
+                      style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: '#fff', fontSize: '1rem', marginBottom: '15px' }} 
+                    />
+                    <button style={{ width: '100%', padding: '15px', background: 'var(--accent-blue)', border: 'none', color: '#fff', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}>
+                      Update Ticker
+                    </button>
                 </div>
             </div>
           </div>
         );
-      case 'Leave Approvals':
-        return <div className="feature-box"><h3 className="box-title">Pending Leave Requests</h3><LeaveApprovals /></div>;
       case 'Student Records':
         return <div className="feature-box"><RecordManagement /></div>;
       case 'Notifications':
@@ -217,6 +208,10 @@ const AdminDashboard = () => {
         return <div className="feature-box"><FacultyManagement /></div>;
       case 'Fee Ledger':
         return <div className="feature-box"><FeeCollector userRole="admin" userName="Principal Admin" /></div>;
+      case 'Student Fee Audit':
+        return <div className="feature-box"><StudentFeeLedger /></div>;
+      case 'Attendance Audit':
+        return <div className="feature-box"><StudentAttendanceAudit /></div>;
       case 'Activity Tracker':
         return <div className="feature-box"><LessonDiary mode="admin" /></div>;
       case 'System Backup':

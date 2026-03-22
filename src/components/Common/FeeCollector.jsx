@@ -107,11 +107,17 @@ const FeeCollector = ({ userRole, userName }) => {
                     <div style={{ marginTop: '30px', padding: '25px', borderRadius: '24px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b98150' }}>
                         <div style={{ color: '#10b981', fontWeight: '800', marginBottom: '15px', textAlign: 'center' }}>RECORDED SUCCESSFULLY!</div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            {recentTxn.mode !== 'Cash' && (
+                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '15px' }}>
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{t('txnId')}</div>
+                                    <div style={{ fontWeight: '900', color: 'var(--accent-blue)' }}>#{recentTxn.id}</div>
+                                </div>
+                            )}
                             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '15px' }}>
-                                <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{t('txnId')}</div>
-                                <div style={{ fontWeight: '900', color: 'var(--accent-blue)' }}>#{recentTxn.id}</div>
+                                <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>STUDENT ID</div>
+                                <div style={{ fontWeight: '900', color: '#fff' }}>{recentTxn.studentId}</div>
                             </div>
-                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '15px' }}>
+                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '15px', gridColumn: recentTxn.mode === 'Cash' ? 'span 2' : 'span 1' }}>
                                 <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Mode</div>
                                 <div style={{ fontWeight: '900', color: '#10b981' }}>{recentTxn.mode}</div>
                             </div>
@@ -125,9 +131,13 @@ const FeeCollector = ({ userRole, userName }) => {
                 <div style={{ overflowY: 'auto', maxHeight: '500px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {ledger.slice().reverse().map(txn => (
                         <div key={txn.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', borderRadius: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div>
-                                <div style={{ fontWeight: '700', fontSize: '1rem' }}>{txn.studentName}</div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{txn.date} • {t('txnId')} #{txn.id}</div>
+                             <div>
+                                <div style={{ fontWeight: '700', fontSize: '1rem' }}>{txn.studentName} <span style={{ fontSize: '0.75rem', opacity: 0.6, fontWeight: 400 }}>({txn.studentId})</span></div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    {txn.date} 
+                                    {txn.mode !== 'Cash' && ` • ${t('txnId')} #${txn.id}`} 
+                                    <span style={{ opacity: 0.6 }}>• By: {txn.collectedBy}</span>
+                                </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
                                 <div style={{ fontWeight: '900', color: 'var(--accent-blue)', fontSize: '1.1rem' }}>₹{txn.amount}</div>

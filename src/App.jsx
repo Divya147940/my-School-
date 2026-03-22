@@ -30,6 +30,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import ParentDashboard from './pages/ParentDashboard';
 import Careers from './pages/Careers';
 import ChairmanMessagePage from './pages/ChairmanMessagePage';
+import EmergencyPortal from './pages/EmergencyPortal';
 import VirtualTour from './pages/VirtualTour';
 import SchoolMapPage from './pages/SchoolMapPage';
 import Transport from './pages/Transport';
@@ -89,6 +90,13 @@ function App() {
                   <ProtectedRoute allowedRoles={['Admin']}>
                     <ErrorBoundary>
                       <AdminDashboard />
+                    </ErrorBoundary>
+                  </ProtectedRoute>
+                } />
+                <Route path="/emergency-portal" element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Faculty']}>
+                    <ErrorBoundary>
+                      <EmergencyPortal />
                     </ErrorBoundary>
                   </ProtectedRoute>
                 } />

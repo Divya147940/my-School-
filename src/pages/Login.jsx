@@ -39,6 +39,14 @@ const portals = [
     description: 'Full system control and management tools.',
     path: '/admin-dashboard',
     color: 'var(--accent-purple)'
+  },
+  {
+    type: 'Emergency',
+    icon: '🚑',
+    title: 'Emergency Portal',
+    description: 'Access student bio data and emergency contacts.',
+    path: '/emergency-portal',
+    color: '#ef4444'
   }
 ];
 
@@ -244,8 +252,8 @@ const Login = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: portal.type === 'Admin' ? 'ADM-001' : 'TEA-001',
-          role: portal.type
+          id: (portal.type === 'Admin' || portal.type === 'Emergency') ? 'ADM-001' : 'TEA-001',
+          role: portal.type === 'Emergency' ? 'Admin' : portal.type
         })
       });
 
@@ -259,7 +267,7 @@ const Login = () => {
     } catch (err) {
       console.error("Auth Error:", err);
       // Fallback for demo if server is down
-      if (portal.type === 'Admin') {
+      if (portal.type === 'Admin' || portal.type === 'Emergency') {
           login({ id: 'ADM-001', name: 'Principal Admin', role: 'Admin' }, "MOCK_JWT");
           navigate(portal.path);
       }

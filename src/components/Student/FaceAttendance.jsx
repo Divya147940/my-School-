@@ -78,6 +78,7 @@ const FaceAttendance = ({ mode }) => {
     const startScan = async () => {
         setScanStatus('matching');
         setProgress(0);
+        setMatchConfidence(0);
         await startCamera();
         
         let matchInterval = setInterval(() => {
@@ -87,9 +88,9 @@ const FaceAttendance = ({ mode }) => {
                     performVerification();
                     return 100;
                 }
-                return prev + 10;
+                return prev + 2;
             });
-        }, 50);
+        }, 40); // 2 seconds total for alignment
     };
 
     const startFaceMatching = () => {
@@ -100,7 +101,7 @@ const FaceAttendance = ({ mode }) => {
                     performVerification();
                     return 100;
                 }
-                return prev + 10;
+                return prev + 2;
             });
         }, 40);
     };
@@ -117,9 +118,9 @@ const FaceAttendance = ({ mode }) => {
                     setIsEnrolling(false);
                     return 100;
                 }
-                return prev + 5;
+                return prev + 2;
             });
-        }, 100);
+        }, 40); // 2 seconds for enrollment alignment too
     };
 
     const performVerification = async (isFallback = false) => {
@@ -143,8 +144,9 @@ const FaceAttendance = ({ mode }) => {
                 setVerifiedStudent(result.student);
                 setMatchConfidence(result.confidence);
                 
-                if (result.confidence >= 0.7) {
+                if (result.confidence >= 0.5) {
                     const markResult = mockApi.markAttendance(result.student.name, 'Present');
+                    window.dispatchEvent(new CustomEvent('attendanceUpdate', { detail: { studentName: result.student.name, status: 'Present' } }));
                     
                     // Add to Recent Scans (Proactive Logic)
                     const scanEntry = {
@@ -442,7 +444,7 @@ const FaceAttendance = ({ mode }) => {
                     {scanStatus === 'failed' && (
                         <div>
                             <p style={{ color: '#ef4444', fontWeight: '800', fontSize: '1.2rem', marginBottom: '5px' }}>Low Confidence / No Match</p>
-                            {matchConfidence > 0 && <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>Confidence: {(matchConfidence * 100).toFixed(1)}% (Min 70% req.)</p>}
+                            {matchConfidence > 0 && <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>Confidence: {(matchConfidence * 100).toFixed(1)}% (Min 50% req.)</p>}
                             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
                                 <button onClick={() => { setScanStatus('idle'); setCapturedImage(null); }} style={{ padding: '12px 25px', borderRadius: '12px', background: 'var(--accent-blue)', color: '#fff', border: 'none', cursor: 'pointer' }}>Try Again</button>
                                 {(user?.role === 'Faculty' || user?.role === 'Admin') && (

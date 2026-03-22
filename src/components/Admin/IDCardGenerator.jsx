@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import IDCard from '../Common/IDCard';
 import './IDCardGenerator.css';
 

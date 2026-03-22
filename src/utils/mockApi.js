@@ -103,8 +103,8 @@ const defaultData = {
   },
   attendanceHub: [
     { id: 1, studentName: 'Aman Gupta', class: '10A', status: 'Pending', time: '-' },
-    { id: 2, studentName: 'Priya Singh', class: '9B', status: 'Present', time: '08:15 AM' },
-    { id: 3, studentName: 'Rahul Verma', class: '10A', status: 'Absent', time: '-' },
+    { id: 2, studentName: 'Priya Singh', class: '9B', status: 'Pending', time: '-' },
+    { id: 3, studentName: 'Rahul Verma', class: '10A', status: 'Pending', time: '-' },
     { id: 4, studentName: 'Sneha Kapoor', class: '10A', status: 'Pending', time: '-' },
   ],
   isOnline: true,
@@ -119,8 +119,8 @@ const defaultData = {
     { id: 'STU2026-001', name: 'Aman Gupta', class: '10A', rollNo: 1, role: 'student', parentName: 'Deepak Gupta', contact: '9988776655', isFaceEnrolled: false },
   ],
   feeLedger: [
-    { id: 'TXN1001', studentId: 'STU2026-001', studentName: 'Aman Gupta', amount: 5000, mode: 'Online', status: 'Success', date: '2026-03-15', collectedBy: 'System' },
-    { id: 'TXN1002', studentId: 'STU2026-001', studentName: 'Aman Gupta', amount: 2000, mode: 'Cash', status: 'Success', date: '2026-03-16', collectedBy: 'Professor Divyanshi' },
+    { id: 'TXN1001', studentId: 'STU2026-001', studentName: 'Aman Gupta', amount: 5000, mode: 'Online', status: 'Success', date: '2026-03-15 10:30 AM', collectedBy: 'System' },
+    { id: 'TXN1002', studentId: 'STU2026-001', studentName: 'Aman Gupta', amount: 2000, mode: 'Cash', status: 'Success', date: '2026-03-16 02:15 PM', collectedBy: 'Professor Divyanshi' },
   ],
   lessonLogs: [
     { id: 'LOG101', date: '2026-03-18', teacherId: 'TEA2026-02', teacherName: 'Professor Divyanshi', subject: 'Science', topic: 'Photosynthesis', summary: 'Explained the light-dependent and light-independent reactions in plants.' }
@@ -193,16 +193,10 @@ const defaultData = {
       bloodGroup: 'B+',
       height: '142 cm',
       weight: '38 kg',
-      vaccinations: [
-        { name: 'BCG', date: 'Done', type: 'Mandatory' },
-        { name: 'Hepatitis B', date: 'Done', type: 'Mandatory' },
-        { name: 'Covid-19', date: 'March 2022', type: 'Special' }
-      ],
-      allergies: ['Dust', 'Peanuts'],
-      emergencyContact: {
-        name: 'Mr. Gupta (Father)',
-        phone: '+91 98765 43210'
-      }
+      allergies: 'Dust, Peanuts',
+      emergencyContactName: 'Mr. Gupta (Father)',
+      emergencyContactPhone: '+91 98765 43210',
+      medicalHistory: 'Asthma'
     }
   },
   documents: {
@@ -232,6 +226,12 @@ const getDB = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return defaultData;
     const data = JSON.parse(saved);
+    
+    // Force Clear old dummy attendance if it's still dragging along from old versions
+    if (data.attendanceHub && data.attendanceHub.some(a => a.status === 'Present' && a.time === '08:15 AM')) {
+      data.attendanceHub = defaultData.attendanceHub;
+    }
+
     // Merge defaultData with saved data to ensure transitions are smooth
     return { ...defaultData, ...data };
   } catch (error) {
@@ -268,6 +268,17 @@ export const mockApi = {
     }
 
     // Online mode: Regular update
+    const today = new Date().toISOString().split('T')[0];
+    if (!data.attendance) data.attendance = {};
+    if (!data.attendance[studentName]) data.attendance[studentName] = [];
+    
+    const existingIndex = data.attendance[studentName].findIndex(a => a.date === today);
+    if (existingIndex !== -1) {
+      data.attendance[studentName][existingIndex] = { date: today, status, time: now };
+    } else {
+      data.attendance[studentName].push({ date: today, status, time: now });
+    }
+
     if (!data.attendanceHub) data.attendanceHub = [];
     data.attendanceHub = data.attendanceHub.map(record => 
       record.studentName === studentName ? { ...record, status, time: status === 'Present' ? now : '-' } : record
@@ -405,6 +416,114 @@ export const mockApi = {
     }
     saveDB(db);
   },
+  
+  addFine: (studentId, amount, reason) => {
+    const db = getDB();
+    if (!db.fines) db.fines = [];
+    const newFine = {
+        id: `FINE-${Date.now()}`,
+        studentId,
+        amount: parseInt(amount),
+        reason,
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    db.fines.push(newFine);
+    
+    // Also increase the student's total fee in the fees table
+    const student = db.studentRegistry.find(s => s.id === studentId);
+    if (student) {
+        const feeRecord = db.fees.find(f => f.student === student.name);
+        if (feeRecord) {
+            feeRecord.total += parseInt(amount);
+            feeRecord.status = feeRecord.paid >= feeRecord.total ? 'Paid' : 'Partial';
+        }
+    }
+    
+    saveDB(db);
+    return newFine;
+  },
+
+  getStudentLedger: (studentId) => {
+    const db = getDB();
+    const student = db.studentRegistry.find(s => s.id === studentId);
+    if (!student) return null;
+    
+    const transactions = (db.feeLedger || []).filter(f => f.studentId === studentId);
+    const fines = (db.fines || []).filter(f => f.studentId === studentId);
+    const feeSummary = (db.fees || []).find(f => f.student === student.name) || { total: 0, paid: 0 };
+    
+    return {
+        student,
+        summary: feeSummary,
+        transactions,
+        fines
+    };
+  },
+
+  getStudentAttendanceAudit: (studentId) => {
+    const db = getDB();
+    const student = db.studentRegistry.find(s => s.id.toUpperCase() === studentId.toUpperCase());
+    if (!student) return null;
+
+    const history = db.attendance[student.name] || [];
+    const totalDays = history.length;
+    const presentDays = history.filter(a => a.status === 'Present').length;
+    const absentDays = history.filter(a => a.status === 'Absent').length;
+    const rate = totalDays > 0 ? ((presentDays / totalDays) * 100).toFixed(1) : 0;
+
+    // Group by Month
+    const monthlyStats = history.reduce((acc, entry) => {
+        const date = new Date(entry.date);
+        const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+        if (!acc[month]) acc[month] = { total: 0, present: 0 };
+        acc[month].total++;
+        if (entry.status === 'Present') acc[month].present++;
+        return acc;
+    }, {});
+
+    const monthlySummary = Object.keys(monthlyStats).map(month => ({
+        month,
+        percentage: ((monthlyStats[month].present / monthlyStats[month].total) * 100).toFixed(1),
+        present: monthlyStats[month].present,
+        total: monthlyStats[month].total
+    }));
+
+    // Group by Week (Simple 7-day windows or logic depends on implementation)
+    // For now, let's group by "Week of [Date]"
+    const weeklyStats = history.reduce((acc, entry) => {
+        const date = new Date(entry.date);
+        const day = date.getDay();
+        const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Get Monday
+        const monday = new Date(date.setDate(diff)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        const weekKey = `Week of ${monday}`;
+        
+        if (!acc[weekKey]) acc[weekKey] = { total: 0, present: 0 };
+        acc[weekKey].total++;
+        if (entry.status === 'Present') acc[weekKey].present++;
+        return acc;
+    }, {});
+
+    const weeklySummary = Object.keys(weeklyStats).map(week => ({
+        week,
+        percentage: ((weeklyStats[week].present / weeklyStats[week].total) * 100).toFixed(1),
+        present: weeklyStats[week].present,
+        total: weeklyStats[week].total
+    }));
+
+    return {
+        student,
+        stats: {
+            totalDays,
+            presentDays,
+            absentDays,
+            rate
+        },
+        history,
+        monthlySummary,
+        weeklySummary
+    };
+  },
 
   // Generic Initial Data
   getInitialData: () => getDB(),
@@ -477,6 +596,54 @@ export const mockApi = {
     const db = getDB();
     db.reportCards.unshift({ id: Date.now(), date: new Date().toISOString().split('T')[0], ...card });
     saveDB(db);
+  },
+
+  // Health / Bio Data
+  getHealthRecord: (studentId) => {
+    const db = getDB();
+    return db.healthRecords?.[studentId] || {
+      bloodGroup: '',
+      height: '',
+      weight: '',
+      allergies: '',
+      emergencyContactName: '',
+      emergencyContactPhone: '',
+      medicalHistory: ''
+    };
+  },
+  updateHealthRecord: (studentId, data) => {
+    const db = getDB();
+    if (!db.healthRecords) db.healthRecords = {};
+    db.healthRecords[studentId] = { ...(db.healthRecords[studentId] || {}), ...data };
+    saveDB(db);
+    return db.healthRecords[studentId];
+  },
+
+  // Emergency / Daily Logs
+  getEarlyDepartures: () => {
+    const db = getDB();
+    return db.earlyDepartures || [];
+  },
+  logEarlyDeparture: (record) => {
+    const db = getDB();
+    if (!db.earlyDepartures) db.earlyDepartures = [];
+    const newRecord = { id: Date.now(), ...record };
+    db.earlyDepartures.unshift(newRecord);
+    saveDB(db);
+    return newRecord;
+  },
+  
+  getDailyLogs: () => {
+    const db = getDB();
+    return db.dailyLogs || [];
+  },
+  logDailyEvent: (record) => {
+    const db = getDB();
+    if (!db.dailyLogs) db.dailyLogs = [];
+    const newRecord = { id: Date.now(), ...record };
+    db.dailyLogs.unshift(newRecord);
+    saveDB(db);
+    return newRecord;
   },
 
   // QR Attendance
@@ -706,6 +873,19 @@ export const mockApi = {
   markAttendanceHub: (studentName, status) => {
     const data = getDB();
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Update student history for Audit
+    if (!data.attendance) data.attendance = {};
+    if (!data.attendance[studentName]) data.attendance[studentName] = [];
+    
+    const existingIndex = data.attendance[studentName].findIndex(a => a.date === today);
+    if (existingIndex !== -1) {
+      data.attendance[studentName][existingIndex] = { date: today, status, time: now };
+    } else {
+      data.attendance[studentName].push({ date: today, status, time: now });
+    }
+
     data.attendanceHub = data.attendanceHub.map(record => 
       record.studentName === studentName ? { ...record, status, time: status === 'Present' ? now : '-' } : record
     );
@@ -1062,7 +1242,7 @@ export const mockApi = {
     
     const liveDescriptor = new Float32Array(liveArray);
     let bestMatch = null;
-    let minDistance = 0.40; // Extremely strict AI matching
+    let minDistance = 0.50; // More lenient matching
 
     for (const student of enrolledStudents) {
         if (student.faceDescriptor) {
@@ -1104,7 +1284,7 @@ export const mockApi = {
     
     const liveDescriptor = new Float32Array(liveArray);
     let bestMatch = null;
-    let minDistance = 0.40;
+    let minDistance = 0.50;
 
     for (const faculty of enrolledFaculty) {
         if (faculty.faceDescriptor) {
@@ -1160,11 +1340,18 @@ export const mockApi = {
       amount: parseInt(amount),
       mode,
       status: 'Success',
-      date: new Date().toISOString().split('T')[0],
+      date: `${new Date().toISOString().split('T')[0]} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
       collectedBy: collectorName || collectorRole
     };
     data.feeLedger.push(newEntry);
     
+    // Update Fees summary table
+    const feeRecord = data.fees.find(f => f.student === studentName);
+    if (feeRecord) {
+        feeRecord.paid += parseInt(amount);
+        feeRecord.status = feeRecord.paid >= feeRecord.total ? 'Paid' : 'Partial';
+    }
+
     // Update parentFees if it exists for this student
     if (data.parentFees) {
       const feeIndex = data.parentFees.findIndex(f => f.status === 'Pending' && f.studentName === studentName);

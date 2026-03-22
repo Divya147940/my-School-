@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { mockApi } from '../../utils/mockApi';
+import { useToast } from '../Common/Toaster';
 
 const Attendance = () => {
+  const { addToast } = useToast();
   const [selectedClass, setSelectedClass] = useState('10A');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendanceData, setAttendanceData] = useState([]);
@@ -20,13 +22,27 @@ const Attendance = () => {
           id: s.id,
           name: s.name,
           roll: s.rollNo,
-          status: attRecord ? attRecord.status : null
+          status: attRecord && attRecord.status !== 'Pending' ? attRecord.status : null
         };
       });
     
     setAttendanceData(students);
     setLoading(false);
   }, [selectedClass]);
+
+  React.useEffect(() => {
+    const handleUpdate = (e) => {
+      const { studentName, status } = e.detail;
+      setAttendanceData(prev => prev.map(student => {
+        if (student.name === studentName) {
+          return { ...student, status };
+        }
+        return student;
+      }));
+    };
+    window.addEventListener('attendanceUpdate', handleUpdate);
+    return () => window.removeEventListener('attendanceUpdate', handleUpdate);
+  }, []);
 
   const setStatus = (id, newStatus) => {
     setAttendanceData(prev => prev.map(student => {
@@ -41,7 +57,13 @@ const Attendance = () => {
     attendanceData.forEach(student => {
       mockApi.markAttendanceHub(student.name, student.status);
     });
-    alert(`Attendance for ${selectedClass} on ${date} saved successfully!`);
+    addToast(`Attendance for ${selectedClass} saved.`, "success");
+  };
+
+  const handleResetAttendance = () => {
+    if (window.confirm("Clear today's register for this class?")) {
+      setAttendanceData(prev => prev.map(s => ({ ...s, status: null })));
+    }
   };
 
   const statusColors = {
@@ -70,19 +92,27 @@ const Attendance = () => {
             style={{ padding: '10px 15px', borderRadius: '10px', background: '#1e293b', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
           />
         </div>
-        <button 
-          onClick={handleSaveAttendance}
-          style={{ padding: '10px 25px', borderRadius: '10px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
-        >
-          Save Attendance
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={handleResetAttendance}
+            style={{ padding: '10px 20px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Reset
+          </button>
+          <button 
+            onClick={handleSaveAttendance}
+            style={{ padding: '10px 25px', borderRadius: '10px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Save Attendance
+          </button>
+        </div>
       </div>
 
       <div style={{ background: 'rgba(30, 41, 59, 0.5)', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
-              <th style={{ padding: '15px 20px' }}>Roll No</th>
+              <th style={{ padding: '15px 20px' }}>Student ID</th>
               <th style={{ padding: '15px 20px' }}>Student Name</th>
               <th style={{ padding: '15px 20px' }}>Status</th>
               <th style={{ padding: '15px 20px' }}>Action</th>
@@ -96,7 +126,7 @@ const Attendance = () => {
             ) : (
               attendanceData.map((student) => (
                 <tr key={student.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '15px 20px' }}>{student.roll}</td>
+                  <td style={{ padding: '15px 20px' }}>{student.id}</td>
                   <td style={{ padding: '15px 20px' }}>{student.name}</td>
                   <td style={{ padding: '15px 20px' }}>
                     {student.status && (
