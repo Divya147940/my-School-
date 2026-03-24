@@ -29,7 +29,7 @@
 }
 
 .timeline-container {
-    max-width: 1000px;
+    width: 100%;
     margin: 0 auto;
     position: relative;
     padding: 40px 0;
@@ -47,24 +47,33 @@
 
 .timeline-item {
     display: flex;
-    justify-content: flex-end;
-    padding-left: 30px;
+    align-items: center;
     position: relative;
-    margin-bottom: 100px;
-    width: 50%;
+    margin-bottom: 120px;
+    width: 100%;
 }
 
 .timeline-item.left {
-    align-self: flex-start;
-    justify-content: flex-end;
-    left: 0;
+    flex-direction: row;
 }
 
 .timeline-item.right {
-    align-self: flex-end;
-    justify-content: flex-start;
+    flex-direction: row-reverse;
+}
+
+.timeline-card-side, .timeline-text-side {
+    flex: 1;
+    padding: 0 40px;
+}
+
+.timeline-marker {
+    position: absolute;
     left: 50%;
-    padding-left: 50px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 5;
 }
 
 .timeline-card {
@@ -121,20 +130,39 @@
 }
 
 .timeline-year {
-    position: absolute;
-    top: 0;
-    font-size: 5rem;
-    font-weight: 950;
-    color: rgba(255, 255, 255, 0.03);
-    z-index: -1;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    background: #3b82f6;
+    padding: 4px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.left .timeline-year { right: 20px; }
-.right .timeline-year { left: 40px; }
+.hindi-content {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.hindi-title {
+    color: var(--accent-blue);
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    font-weight: 800;
+}
+
+.hindi-desc {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
 
 .timeline-dot {
-    position: absolute;
-    top: 30px;
     width: 16px;
     height: 16px;
     background: #3b82f6;
@@ -143,12 +171,9 @@
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
 }
 
-.left .timeline-dot { right: -8px; }
-.right .timeline-dot { left: -8px; }
-
-@media (max-width: 768px) {
-    .timeline-line { left: 20px; }
-    .timeline-item { width: 100%; left: 0 !important; padding-left: 50px !important; }
-    .timeline-dot { left: 12px !important; }
-    .timeline-year { font-size: 3rem; top: -30px; }
+@media (max-width: 900px) {
+    .timeline-item, .timeline-item.right { flex-direction: column; text-align: center; }
+    .timeline-marker { position: relative; left: 0; transform: none; margin-bottom: 30px; }
+    .timeline-line { left: 20px; transform: none; }
+    .timeline-card-side, .timeline-text-side { padding: 20px; width: 100%; }
 }

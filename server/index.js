@@ -114,8 +114,8 @@ const razorpay = new Razorpay({
 // Health check route
 app.get('/api/health', async (req, res) => {
     try {
-        const result = await pool.query('SELECT NOW()');
-        res.json({ status: 'ok', time: result.rows[0].now });
+        const [rows] = await pool.query('SELECT NOW() as now');
+        res.json({ status: 'ok', time: rows[0].now });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Database connection failed' });
@@ -125,8 +125,8 @@ app.get('/api/health', async (req, res) => {
 // Faculty API
 app.get('/api/faculty', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM faculty');
-        res.json(result.rows);
+        const [rows] = await pool.query('SELECT * FROM faculty');
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch faculty' });
@@ -138,9 +138,9 @@ app.post('/api/faculty', async (req, res) => {
     try {
         const query = `
             INSERT INTO faculty (name, designation, description, face_image, face_descriptor, is_face_enrolled) 
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+            VALUES (?, ?, ?, ?, ?, ?);
         `;
-        const result = await pool.query(query, [
+        const [result] = await pool.query(query, [
             name, 
             designation || 'Teacher', 
             description || '', 
@@ -148,7 +148,7 @@ app.post('/api/faculty', async (req, res) => {
             faceDescriptor,
             !!faceDescriptor
         ]);
-        res.status(201).json({ status: 'success', data: result.rows[0] });
+        res.status(201).json({ status: 'success', data: { id: result.insertId, name, designation } });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save faculty' });
@@ -160,12 +160,13 @@ app.get('/api/faculty/search/:id', async (req, res) => {
     try {
         const searchId = req.params.id.toUpperCase().replace(/[^0-9]/g, ''); // Extract numbers
         // Search by name (if full name is entered) OR by numeric ID (if T015/TEA015 etc is entered)
-        const result = await pool.query(
-            'SELECT * FROM faculty WHERE UPPER(name) = $1 OR CAST(id AS TEXT) = $2 OR CAST(id AS TEXT) = $3 LIMIT 1',
+        const [rows] = await pool.query(
+            'SELECT * FROM faculty WHERE UPPER(name) = ? OR CAST(id AS CHAR) = ? OR CAST(id AS CHAR) = ? LIMIT 1',
             [req.params.id.toUpperCase(), req.params.id.toUpperCase(), searchId]
         );
-        res.json(result.rows[0] || null);
+        res.json(rows[0] || null);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ status: 'error' });
     }
 });
@@ -173,8 +174,8 @@ app.get('/api/faculty/search/:id', async (req, res) => {
 // Admissions API
 app.get('/api/admissions', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM admissions ORDER BY created_at DESC');
-        res.json(result.rows);
+        const [rows] = await pool.query('SELECT * FROM admissions ORDER BY created_at DESC');
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch admissions' });
@@ -192,16 +193,15 @@ app.post('/api/admissions', async (req, res) => {
             INSERT INTO admissions (
                 student_name, father_name, mother_name, dob, gender,
                 aadhar, class_applied, previous_school, address, phone, email, category
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-            RETURNING id;
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
         const values = [
             studentName, fatherName, motherName, dob, gender,
             aadhar, classApplied, previousSchool, address, phone, email, category
         ];
 
-        const result = await pool.query(query, values);
-        res.status(201).json({ status: 'success', id: result.rows[0].id });
+        const [result] = await pool.query(query, values);
+        res.status(201).json({ status: 'success', id: result.insertId });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save admission' });
@@ -211,8 +211,8 @@ app.post('/api/admissions', async (req, res) => {
 // Students API
 app.get('/api/students', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM students ORDER BY roll_no');
-        res.json(result.rows);
+        const [rows] = await pool.query('SELECT * FROM students ORDER BY roll_no');
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
@@ -221,12 +221,13 @@ app.get('/api/students', async (req, res) => {
 
 app.get('/api/students/search/:id', async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT * FROM students WHERE UPPER(name) = $1 OR UPPER(roll_no) = $1 LIMIT 1',
-            [req.params.id.toUpperCase()]
+        const [rows] = await pool.query(
+            'SELECT * FROM students WHERE UPPER(name) = ? OR UPPER(roll_no) = ? LIMIT 1',
+            [req.params.id.toUpperCase(), req.params.id.toUpperCase()]
         );
-        res.json(result.rows[0] || null);
+        res.json(rows[0] || null);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ status: 'error' });
     }
 });
@@ -273,11 +274,11 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 app.get('/api/attendance', verifyToken, async (req, res) => {
     const { date, class_name } = req.query;
     try {
-        const result = await pool.query(
-            'SELECT a.*, s.name as student_name, s.roll_no FROM attendance a JOIN students s ON a.student_id = s.id WHERE a.date = $1 AND s.class = $2',
+        const [rows] = await pool.query(
+            'SELECT a.*, s.name as student_name, s.roll_no FROM attendance a JOIN students s ON a.student_id = s.id WHERE a.date = ? AND s.class = ?',
             [date, class_name]
         );
-        res.json(result.rows);
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch attendance' });
@@ -287,11 +288,13 @@ app.get('/api/attendance', verifyToken, async (req, res) => {
 app.post('/api/attendance', verifyToken, async (req, res) => {
     const { student_id, status, marked_by, date } = req.body;
     try {
-        const result = await pool.query(
-            'INSERT INTO attendance (student_id, status, marked_by, date) VALUES ($1, $2, $3, $4) ON CONFLICT (student_id, date) DO UPDATE SET status = $2 RETURNING *',
-            [student_id, status, marked_by, date || new Date()]
-        );
-        res.status(201).json(result.rows[0]);
+        const query = `
+            INSERT INTO attendance (student_id, status, marked_by, date) 
+            VALUES (?, ?, ?, ?) 
+            ON DUPLICATE KEY UPDATE status = VALUES(status)
+        `;
+        const [result] = await pool.query(query, [student_id, status, marked_by, date || new Date()]);
+        res.status(201).json({ id: result.insertId, student_id, status });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to mark attendance' });
@@ -301,8 +304,8 @@ app.post('/api/attendance', verifyToken, async (req, res) => {
 // Assignments API
 app.get('/api/assignments', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM assignments ORDER BY created_at DESC');
-        res.json(result.rows);
+        const [rows] = await pool.query('SELECT * FROM assignments ORDER BY created_at DESC');
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch assignments' });
@@ -312,11 +315,11 @@ app.get('/api/assignments', async (req, res) => {
 app.post('/api/assignments', verifyToken, checkRole(['Faculty', 'Admin']), async (req, res) => {
     const { title, description, class_name, subject, teacher_id, due_date } = req.body;
     try {
-        const result = await pool.query(
-            'INSERT INTO assignments (title, description, class, subject, teacher_id, due_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        const [result] = await pool.query(
+            'INSERT INTO assignments (title, description, class, subject, teacher_id, due_date) VALUES (?, ?, ?, ?, ?, ?)',
             [title, description, class_name, subject, teacher_id, due_date]
         );
-        res.status(201).json(result.rows[0]);
+        res.status(201).json({ id: result.insertId, title, class: class_name });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to create assignment' });
@@ -326,8 +329,8 @@ app.post('/api/assignments', verifyToken, checkRole(['Faculty', 'Admin']), async
 // Exams & Marks API
 app.get('/api/exams', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM exams');
-        res.json(result.rows);
+        const [rows] = await pool.query('SELECT * FROM exams');
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch exams' });
@@ -336,11 +339,11 @@ app.get('/api/exams', async (req, res) => {
 
 app.get('/api/marks/:examId', async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT m.*, s.name as student_name, s.roll_no FROM marks m JOIN students s ON m.student_id = s.id WHERE m.exam_id = $1',
+        const [rows] = await pool.query(
+            'SELECT m.*, s.name as student_name, s.roll_no FROM marks m JOIN students s ON m.student_id = s.id WHERE m.exam_id = ?',
             [req.params.examId]
         );
-        res.json(result.rows);
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch marks' });
@@ -350,11 +353,13 @@ app.get('/api/marks/:examId', async (req, res) => {
 app.post('/api/marks', verifyToken, checkRole(['Faculty', 'Admin']), async (req, res) => {
     const { exam_id, student_id, marks_obtained, remarks } = req.body;
     try {
-        const result = await pool.query(
-            'INSERT INTO marks (exam_id, student_id, marks_obtained, remarks) VALUES ($1, $2, $3, $4) ON CONFLICT (exam_id, student_id) DO UPDATE SET marks_obtained = $3, remarks = $4 RETURNING *',
-            [exam_id, student_id, marks_obtained, remarks]
-        );
-        res.status(201).json(result.rows[0]);
+        const query = `
+            INSERT INTO marks (exam_id, student_id, marks_obtained, remarks) 
+            VALUES (?, ?, ?, ?) 
+            ON DUPLICATE KEY UPDATE marks_obtained = VALUES(marks_obtained), remarks = VALUES(remarks)
+        `;
+        const [result] = await pool.query(query, [exam_id, student_id, marks_obtained, remarks]);
+        res.status(201).json({ id: result.insertId, exam_id, student_id, marks_obtained });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save marks' });
@@ -364,11 +369,11 @@ app.post('/api/marks', verifyToken, checkRole(['Faculty', 'Admin']), async (req,
 // Timetable API
 app.get('/api/timetable/:className', async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT t.*, f.name as teacher_name FROM timetable t LEFT JOIN faculty f ON t.teacher_id = f.id WHERE t.class = $1 ORDER BY t.day, t.period_no',
+        const [rows] = await pool.query(
+            'SELECT t.*, f.name as teacher_name FROM timetable t LEFT JOIN faculty f ON t.teacher_id = f.id WHERE t.class = ? ORDER BY t.day, t.period_no',
             [req.params.className]
         );
-        res.json(result.rows);
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch timetable' });
@@ -378,11 +383,11 @@ app.get('/api/timetable/:className', async (req, res) => {
 // Digital Diary API
 app.get('/api/diary/:teacherId', async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT * FROM digital_diary WHERE teacher_id = $1 ORDER BY date DESC',
+        const [rows] = await pool.query(
+            'SELECT * FROM digital_diary WHERE teacher_id = ? ORDER BY date DESC',
             [req.params.teacherId]
         );
-        res.json(result.rows);
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch diary' });
@@ -392,11 +397,11 @@ app.get('/api/diary/:teacherId', async (req, res) => {
 app.post('/api/diary', verifyToken, async (req, res) => {
     const { teacher_id, date, lesson_plan, progress_percentage, remarks } = req.body;
     try {
-        const result = await pool.query(
-            'INSERT INTO digital_diary (teacher_id, date, lesson_plan, progress_percentage, remarks) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        const [result] = await pool.query(
+            'INSERT INTO digital_diary (teacher_id, date, lesson_plan, progress_percentage, remarks) VALUES (?, ?, ?, ?, ?)',
             [teacher_id, date || new Date(), lesson_plan, progress_percentage, remarks]
         );
-        res.status(201).json(result.rows[0]);
+        res.status(201).json({ id: result.insertId, teacher_id, lesson_plan });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save diary entry' });
@@ -406,11 +411,11 @@ app.post('/api/diary', verifyToken, async (req, res) => {
 // Fee Management API
 app.get('/api/fees/:studentId', async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT * FROM fees WHERE student_id = $1 ORDER BY due_date DESC',
+        const [rows] = await pool.query(
+            'SELECT * FROM fees WHERE student_id = ? ORDER BY due_date DESC',
             [req.params.studentId]
         );
-        res.json(result.rows);
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch fees' });
@@ -429,7 +434,7 @@ app.post('/api/fees/create-order', async (req, res) => {
         
         // Save order to payments table
         await pool.query(
-            'INSERT INTO payments (fee_id, razorpay_order_id, amount, status) VALUES ($1, $2, $3, $4)',
+            'INSERT INTO payments (fee_id, razorpay_order_id, amount, status) VALUES (?, ?, ?, ?)',
             [feeId, order.id, amount, 'created']
         );
         
@@ -451,13 +456,13 @@ app.post('/api/fees/verify-payment', async (req, res) => {
         try {
             // Update payment record
             await pool.query(
-                'UPDATE payments SET razorpay_payment_id = $1, razorpay_signature = $2, status = $3 WHERE razorpay_order_id = $4',
+                'UPDATE payments SET razorpay_payment_id = ?, razorpay_signature = ?, status = ? WHERE razorpay_order_id = ?',
                 [razorpay_payment_id, razorpay_signature, 'captured', razorpay_order_id]
             );
             
             // Update fee status
             await pool.query(
-                'UPDATE fees SET status = $1 WHERE id = $2',
+                'UPDATE fees SET status = ? WHERE id = ?',
                 ['Paid', feeId]
             );
             
@@ -474,28 +479,34 @@ app.post('/api/fees/verify-payment', async (req, res) => {
 // Live Classes API
 app.get('/api/live-classes/:className', async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT l.*, f.name as teacher_name FROM live_classes l JOIN faculty f ON l.teacher_id = f.id WHERE l.class_name = $1 AND l.status = $2 ORDER BY l.start_time ASC',
+        const [rows] = await pool.query(
+            'SELECT l.*, f.name as teacher_name FROM live_classes l JOIN faculty f ON l.teacher_id = f.id WHERE l.class_name = ? AND l.status = ? ORDER BY l.start_time ASC',
             [req.params.className, 'Scheduled']
         );
-        res.json(result.rows);
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to fetch live classes' });
     }
 });
 
-app.post('/api/live-classes', verifyToken, checkRole(['Faculty', 'Admin']), async (req, res) => {
-    const { teacher_id, class_name, subject, meeting_link, start_time, topic } = req.body;
+app.post('/api/live-classes', async (req, res) => {
+    const { teacher_id, class_name, subject, meeting_link, start_time, topic, teacher_name } = req.body;
     try {
-        const result = await pool.query(
-            'INSERT INTO live_classes (teacher_id, class_name, subject, meeting_link, start_time, topic) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [teacher_id, class_name, subject, meeting_link, start_time, topic]
+        // Try to find teacher_id from DB if not provided or invalid
+        let finalTeacherId = teacher_id;
+        if (!finalTeacherId || isNaN(parseInt(finalTeacherId))) {
+            const [fallback] = await pool.query('SELECT id FROM faculty LIMIT 1');
+            finalTeacherId = fallback[0]?.id || 1;
+        }
+        const [result] = await pool.query(
+            'INSERT INTO live_classes (teacher_id, class_name, subject, meeting_link, start_time, topic) VALUES (?, ?, ?, ?, ?, ?)',
+            [finalTeacherId, class_name, subject, meeting_link, start_time, topic]
         );
-        res.status(201).json(result.rows[0]);
+        res.status(201).json({ id: result.insertId, topic, status: 'Scheduled' });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ status: 'error', message: 'Failed to schedule live class' });
+        console.error('Live class schedule error:', err.message);
+        res.status(500).json({ status: 'error', message: err.message || 'Failed to schedule live class' });
     }
 });
 

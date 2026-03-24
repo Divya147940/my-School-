@@ -1,6 +1,6 @@
 .vault-container {
     padding: 20px;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .vault-header {

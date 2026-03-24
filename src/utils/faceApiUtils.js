@@ -24,9 +24,13 @@ export const getFaceDescriptor = async (mediaElement) => {
     await loadFaceModels();
     
     // Using TinyFaceDetector which is fast and lightweight for web
+    const detectionOptions = new faceapi.TinyFaceDetectorOptions({ 
+        inputSize: 320, // Increased for better accuracy in dark/harsh lighting
+        scoreThreshold: 0.4 // More permissive for low-light scenarios
+    });
     const detection = await faceapi.detectSingleFace(
         mediaElement, 
-        new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })
+        detectionOptions
     ).withFaceLandmarks().withFaceDescriptor();
 
     // detection contains .descriptor (Float32Array) and .landmarks
@@ -44,13 +48,14 @@ export const getFaceDescriptorFromBase64 = async (base64) => {
         const timeout = setTimeout(() => {
             reject(new Error("AI FACE DETECTION TIMEOUT: Image processing took too long. Check lighting."));
         }, 15000);
-
+ 
         const img = new Image();
         img.onload = async () => {
             try {
                 const detection = await getFaceDescriptor(img);
                 clearTimeout(timeout);
-                resolve(detection ? detection.descriptor : null);
+                // Return full detection object for cropping/analysis
+                resolve(detection || null);
             } catch (err) {
                 clearTimeout(timeout);
                 console.error("getFaceDescriptor error:", err);

@@ -23,11 +23,14 @@ import SchoolCalendar from '../components/Common/SchoolCalendar';
 import IDCard from '../components/Common/IDCard';
 import HallOfFame from '../components/Common/HallOfFame';
 import BusTracker from '../components/Common/BusTracker';
+import ChatSystem from '../components/Common/ChatSystem';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Common/Toaster';
 import FaceAttendance from '../components/Student/FaceAttendance';
 import StudentAttendanceAudit from '../components/Common/StudentAttendanceAudit';
 import Skeleton from '../components/Common/Skeleton';
+import NotificationCenter from '../components/Common/NotificationCenter';
+import Campus3D from '../components/Common/Campus3D';
 import './ParentDashboard.css';
 
 const ParentDashboard = () => {
@@ -37,6 +40,8 @@ const ParentDashboard = () => {
   const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState('Overview');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,6 +78,7 @@ const ParentDashboard = () => {
     { name: language === 'hi' ? 'डिजिटल डायरी' : 'Digital Diary', icon: '📔' },
     { name: language === 'hi' ? 'लाइब्रेरी' : 'Library', icon: '📚' },
     { name: t('bus'), icon: '🚌' },
+    { name: language === 'hi' ? 'चैट हब' : 'Chat Hub', icon: '💬' },
     { name: t('notifications'), icon: '📢' }
   ];
 
@@ -125,13 +131,13 @@ const ParentDashboard = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginTop: '30px' }}>
-               <div className="feature-box glass-panel">
+              <div className="feature-box glass-panel">
                 <h3 className="section-title">Recent Activity for {childInfo.name}</h3>
                 <div className="activity-item" style={{ padding: '15px', background: 'var(--glass-bg)', borderRadius: '12px', marginBottom: '15px', border: '1px solid var(--glass-border)' }}>
-                   <p style={{ margin: 0, fontWeight: '600' }}>Marked Present today at 08:35 AM.</p>
+                  <p style={{ margin: 0, fontWeight: '600' }}>Marked Present today at 08:35 AM.</p>
                 </div>
                 <div className="activity-item" style={{ padding: '15px', background: 'var(--glass-bg)', borderRadius: '12px', marginBottom: '15px', border: '1px solid var(--glass-border)' }}>
-                   <p style={{ margin: 0, fontWeight: '600' }}>New Mathematics homework assigned.</p>
+                  <p style={{ margin: 0, fontWeight: '600' }}>New Mathematics homework assigned.</p>
                 </div>
               </div>
 
@@ -147,6 +153,25 @@ const ParentDashboard = () => {
             </div>
 
             <div className="parent-stats-grid" style={{ marginTop: '30px' }}>
+              {['Class 0', 'Class 1', 'Class 2'].includes(childInfo.class) && (
+                  <div className="parent-card glass-panel" style={{ background: 'linear-gradient(135deg, #10b981, #059669)', gridColumn: 'span 2' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#fff' }}>
+                          <div>
+                              <h3 style={{ margin: 0 }}>Gate Assistance 🏫</h3>
+                              <p style={{ margin: '5px 0 0 0', opacity: 0.8, fontSize: '0.85rem' }}>Inform teacher that you have arrived for pickup.</p>
+                          </div>
+                          <button 
+                            onClick={() => {
+                                mockApi.triggerGateAlert(childInfo.name);
+                                alert("🚨 Alert Sent! The class teacher has been notified of your arrival.");
+                            }}
+                            style={{ padding: '12px 25px', borderRadius: '12px', background: '#fff', color: '#10b981', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
+                          >
+                            I am at the Gate! 🙋‍♂️
+                          </button>
+                      </div>
+                  </div>
+              )}
               <Link to="/transport" className="parent-card glass-panel card-vibe" style={{ textDecoration: 'none', cursor: 'pointer' }}>
                 <div className="card-title">🚌 {language === 'hi' ? 'लाइव बस ट्रैक करें' : 'Track Live Bus'}</div>
                 <div className="card-value" style={{ fontSize: '1rem', marginTop: '10px' }}>{language === 'hi' ? 'अभी देखें' : 'View Now'} →</div>
@@ -197,6 +222,8 @@ const ParentDashboard = () => {
         return <div className="feature-section"><h3 className="section-title">Child's Library History</h3><Library /></div>;
       case 'Live Bus':
         return <div className="feature-section"><BusTracker /></div>;
+      case 'Chat Hub':
+        return <div className="feature-section"><ChatSystem userType="parent" /></div>;
       default:
         return (
           <div className="feature-section glass-panel">
@@ -228,9 +255,9 @@ const ParentDashboard = () => {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <button 
-            onClick={(e) => { e.preventDefault(); logout(); }} 
-            className="nav-link" 
+          <button
+            onClick={(e) => { e.preventDefault(); logout(); }}
+            className="nav-link"
             style={{ color: '#ef4444', background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
           >
             <span className="nav-icon">🚪</span>
@@ -245,20 +272,44 @@ const ParentDashboard = () => {
             <h1>Guardians Hub</h1>
             <p style={{ color: 'var(--text-secondary)' }}>Monitoring: **{childInfo.name}** (Class {childInfo.class})</p>
           </div>
-          <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: 'bold' }}>Mr. Rajkumar Gupta</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Parent Account</div>
+          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <button 
+              className="tour-trigger glass-panel" 
+              onClick={() => setIsTourOpen(true)}
+              style={{ padding: '10px 20px', cursor: 'pointer', border: '1px solid var(--accent-blue)', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', color: 'var(--accent-blue)', fontWeight: '700' }}
+            >
+              <span style={{ marginRight: '8px' }}>🌐</span> 3D Tour
+            </button>
+            <button 
+              className="notif-trigger glass-panel" 
+              onClick={() => setIsNotifOpen(true)}
+              style={{ padding: '10px 15px', position: 'relative', cursor: 'pointer', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', borderRadius: '12px', color: 'inherit' }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>🔔</span>
+              <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: 'white', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '50px', fontWeight: '800' }}>2</span>
+            </button>
+            <div className="search-trigger glass-panel" onClick={() => setIsPaletteOpen(true)} style={{ cursor: 'pointer', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', borderRadius: '12px' }}>
+              <span>🔍</span>
+              <span className="search-hint">Press <kbd>Ctrl K</kbd> to search</span>
             </div>
-            <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>RG</div>
+            <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 'bold' }}>Mr. Rajkumar Gupta</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Parent Account</div>
+              </div>
+              <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>RG</div>
+            </div>
           </div>
         </header>
 
         {renderContent()}
       </main>
 
-      <CommandPalette 
-        isOpen={isPaletteOpen} 
+      <NotificationCenter isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+      <Campus3D isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+
+      <CommandPalette
+        isOpen={isPaletteOpen}
         onClose={setIsPaletteOpen}
         portalName="Parent"
         navItems={navItems.map(item => ({

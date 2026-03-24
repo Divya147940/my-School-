@@ -1,5 +1,5 @@
 .report-card-visual {
-    background: #fff;
+    background: var(--bg-primary);
     color: #1e293b;
     padding: 40px;
     border-radius: 5px;
@@ -8,7 +8,7 @@
     font-family: 'Times New Roman', Times, serif;
     max-width: 800px;
     margin: 0 auto;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-premium);
 }
 
 .rc-watermark {
@@ -134,7 +134,7 @@
     margin-bottom: 40px;
     padding: 15px;
     border: 1px solid #cbd5e1;
-    background: #fff;
+    background: var(--bg-primary);
     min-height: 80px;
     position: relative;
     z-index: 1;

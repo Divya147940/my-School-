@@ -30,7 +30,7 @@
 .strength-title {
     font-size: clamp(32px, 5vw, 48px);
     font-weight: 800;
-    color: #fff;
+    color: var(--text-primary);
     margin: 0 0 24px 0;
     letter-spacing: -1.5px;
     line-height: 1.1;
@@ -92,7 +92,7 @@
 .strength-item:hover {
     transform: translateY(-10px);
     border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-premium);
 }
 
 .strength-item:hover::before {
@@ -125,7 +125,7 @@
 .strength-number {
     font-size: 64px;
     font-weight: 800;
-    color: #fff;
+    color: var(--text-primary);
     margin: 0 0 12px 0;
     letter-spacing: -3px;
     line-height: 1;

@@ -1,6 +1,6 @@
 .quiz-list-container, .quiz-player, .quiz-creator {
     padding: 20px;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .quiz-header {
@@ -79,7 +79,7 @@
     background: #1e293b;
     padding: 40px;
     border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-premium);
 }
 
 .player-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
@@ -132,7 +132,7 @@
 .creator-card input[type="text"], .creator-card textarea {
     background: #0f172a;
     border: 1px solid rgba(255,255,255,0.1);
-    color: #fff;
+    color: var(--text-primary);
     padding: 15px;
     border-radius: 12px;
     width: 100%;

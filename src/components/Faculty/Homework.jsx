@@ -2,19 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../Common/Toaster';
+import { useAuth } from '../../context/AuthContext';
 
 const Homework = () => {
     const { t, language } = useLanguage();
     const { addToast } = useToast();
+    const { user } = useAuth();
     const [showForm, setShowForm] = useState(false);
     const [assignments, setAssignments] = useState([]);
+    
+    const userClass = user?.assignedClass ? `Class ${user.assignedClass}` : 'Class 10A';
+
     const [newAssignment, setNewAssignment] = useState({ 
         title: '', 
-        class: 'Class 10A', 
-        subject: '', 
+        class: userClass, 
+        subject: user?.subject || '', 
         dueDate: '',
         instructions: '' 
     });
+    const [viewingAsm, setViewingAsm] = useState(null);
 
     useEffect(() => {
         setAssignments(mockApi.getAssignments());
@@ -29,7 +35,7 @@ const Homework = () => {
     const handleQuickPost = (bp) => {
         const today = new Date();
         const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        const asm = { ...bp, class: 'Class 10A', dueDate: nextWeek };
+        const asm = { ...bp, class: userClass, dueDate: nextWeek };
         mockApi.addAssignment(asm);
         setAssignments(mockApi.getAssignments());
         addToast(language === 'hi' ? 'ब्लूप्रिंट का उपयोग करके प्रकाशित किया गया!' : 'Published using Blueprint!', 'success');
@@ -40,7 +46,7 @@ const Homework = () => {
         mockApi.addAssignment(newAssignment);
         setAssignments(mockApi.getAssignments());
         setShowForm(false);
-        setNewAssignment({ title: '', class: 'Class 10A', subject: '', dueDate: '', instructions: '' });
+        setNewAssignment({ title: '', class: userClass, subject: user?.subject || '', dueDate: '', instructions: '' });
         addToast(language === 'hi' ? 'असाइनमेंट सफलतापूर्वक बनाया गया!' : 'Assignment Broadcasted Successfully!', 'success');
     };
 
@@ -115,6 +121,7 @@ const Homework = () => {
                         <div className="form-group">
                             <label>Target Class</label>
                             <select value={newAssignment.class} onChange={e => setNewAssignment({...newAssignment, class: e.target.value})} className="premium-input">
+                                {user?.assignedClass && <option value={`Class ${user.assignedClass}`}>Class {user.assignedClass}</option>}
                                 <option>Class 10A</option>
                                 <option>Class 9B</option>
                                 <option>Class 8C</option>
@@ -166,13 +173,72 @@ const Homework = () => {
                             </div>
 
                             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                <button className="action-btn-outline" style={{ flex: 1 }}>Grade Work</button>
+                                <button 
+                                    className="action-btn-outline" 
+                                    style={{ flex: 1 }}
+                                    onClick={() => setViewingAsm(asm)}
+                                >
+                                    Grade Work {asm.submissions > 0 && `(${asm.submissions})`}
+                                </button>
                                 <button onClick={() => handleDelete(asm.id)} style={{ padding: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>🗑️</button>
                             </div>
                         </div>
                     );
                 })}
             </div>
+
+            {/* Submissions Viewer Modal */}
+            {viewingAsm && (
+                <div className="handwriting-canvas-overlay" style={{ zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="glass-panel" style={{ width: '96vw', height: '96vh', display: 'flex', flexDirection: 'column', padding: '30px', borderRadius: '24px', position: 'relative', background: '#f8fafc' }}>
+                        <button 
+                            onClick={() => setViewingAsm(null)} 
+                            style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer', fontSize: '1.2rem' }}
+                        >
+                            ✕
+                        </button>
+                        
+                        <div style={{ marginBottom: '20px' }}>
+                            <h2 style={{ margin: 0 }}>Review: {viewingAsm.title}</h2>
+                            <p style={{ color: 'var(--text-secondary)' }}>{viewingAsm.submissionsList?.length || 0} student submissions found</p>
+                        </div>
+
+                        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
+                            {viewingAsm.submissionsList && viewingAsm.submissionsList.length > 0 ? (
+                                viewingAsm.submissionsList.map((sub, idx) => (
+                                    <div key={idx} className="glass-panel" style={{ marginBottom: '30px', padding: '20px', background: 'rgba(0,0,0,0.2)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center' }}>
+                                            <div>
+                                                <h3 style={{ margin: 0, color: '#60a5fa' }}>{sub.studentName}</h3>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Submitted on: {sub.date}</span>
+                                            </div>
+                                            <button className="premium-btn" style={{ fontSize: '0.8rem', padding: '8px 15px' }}>Add Feedback</button>
+                                        </div>
+                                        <div style={{ borderRadius: '12px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                            {Array.isArray(sub.data) ? (
+                                                sub.data.map((pageImg, pIdx) => (
+                                                    <div key={pIdx} style={{ background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}>
+                                                        <div style={{ fontSize: '0.7rem', color: '#666', marginBottom: '5px' }}>Page {pIdx + 1}</div>
+                                                        <img src={pageImg} alt={`Page ${pIdx + 1}`} style={{ width: '100%', height: 'auto' }} />
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div style={{ background: '#fff', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}>
+                                                    <img src={sub.data} alt="Student Work" style={{ width: '100%', height: 'auto' }} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                                    No submissions yet for this assignment.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style dangerouslySetInnerHTML={{ __html: `
                 .premium-input {

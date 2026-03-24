@@ -14,7 +14,13 @@ const StudentManagement = () => {
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [recentStudent, setRecentStudent] = useState(null);
     const [isVirtualStream, setIsVirtualStream] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
+    const [scanProgress, setScanProgress] = useState(0);
+    const [landmarks, setLandmarks] = useState(null);
+    const [scanMessage, setScanMessage] = useState('ALIGNING...');
+    const [scanTips, setScanTips] = useState('');
     const [studentList, setStudentList] = useState([]);
+    const [cameraIndex, setCameraIndex] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterClass, setFilterClass] = useState('All');
     
@@ -82,9 +88,46 @@ const StudentManagement = () => {
         setIsCameraOpen(true);
         setIsVirtualStream(false);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
+            const tiers = [
+                { video: { facingMode: { exact: 'user' } } },
+                { video: { facingMode: 'user' } },
+                { video: true }
+            ];
+
+            let stream = null;
+            for (const constraints of tiers) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    if (stream) break;
+                } catch (e) {
+                    console.warn("Permission acquisition retry...", e.name);
+                }
+            }
+
+            if (stream) {
+                try {
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                    if (videoDevices.length > 1) {
+                        const frontCam = videoDevices.find(d => 
+                            d.label.toLowerCase().includes('front') || 
+                            d.label.toLowerCase().includes('selfie') ||
+                            d.label.toLowerCase().includes('user')
+                        );
+                        const currentTrack = stream.getVideoTracks()[0];
+                        const currentLabel = currentTrack?.label?.toLowerCase() || '';
+                        if (frontCam && !currentLabel.includes('front') && !currentLabel.includes('selfie') && !currentLabel.includes('user')) {
+                            currentTrack.stop();
+                            stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: frontCam.deviceId } } });
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Camera refinement failed:", e);
+                }
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
             }
         } catch (err) {
             console.warn("Camera busy/denied. Using Biometric Simulation Mode.");
@@ -99,7 +142,87 @@ const StudentManagement = () => {
             videoRef.current.srcObject = null;
         }
         setIsCameraOpen(false);
+        setIsScanning(false);
+        setScanProgress(0);
     };
+
+    // Auto-Scanning Loop
+    useEffect(() => {
+        let scanInterval;
+        if (isCameraOpen && !capturedImage) {
+            setIsScanning(true);
+            setScanProgress(0);
+            
+            scanInterval = setInterval(async () => {
+                if (videoRef.current && canvasRef.current) {
+                    const video = videoRef.current;
+                    const canvas = canvasRef.current;
+                    canvas.width = video.videoWidth || 640;
+                    canvas.height = video.videoHeight || 480;
+                    const ctx = canvas.getContext('2d');
+                        
+                    // ADAPTIVE DIGITAL BOOST: 1.6 brightness + 1.3 contrast to handle harsh shadows
+                    ctx.filter = 'brightness(1.6) contrast(1.3)';
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const dataUrl = canvas.toDataURL('image/jpeg');
+
+                    try {
+                        const detection = await mockApi.getFaceDescriptorFromBase64(dataUrl);
+                        
+                        if (detection) {
+                            setLandmarks(detection.landmarks);
+                            setScanTips('');
+                            setScanMessage(scanProgress < 50 ? "HOLD STILL..." : "LOCKING FEATURES...");
+                            // Calculate scan progress based on facial features detected
+                            let progress = 30; // 30% for just detecting face
+                            if (detection.landmarks) progress += 40; // 70% for landmarks (eyes, nose, mouth)
+                            
+                            // Check for "Multi-angle" by looking at landmarks distribution
+                            // (Simulated: if landmarks are within a good range, we hit 100)
+                            if (progress >= 70) {
+                                setScanProgress(prev => Math.min(100, prev + 15));
+                            } else {
+                                setScanProgress(prev => Math.max(10, prev - 5));
+                            }
+
+                            // If we hit 100%, crop to face
+                            if (scanProgress >= 100) {
+                                const box = detection.detection.box;
+                                const pad = 30; // Padding around face
+                                const cropCanvas = document.createElement('canvas');
+                                cropCanvas.width = box.width + pad * 2;
+                                cropCanvas.height = box.height + pad * 2;
+                                const cropCtx = cropCanvas.getContext('2d');
+                                
+                                cropCtx.drawImage(
+                                    video, 
+                                    box.x - pad, box.y - pad, box.width + pad * 2, box.height + pad * 2, 
+                                    0, 0, cropCanvas.width, cropCanvas.height
+                                );
+                                
+                                const croppedData = cropCanvas.toDataURL('image/jpeg');
+                                setCapturedImage(croppedData);
+                                stopCamera();
+                                addToast("Biometric Lock: Face Profile Captured!", "success");
+                            }
+                        } else {
+                            setLandmarks(null);
+                            setScanProgress(prev => Math.max(0, prev - 10));
+                            setScanMessage("FACE NOT DETECTED");
+                            setScanTips("Tip: Look straight & ensure bright light on your face.");
+                        }
+                    } catch (err) {
+                        setScanMessage("AI SEARCHING...");
+                        setScanTips("Tip: Hold still and ensure your whole face is visible.");
+                        console.warn("Biometric scan error:", err);
+                    }
+                }
+            }, 600); // 600ms to reduce CPU load and let AI finish // 500ms for high-res model processing
+        } else {
+            setIsScanning(false);
+        }
+        return () => clearInterval(scanInterval);
+    }, [isCameraOpen, capturedImage, isScanning]);
 
     const capturePhoto = () => {
         if (videoRef.current && canvasRef.current) {
@@ -124,6 +247,16 @@ const StudentManagement = () => {
     });
 
     return (
+        <>
+        <style>
+            {`
+                @keyframes scanLine {
+                    0% { top: 10%; opacity: 0; }
+                    50% { opacity: 1; }
+                    100% { top: 90%; opacity: 0; }
+                }
+            `}
+        </style>
         <div className="student-management" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px', padding: '20px' }}>
             <div className="glass-panel" style={{ padding: '40px', borderRadius: '32px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
                 <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '30px' }}>{t('registerStudent')}</h2>
@@ -185,25 +318,88 @@ const StudentManagement = () => {
                         )}
 
                         {isCameraOpen && (
-                            <div style={{ position: 'relative', width: '100%', borderRadius: '12px', overflow: 'hidden', background: '#000' }}>
-                                <video 
-                                    ref={videoRef} 
-                                    autoPlay 
-                                    playsInline 
-                                    style={{ width: '100%', display: 'block' }}
-                                />
-                                <div style={{ position: 'absolute', bottom: '15px', left: '0', right: '0', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                            <div className="scanner-container" style={{ position: 'relative', width: '100%', borderRadius: '24px', overflow: 'hidden', background: '#0f172a', padding: '40px 0', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div className="scanner-viewport" style={{ 
+                                    width: '260px', 
+                                    height: '260px', 
+                                    margin: '0 auto 30px', 
+                                    borderRadius: '50%', 
+                                    border: '2px dashed rgba(255,255,255,0.15)',
+                                    position: 'relative',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden',
+                                    background: 'rgba(255,255,255,0.02)'
+                                }}>
+                                    <video 
+                                        ref={videoRef} 
+                                        autoPlay 
+                                        playsInline 
+                                        style={{ 
+                                            position: 'absolute', 
+                                            inset: 0, 
+                                            width: '100%', 
+                                            height: '100%', 
+                                            objectFit: 'cover',
+                                            filter: isScanning ? 'brightness(1.1) contrast(1.1)' : 'none' 
+                                        }}
+                                    />
+
+                                    {/* Switch Camera Button Over Video */}
                                     <button 
-                                        type="button" 
-                                        onClick={capturePhoto}
-                                        style={{ padding: '10px 20px', borderRadius: '30px', background: '#fff', color: '#000', border: 'none', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setCameraIndex(prev => prev + 1);
+                                            startCamera();
+                                        }} 
+                                        style={{ position: 'absolute', top: '15px', right: '15px', background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', width: '45px', height: '45px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', zIndex: 100 }}
+                                        title="Switch Camera"
                                     >
-                                        📸 CAPTURE
+                                        🔄
                                     </button>
+                                    
+                                    {/* AI Landmark Dots */}
+                                    {isScanning && landmarks && (
+                                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 5 }}>
+                                            <div style={{ position: 'absolute', left: `${(landmarks.getLeftEye()[0].x / 640) * 260}px`, top: `${(landmarks.getLeftEye()[0].y / 480) * 260}px`, width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 10px #10b981' }}></div>
+                                            <div style={{ position: 'absolute', left: `${(landmarks.getRightEye()[0].x / 640) * 260}px`, top: `${(landmarks.getRightEye()[0].y / 480) * 260}px`, width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 10px #10b981' }}></div>
+                                            <div style={{ position: 'absolute', left: `${(landmarks.getNose()[0].x / 640) * 260}px`, top: `${(landmarks.getNose()[0].y / 480) * 260}px`, width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 10px #10b981' }}></div>
+                                        </div>
+                                    )}
+
+                                    {isScanning && (
+                                        <div className="scan-line" style={{ 
+                                            position: 'absolute', 
+                                            top: `${scanProgress}%`, 
+                                            left: 0, 
+                                            width: '100%', 
+                                            height: '2px', 
+                                            background: '#3b82f6', 
+                                            boxShadow: '0 0 15px #3b82f6',
+                                            zIndex: 2,
+                                            transition: 'top 0.1s linear'
+                                        }}></div>
+                                    )}
+                                </div>
+                                
+                                <div style={{ textAlign: 'center' }}>
+                                    <div style={{ color: '#3b82f6', fontWeight: '800', fontSize: '1rem', marginBottom: '10px', animation: 'pulse 1.5s infinite' }}>
+                                        {scanMessage} {scanProgress}%
+                                    </div>
+                                    {scanTips && (
+                                        <div style={{ color: '#fbbf24', fontSize: '0.7rem', fontWeight: 'bold', background: 'rgba(0,0,0,0.3)', display: 'inline-block', padding: '4px 12px', borderRadius: '20px' }}>
+                                            {scanTips}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
                                     <button 
                                         type="button" 
                                         onClick={stopCamera}
-                                        style={{ padding: '10px 20px', borderRadius: '30px', background: 'rgba(239, 68, 68, 0.8)', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer' }}
+                                        style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer', fontSize: '0.8rem' }}
                                     >
                                         ✕
                                     </button>
@@ -318,6 +514,7 @@ const StudentManagement = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

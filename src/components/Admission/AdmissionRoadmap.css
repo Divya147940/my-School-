@@ -62,7 +62,7 @@
     width: 30px;
     height: 30px;
     background: #3b82f6;
-    color: white;
+    color: var(--text-primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -74,7 +74,7 @@
 .step-content h4 {
     font-size: 1.1rem;
     margin-bottom: 10px;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .step-content p {

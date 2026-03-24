@@ -51,7 +51,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 30px;
     font-weight: 800;
-    color: #ffffff;
+    color: var(--text-primary);
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
@@ -79,7 +79,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-premium);
     transition: all 0.3s ease;
 }
 
@@ -127,7 +127,7 @@
 }
 
 .campus-dot:hover {
-    background: #ffffff;
+    background: var(--bg-primary);
 }
 
 /* ===== Responsive ===== */

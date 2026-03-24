@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { 
+import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
   BarChart, Bar, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ComposedChart, Legend
@@ -32,6 +32,20 @@ import CertificateGenerator from '../components/Common/CertificateGenerator';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Common/Toaster';
 import Skeleton from '../components/Common/Skeleton';
+import AIDoubtSolver from '../components/Student/AIDoubtSolver';
+import NotificationCenter from '../components/Common/NotificationCenter';
+import Gamification from '../components/Common/Gamification';
+import Leaderboard from '../components/Student/Leaderboard';
+import Campus3D from '../components/Common/Campus3D';
+import AdaptiveTutor from '../components/Student/AdaptiveTutor';
+import CertificateVault from '../components/Common/CertificateVault';
+import JuniorActivityCenter from '../components/Student/JuniorActivityCenter';
+import JuniorMagicStudio from '../components/Student/JuniorMagicStudio';
+import JuniorBabyWorld from '../components/Student/JuniorBabyWorld';
+import JuniorDiscoveryHub from '../components/Student/JuniorDiscoveryHub';
+import JuniorBrainBoost from '../components/Student/JuniorBrainBoost';
+import JuniorDashboardAnimations from '../components/Common/JuniorDashboardAnimations';
+import MessageInbox from '../components/Communication/MessageInbox';
 import './StudentDashboard.css';
 
 const performanceData = [
@@ -73,7 +87,12 @@ const StudentDashboard = () => {
   const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState('Overview');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const juniorClasses = ['Class 0', 'Class 1', 'Class 2', 'Class 3', 'Nursery', 'LKG', 'UKG', '0', '1', '2', '3'];
+  const isJunior = juniorClasses.includes(user?.class);
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -85,37 +104,67 @@ const StudentDashboard = () => {
 
   const navItems = [
     { name: 'Overview', icon: '🏠' },
-    { name: 'Scan Attendance', icon: '📲' },
-    { name: 'Face Attendance', icon: '👤' },
-    { name: 'Live Classes', icon: '🎥' },
-    { name: 'Attendance', icon: '📝' },
-    { name: 'Assignments', icon: '📚' },
-    { name: 'Results', icon: '🏆' },
-    { name: 'Online Quizzes', icon: '🧠' },
-    { name: 'School Calendar', icon: '📅' },
-    { name: 'Digital ID', icon: '🆔' },
-    { name: 'Hall of Fame', icon: '🌟' },
-    { name: 'Achievement Awards', icon: '📜' },
-    { name: 'Smart Store', icon: '🛒' },
-    { name: 'Health Record', icon: '🏥' },
-    { name: 'Doc Vault', icon: '📂' },
-    { name: 'Timetable', icon: '📅' },
-    { name: 'E-Learning', icon: '🎥' },
-    { name: 'Live Bus', icon: '🚌' },
-    { name: 'Digital Diary', icon: '📝' },
-    { name: 'Performance Analytics', icon: '📈' },
-    { name: 'Leave', icon: '✉️' },
-    { name: 'Extra Resources', icon: '💡' }
+    { name: 'Schedule', icon: '📅' },
+    { name: 'Junior Center', icon: isJunior ? '🎡' : '🎨', juniorOnly: true },
+    { name: 'Magic Studio', icon: isJunior ? '🎨' : '✨', juniorOnly: true },
+    { name: 'Baby Hub', icon: isJunior ? '🍼' : '👶', juniorOnly: true },
+    { name: 'Discovery Hub', icon: isJunior ? '🔬' : '🧪', juniorOnly: true },
+    { name: 'Brain Boost Hub', icon: '🧠', juniorOnly: true },
+    { name: 'My Courses', icon: isJunior ? '🌈' : '📚' },
+    { name: 'Live Classes', icon: isJunior ? '📺' : '🎥' },
+    // { name: 'Face Attendance', icon: '👤✨' },
+    { name: 'Attendance', icon: isJunior ? '⭐' : '📝' },
+    { name: 'Assignments', icon: isJunior ? '🦄' : '📚' },
+    { name: 'Results', icon: isJunior ? '🎉' : '🏆' },
+    { name: 'Online Quizzes', icon: isJunior ? '🧩' : '🧠' },
+    { name: 'School Calendar', icon: isJunior ? '📅' : '📅' },
+    { name: 'Digital ID', icon: isJunior ? '🏷️' : '🆔' },
+    { name: 'Hall of Fame', icon: isJunior ? '🎖️' : '🌟' },
+    { name: 'Achievement Awards', icon: isJunior ? '📜' : '📜' },
+    { name: 'Smart Store', icon: isJunior ? '🍭' : '🛒' },
+    { name: 'Health Record', icon: isJunior ? '🩺' : '🏥' },
+    { name: 'Doc Vault', icon: isJunior ? '📁' : '📂' },
+    { name: 'Timetable', icon: isJunior ? '⏰' : '📅' },
+    { name: 'E-Learning', icon: isJunior ? '📽️' : '🎥' },
+    { name: 'Live Bus', icon: isJunior ? '🚌' : '🚌' },
+    { name: 'Digital Diary', icon: isJunior ? '📒' : '📝' },
+    { name: 'Performance Analytics', icon: isJunior ? '🚀' : '📈' },
+    { name: 'Leave', icon: isJunior ? '📭' : '✉️' },
+    { name: 'AI Doubt Solver', icon: isJunior ? '🤖' : '🧠💡' },
+    { name: 'Extra Resources', icon: isJunior ? '💡' : '💡' },
+    { name: 'Blockchain Vault', icon: isJunior ? '🛡️' : '🛡️' },
+    { name: 'Inbox', icon: '💬' }
   ];
 
   const studentInfo = {
-    name: 'Aman Gupta',
-    class: '10A',
-    roll: 'S101',
+    name: user?.name || 'Student',
+    class: user?.class || 'N/A',
+    roll: user?.rollNumber || 'S101',
     attendance: '95%',
     avgGrade: 'A',
-    pendingFees: '₹0'
+    pendingFees: '₹0',
+    level: 12,
+    xp: 3750,
+    nextLevelXp: 5000,
+    badges: [
+      { name: 'Early Bird', icon: '🌅' },
+      { name: 'Math Wizard', icon: '🧙‍♂️' },
+      { name: 'Perfect Week', icon: '📅' },
+      { name: 'Top 5', icon: '🏆' }
+    ]
   };
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.juniorOnly) {
+      return isJunior;
+    }
+    // If it's a junior, hide some complex analytics/vaults
+    if (isJunior) {
+      const skipForKids = ['Blockchain Vault', 'Performance Analytics', 'Health Record', 'Doc Vault'];
+      return !skipForKids.includes(item.name);
+    }
+    return true;
+  });
 
   const renderContent = () => {
     if (loading) {
@@ -140,6 +189,56 @@ const StudentDashboard = () => {
       case 'Overview':
         return (
           <div className="overview-content">
+            {isJunior && (
+                <div style={{ 
+                    background: theme === 'dark' ? 'linear-gradient(90deg, #1e293b, #0f172a)' : 'linear-gradient(90deg, var(--accent-blue), var(--accent-purple))', 
+                    padding: '24px', 
+                    borderRadius: '24px', 
+                    marginBottom: '30px', 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                    border: '1px solid rgba(139,92,246,0.3)'
+                }}>
+                    <div>
+                        <h2 style={{ margin: 0, color: '#fff' }}>Hiiii {studentInfo.name.split(' ')[0]}! 👋</h2>
+                        <p style={{ margin: 0, color: 'rgba(255,255,255,0.9)' }}>Choose your magic activity for today!</p>
+                        <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                            <span style={{ background: 'rgba(255,255,255,0.15)', padding: '5px 12px', borderRadius: '20px', fontSize: '0.8rem', color: '#fff' }}>✨ Magic Words</span>
+                            <span style={{ background: 'rgba(255,255,255,0.15)', padding: '5px 12px', borderRadius: '20px', fontSize: '0.8rem', color: '#fff' }}>🎨 Coloring</span>
+                            <span style={{ background: 'rgba(255,255,255,0.15)', padding: '5px 12px', borderRadius: '20px', fontSize: '0.8rem', color: '#fff' }}>🚀 Space Adventure</span>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => setActiveTab('Junior Center')}
+                        style={{ padding: '15px 30px', borderRadius: '18px', background: '#8b5cf6', color: '#fff', border: 'none', fontWeight: '950', cursor: 'pointer', boxShadow: '0 5px 20px rgba(139,92,246,0.4)', fontSize: '1rem' }}
+                    >
+                        Junior World 🎡✨
+                    </button>
+                </div>
+            )}
+            <div className="premium-row" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '30px', marginBottom: '30px' }}>
+              <Gamification 
+                studentName={studentInfo.name}
+                level={studentInfo.level}
+                xp={studentInfo.xp}
+                nextLevelXp={studentInfo.nextLevelXp}
+                badges={studentInfo.badges}
+              />
+              <div className="quick-stats glass-panel" style={{ padding: '25px', borderRadius: '24px', display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--accent-blue)' }}>{studentInfo.attendance}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Attendance</div>
+                </div>
+                <div style={{ height: '40px', width: '1px', background: 'var(--glass-border)' }}></div>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#10b981' }}>{studentInfo.avgGrade}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Avg Grade</div>
+                </div>
+              </div>
+            </div>
+
             <div className="student-stats">
               <div className="student-stat-card glass-panel card-vibe">
                 <div className="progress-circle" style={{ borderColor: '#10b981' }}>{studentInfo.attendance}</div>
@@ -167,14 +266,14 @@ const StudentDashboard = () => {
                     <AreaChart data={performanceData}>
                       <defs>
                         <linearGradient id="colorAttend" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                       <XAxis dataKey="month" stroke="var(--text-secondary)" />
                       <YAxis stroke="var(--text-secondary)" />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
                         itemStyle={{ color: '#fff' }}
                       />
@@ -192,9 +291,9 @@ const StudentDashboard = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                       <XAxis dataKey="subject" stroke="var(--text-secondary)" />
                       <YAxis stroke="var(--text-secondary)" />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                        cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                       />
                       <Bar dataKey="score">
                         {gradeDistribution.map((entry, index) => (
@@ -262,6 +361,18 @@ const StudentDashboard = () => {
         return <div className="feature-section"><StudentTimetable /></div>;
       case 'E-Learning':
         return <div className="feature-section"><ELearningHub userType="student" /></div>;
+      case 'Quiz hbb':
+        return <div className="feature-section"><QuizSystem /></div>;
+      case 'Junior Center':
+        return <div className="feature-section"><JuniorActivityCenter /></div>;
+      case 'Magic Studio':
+        return <div className="feature-section"><JuniorMagicStudio /></div>;
+      case 'Baby Hub':
+        return <div className="feature-section"><JuniorBabyWorld /></div>;
+      case 'Discovery Hub':
+        return <div className="feature-section"><JuniorDiscoveryHub /></div>;
+      case 'Brain Boost Hub':
+        return <div className="feature-section"><JuniorBrainBoost /></div>;
       case 'Live Bus':
         return <div className="feature-section"><BusTracker /></div>;
       case 'Digital Diary':
@@ -270,7 +381,7 @@ const StudentDashboard = () => {
         return (
           <div className="overview-content">
             <div className="analytics-grid">
-               <div className="analytics-card glass-panel">
+              <div className="analytics-card glass-panel">
                 <h3 className="section-title">Academic Skill Map</h3>
                 <div style={{ width: '100%', height: 350 }}>
                   <ResponsiveContainer>
@@ -301,16 +412,19 @@ const StudentDashboard = () => {
                 </div>
               </div>
             </div>
-            <div className="feature-section glass-panel">
-               <h3 className="section-title">AI Insight</h3>
-               <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontStyle: 'italic' }}>
-                 "Great job, Aman! Your performance in Sanskrit and Mathematics is exceptional. Consider focusing more on Tech skills to balance your profile."
-               </p>
+            <div style={{ marginTop: '30px' }}>
+              <AdaptiveTutor skillData={skillData} />
+            </div>
+
+            <div style={{ marginTop: '30px' }}>
+              <Leaderboard />
             </div>
           </div>
         );
       case 'Leave':
         return <div className="feature-section"><StudentLeave /></div>;
+      case 'AI Doubt Solver':
+        return <div className="feature-section"><AIDoubtSolver /></div>;
       case 'Extra Resources':
         return (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
@@ -324,6 +438,10 @@ const StudentDashboard = () => {
             </div>
           </div>
         );
+      case 'Blockchain Vault':
+        return <div className="feature-section"><CertificateVault /></div>;
+      case 'Inbox':
+        return <div className="feature-section"><MessageInbox studentId={user?.id || 'STU2026-001'} studentClass={user?.class || '10A'} studentName={user?.name || 'Aman Gupta'} /></div>;
       default:
         return (
           <div className="feature-section" style={{ background: 'rgba(30, 41, 59, 0.3)', padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -335,13 +453,46 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className={`student-dashboard ${theme === 'light' ? 'light-mode' : ''}`}>
+    <div className={`student-dashboard ${theme === 'light' ? 'light-mode' : ''} ${isJunior ? 'junior-mode' : ''}`}>
+      {isJunior && theme === 'dark' && (
+          <style>{`
+            .junior-mode {
+                background: #020617 !important;
+                color: #fff !important;
+            }
+            .junior-mode .student-sidebar {
+                background: linear-gradient(180deg, #020617 0%, #0f172a 100%) !important;
+                border-right: 1px solid rgba(255,255,255,0.1) !important;
+            }
+            .junior-mode .nav-link.active {
+                background: rgba(139, 92, 246, 0.2) !important;
+                color: #8b5cf6 !important;
+                border-radius: 20px !important;
+                border-left: 4px solid #8b5cf6 !important;
+                transform: scale(1.05);
+            }
+            .junior-mode .glass-panel {
+                background: rgba(255,255,255,0.05) !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+                backdrop-filter: blur(15px);
+                color: #fff !important;
+            }
+            .junior-mode h1, .junior-mode h2, .junior-mode h3 {
+                font-family: 'Outfit', 'Comic Sans MS', cursive !important;
+                color: #fff !important;
+                text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            }
+            .junior-mode .progress-circle {
+                border-width: 8px !important;
+            }
+          `}</style>
+      )}
       <nav className="student-sidebar">
         <div className="sidebar-header">
           <h2>Student Hub</h2>
         </div>
         <ul className="nav-menu">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <li key={item.name} className="nav-item">
               <a
                 href="#"
@@ -355,9 +506,9 @@ const StudentDashboard = () => {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <button 
-            onClick={(e) => { e.preventDefault(); logout(); }} 
-            className="nav-link" 
+          <button
+            onClick={(e) => { e.preventDefault(); logout(); }}
+            className="nav-link"
             style={{ color: '#ef4444', background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
           >
             <span className="nav-icon">🚪</span>
@@ -372,19 +523,43 @@ const StudentDashboard = () => {
             <h1>Dashboard</h1>
             <p style={{ color: 'var(--text-secondary)' }}>Welcome back, {studentInfo.name} (Class {studentInfo.class})</p>
           </div>
-          <div className="user-profile">
-            <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>AG</div>
+          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <button 
+              className="tour-trigger glass-panel" 
+              onClick={() => setIsTourOpen(true)}
+              style={{ padding: '10px 20px', cursor: 'pointer', border: '1px solid var(--accent-blue)', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', color: 'var(--accent-blue)', fontWeight: '700' }}
+            >
+              <span style={{ marginRight: '8px' }}>🌐</span> 3D Tour
+            </button>
+            <button 
+              className="notif-trigger glass-panel" 
+              onClick={() => setIsNotifOpen(true)}
+              style={{ padding: '10px 15px', position: 'relative', cursor: 'pointer', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', borderRadius: '12px', color: 'inherit' }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>🔔</span>
+              <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: 'white', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '50px', fontWeight: '800' }}>3</span>
+            </button>
+            <div className="search-trigger glass-panel" onClick={() => setIsPaletteOpen(true)} style={{ cursor: 'pointer', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', borderRadius: '12px' }}>
+              <span>🔍</span>
+              <span className="search-hint">Press <kbd>Ctrl K</kbd> to search</span>
+            </div>
+            <div className="user-profile">
+              <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>AG</div>
+            </div>
           </div>
         </header>
 
         {renderContent()}
       </main>
 
-      <CommandPalette 
-        isOpen={isPaletteOpen} 
+      <NotificationCenter isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+      <Campus3D isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
+
+      <CommandPalette
+        isOpen={isPaletteOpen}
         onClose={setIsPaletteOpen}
         portalName="Student"
-        navItems={navItems.map(item => ({
+        navItems={filteredNavItems.map(item => ({
           ...item,
           action: () => setActiveTab(item.name)
         }))}

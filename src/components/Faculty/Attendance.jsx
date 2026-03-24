@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useToast } from '../Common/Toaster';
+import { useAuth } from '../../context/AuthContext';
 
 const Attendance = () => {
   const { addToast } = useToast();
-  const [selectedClass, setSelectedClass] = useState('10A');
+  const { user } = useAuth();
+  const [selectedClass, setSelectedClass] = useState(user?.assignedClass || '10A');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);

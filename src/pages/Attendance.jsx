@@ -24,12 +24,15 @@ const generateStudents = (teacherId) => {
 };
 
 
+const TODAY = new Date().toISOString().split('T')[0];
+
 function Attendance() {
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [checkInTime, setCheckInTime] = useState(null);
     const [attendanceMarked, setAttendanceMarked] = useState(false);
     const [students, setStudents] = useState([]);
     const [canCheckOut, setCanCheckOut] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
 
     useEffect(() => {
         if (selectedTeacher) {
@@ -65,16 +68,28 @@ function Attendance() {
         const now = new Date();
         setCheckInTime(now);
         setAttendanceMarked(true);
-        // Use the generator function to populate students on check-in
-        setStudents(generateStudents(selectedTeacher).map(s => ({ ...s, status: 'Present' })));
+        setIsSaved(false);
+        const freshStudents = generateStudents(selectedTeacher).map(s => ({ ...s, status: 'Present' }));
+        setStudents(freshStudents);
         localStorage.setItem(`attendance_${selectedTeacher}`, JSON.stringify({ time: now, marked: true }));
+        // Save default (all present) detail so admin sees it immediately
+        localStorage.setItem(`attendance_detail_${selectedTeacher}_${TODAY}`, JSON.stringify(freshStudents));
+    };
+
+    const handleSaveAttendance = () => {
+        if (!selectedTeacher || students.length === 0) return;
+        localStorage.setItem(`attendance_detail_${selectedTeacher}_${TODAY}`, JSON.stringify(students));
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2500);
     };
 
     const handleCheckOut = () => {
+        // Keep the detail data so admin can still view it; just remove check-in state
         localStorage.removeItem(`attendance_${selectedTeacher}`);
         setCheckInTime(null);
         setAttendanceMarked(false);
         setStudents([]);
+        setIsSaved(false);
         alert('Attendance completed for the day!');
     };
 
@@ -138,6 +153,24 @@ function Attendance() {
                     <div className="student-list-card">
                         <h2>Step 2: Student Attendance / बच्चों की उपस्थिति</h2>
                         <p className="hint">By default all are present. Toggle for absentees.</p>
+
+                        {/* Stats bar */}
+                        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '16px', padding: '12px 16px', background: 'rgba(0,0,0,0.15)', borderRadius: '10px' }}>
+                            <span style={{ color: '#10b981', fontWeight: '700' }}>✅ Present: {students.filter(s => s.status === 'Present').length}</span>
+                            <span style={{ color: '#ef4444', fontWeight: '700' }}>❌ Absent: {students.filter(s => s.status === 'Absent').length}</span>
+                            <span style={{ color: '#94a3b8' }}>Total: {students.length}</span>
+                            <button
+                                onClick={handleSaveAttendance}
+                                style={{
+                                    marginLeft: 'auto', padding: '8px 20px', borderRadius: '8px', border: 'none',
+                                    background: isSaved ? '#10b981' : '#3b82f6', color: '#fff',
+                                    fontWeight: '700', cursor: 'pointer', fontSize: '0.85rem', transition: 'background 0.3s'
+                                }}
+                            >
+                                {isSaved ? '✅ Saved!' : '💾 Save Attendance'}
+                            </button>
+                        </div>
+
                         <div className="student-grid">
                             {students.map(s => (
                                 <div key={s.id} className={`student-card ${s.status === 'Absent' ? 'absent' : ''}`}>

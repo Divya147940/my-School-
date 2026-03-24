@@ -1,11 +1,11 @@
 /* ===== Navbar Styles ===== */
 .navbar {
-    background: rgba(15, 23, 42, 0.8);
+    background: var(--glass-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     padding: 0;
     width: 100%;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--glass-border);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
@@ -66,8 +66,8 @@
 }
 
 .nav-link:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--accent-blue);
+    background: var(--glass-glow);
 }
 
 .nav-link.active-link {
@@ -91,7 +91,7 @@
     top: 100%;
     left: 0;
     min-width: 220px;
-    background: #ffffff;
+    background: var(--bg-secondary);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     list-style: none;
     padding: 10px 0;
@@ -121,13 +121,13 @@
 .dropdown-menu a {
     display: block;
     padding: 12px 25px;
-    color: #333;
+    color: var(--text-primary);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
     transition: all 0.2s ease;
     text-transform: none;
-    border-bottom: 1px solid #f5f5f5;
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .dropdown-menu li:last-child a {
@@ -161,7 +161,7 @@
     display: block;
     width: 100%;
     height: 3px;
-    background-color: #ffffff;
+    background-color: var(--text-primary);
     border-radius: 3px;
     transition: all 0.3s ease;
 }
@@ -195,7 +195,7 @@
         top: 100%;
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, #1a1a6e 0%, #2c3e8c 100%);
+        background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         padding: 10px 0;
     }
@@ -206,7 +206,7 @@
 
     .nav-link {
         padding: 12px 25px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid var(--glass-border);
         text-align: center;
     }
 
@@ -238,7 +238,7 @@
     }
 
     .dropdown-menu a {
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--text-primary);
         padding: 10px 20px;
         font-size: 13px;
         border-bottom: none;

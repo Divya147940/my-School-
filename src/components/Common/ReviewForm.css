@@ -126,6 +126,6 @@
 
 /* Light Mode Overrides if needed */
 .light-mode .review-form-modal {
-  background: white;
+  background: var(--bg-primary);
   color: #1a1a6e;
 }

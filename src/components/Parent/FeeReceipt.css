@@ -50,7 +50,7 @@
 }
 
 .receipt-paper {
-    background: white;
+    background: var(--bg-primary);
     color: #1e293b;
     padding: 2rem;
     font-family: 'Inter', sans-serif;

@@ -1,0 +1,125 @@
+.ai-doubt-solver-container {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
+    gap: 20px;
+}
+
+.ai-solver-header {
+    text-align: center;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 20px;
+}
+
+.ai-badge {
+    background: var(--accent-blue);
+    color: white;
+    width: fit-content;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    margin: 0 auto 10px;
+}
+
+.ai-solver-header h3 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.ai-solver-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-right: 10px;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 10px;
+}
+
+.message-bubble {
+    max-width: 80%;
+    padding: 12px 18px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.message-bubble.user {
+    align-self: flex-end;
+    background: var(--accent-blue);
+    color: var(--text-primary);
+    border-bottom-right-radius: 4px;
+}
+
+.message-bubble.ai {
+    align-self: flex-start;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+}
+
+.typing span {
+    animation: blink 1.4s infinite both;
+    font-size: 1.5rem;
+}
+
+.typing span:nth-child(2) { animation-delay: .2s; }
+.typing span:nth-child(3) { animation-delay: .4s; }
+
+@keyframes blink {
+    0% { opacity: .2; }
+    20% { opacity: 1; }
+    100% { opacity: .2; }
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    background: var(--glass-bg);
+    padding: 10px;
+    border-radius: 18px;
+    border: 1px solid var(--glass-border);
+}
+
+.chat-input-area input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 15px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+}
+
+.send-btn {
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+    background: #2563eb;
+}

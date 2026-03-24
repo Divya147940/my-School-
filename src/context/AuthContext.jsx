@@ -31,9 +31,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const secureApi = async (url, options = {}) => {
+    const currentToken = token || localStorage.getItem('NSGI_AUTH_TOKEN');
     const headers = {
       ...options.headers,
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${currentToken}`,
       'Content-Type': 'application/json'
     };
     return fetch(url, { ...options, headers });

@@ -1,15 +1,22 @@
-import pkg from 'pg';
-const { Pool } = pkg;
+import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_DATABASE || 'school_db',
+    user: process.env.DB_USER || 'root',
     password: String(process.env.DB_PASSWORD || ''),
-    port: parseInt(process.env.DB_PORT || '5433'),
+    database: process.env.DB_DATABASE || 'school_db',
+    port: parseInt(process.env.DB_PORT || '3306'),
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 export default pool;

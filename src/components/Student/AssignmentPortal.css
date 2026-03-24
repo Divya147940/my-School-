@@ -79,7 +79,7 @@
     font-size: 1.25rem;
     font-weight: 800;
     margin-bottom: 10px;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .asm-desc {
@@ -147,7 +147,7 @@
 
 .confirm-btn {
     padding: 12px;
-    background: #fff;
+    background: var(--bg-primary);
     color: #000;
     border: none;
     border-radius: 10px;

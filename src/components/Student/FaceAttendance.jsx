@@ -16,12 +16,16 @@ const FaceAttendance = ({ mode }) => {
     const [capturedImage, setCapturedImage] = useState(null);
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [isManualMode, setIsManualMode] = useState(false);
+    const [landmarks, setLandmarks] = useState(null);
+    const [scanMessage, setScanMessage] = useState('AI SEARCHING...');
     const [searchTerm, setSearchTerm] = useState('');
     const [searchList, setSearchList] = useState([]);
     const [recentScans, setRecentScans] = useState([]);
     const [isVirtualStream, setIsVirtualStream] = useState(false);
-    const TEST_ID_PHOTO = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop"; // Schematic hybrid avatar
+    const [funFilter, setFunFilter] = useState(null); // 'lion', 'crown', 'glasses'
+    const TEST_ID_PHOTO = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop"; 
     
+    const [cameraIndex, setCameraIndex] = useState(0);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
@@ -56,7 +60,30 @@ const FaceAttendance = ({ mode }) => {
         setIsCameraActive(true);
         setIsVirtualStream(false);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            
+            let targetDeviceId = null;
+            if (videoDevices.length > 0) {
+                if (cameraIndex === 0) {
+                    const frontCam = videoDevices.find(d => 
+                        d.label.toLowerCase().includes('front') || 
+                        d.label.toLowerCase().includes('selfie') ||
+                        d.label.toLowerCase().includes('user')
+                    );
+                    if (frontCam) targetDeviceId = frontCam.deviceId;
+                } else {
+                    targetDeviceId = videoDevices[cameraIndex % videoDevices.length].deviceId;
+                }
+            }
+
+            let stream;
+            if (targetDeviceId) {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: targetDeviceId } } });
+            } else {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+            }
+
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
@@ -79,63 +106,59 @@ const FaceAttendance = ({ mode }) => {
         setScanStatus('matching');
         setProgress(0);
         setMatchConfidence(0);
+        setLandmarks(null);
         await startCamera();
         
-        let matchInterval = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 100) {
-                    clearInterval(matchInterval);
-                    performVerification();
-                    return 100;
-                }
-                return prev + 2;
-            });
-        }, 40); // 2 seconds total for alignment
-    };
-
-    const startFaceMatching = () => {
-        let matchInterval = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 100) {
-                    clearInterval(matchInterval);
-                    performVerification();
-                    return 100;
-                }
-                return prev + 2;
-            });
-        }, 40);
-    };
-
-    const startEnrollment = () => {
-        setIsEnrolling(true);
-        setProgress(0);
-        let interval = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 100) {
-                    clearInterval(interval);
-                    mockApi.enrollFace(verifiedStudent.id);
-                    setIsEnrolled(true);
-                    setIsEnrolling(false);
-                    return 100;
-                }
-                return prev + 2;
-            });
-        }, 40); // 2 seconds for enrollment alignment too
-    };
-
-    const performVerification = async (isFallback = false) => {
-        if (isFallback || (videoRef.current && canvasRef.current)) {
-            let photo = capturedImage;
-            if (!isFallback) {
-                const canvas = canvasRef.current;
+        let matchInterval = setInterval(async () => {
+            if (videoRef.current && canvasRef.current) {
                 const video = videoRef.current;
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
+                const canvas = canvasRef.current;
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
                 const ctx = canvas.getContext('2d');
+                
+                // ADAPTIVE DIGITAL BOOST
+                ctx.filter = 'brightness(1.6) contrast(1.3)';
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                photo = canvas.toDataURL('image/jpeg');
-                setCapturedImage(photo);
+                const dataUrl = canvas.toDataURL('image/jpeg');
+
+                try {
+                    const detection = await mockApi.getFaceDescriptorFromBase64(dataUrl);
+                    if (detection) {
+                        setLandmarks(detection.landmarks);
+                        setScanMessage(progress < 50 ? "HOLD STILL..." : "LOCKING FEATURES...");
+                        setProgress(prev => {
+                            if (prev >= 100) {
+                                clearInterval(matchInterval);
+                                performVerification(dataUrl);
+                                return 100;
+                            }
+                            return prev + 5;
+                        });
+                    } else {
+                        setLandmarks(null);
+                        setScanMessage("AI SEARCHING...");
+                        setProgress(prev => Math.max(0, prev - 2));
+                    }
+                } catch (err) {
+                    console.warn("Scan loop error:", err);
+                }
             }
+        }, 150);
+    };
+
+    const performVerification = async (scannedImage = null) => {
+        let photo = scannedImage || capturedImage;
+        if (!photo && videoRef.current) {
+            const canvas = canvasRef.current;
+            const video = videoRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            photo = canvas.toDataURL('image/jpeg');
+        }
+        setCapturedImage(photo);
             
             // Use general matcher with Strict AI Euclidean Distances (0.40)
             const result = await mockApi.matchFaceAcrossAllStudents(photo);
@@ -177,7 +200,6 @@ const FaceAttendance = ({ mode }) => {
                 setScanStatus('failed');
             }
             stopCamera();
-        }
     };
 
     const handleManualMark = (student) => {
@@ -266,33 +288,38 @@ const FaceAttendance = ({ mode }) => {
     }
 
     return (
-        <div className="face-attendance-container" style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+        <div className="face-attendance-container" style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
             <div className="glass-panel" style={{ 
-                background: 'var(--glass-bg)', 
-                padding: '40px', 
-                borderRadius: '32px', 
+                background: '#0f172a', 
+                padding: '60px 40px', 
+                borderRadius: '40px', 
                 textAlign: 'center',
-                border: '1px solid var(--glass-border)',
+                border: '1px solid rgba(255,255,255,0.05)',
                 position: 'relative',
-                overflow: 'hidden'
+                boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
             }}>
-                <div style={{ position: 'absolute', top: '20px', right: '20px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    {verifiedStudent ? `Identified: ${verifiedStudent.name}` : 'Scanning Mode'}
+                <div style={{ position: 'absolute', top: '30px', right: '40px', fontSize: '0.9rem', color: '#64748b', fontWeight: '500' }}>
+                    Scanning Mode
                 </div>
-                <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '30px' }}>
-                    {isEnrolling ? t('enrollFace') : 'AI Face Scanner'}
+                
+                <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: '#fff', marginBottom: '50px', letterSpacing: '-1px' }}>
+                    AI Face Scanner
                 </h2>
 
                 <div className="scanner-viewport" style={{ 
-                    width: '280px', 
-                    height: '280px', 
-                    margin: '0 auto 30px', 
+                    width: '320px', 
+                    height: '320px', 
+                    margin: '0 auto 60px', 
                     borderRadius: '50%', 
-                    border: '4px solid var(--glass-border)',
+                    border: '2px dashed rgba(255,255,255,0.15)',
                     position: 'relative',
-                    overflow: 'hidden'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    background: 'rgba(255,255,255,0.02)'
                 }}>
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(45deg, #1e293b, #0f172a)', opacity: isCameraActive ? 0 : 0.8, transition: 'opacity 0.5s' }}></div>
+                    <div style={{ position: 'absolute', inset: 0, background: '#000', opacity: isCameraActive ? 0 : 0.8, transition: 'opacity 0.5s' }}></div>
                     
                     {isCameraActive && (
                         <video 
@@ -325,160 +352,134 @@ const FaceAttendance = ({ mode }) => {
                             }} 
                         />
                     )}
-                    
-                    {isEnrolling && (
-                        <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-                            {[1,2,3,4,5,6,7,8].map(i => (
-                                <div key={i} style={{ 
-                                    position: 'absolute',
-                                    width: '8px', height: '8px',
-                                    background: 'var(--accent-blue)',
-                                    borderRadius: '50%',
-                                    top: `${40 + Math.sin(i) * 30}%`,
-                                    left: `${50 + Math.cos(i) * 30}%`,
-                                    boxShadow: '0 0 10px var(--accent-blue)',
-                                    opacity: progress > i * 12 ? 1 : 0.2,
-                                    transition: 'all 0.3s'
-                                }}></div>
-                            ))}
-                        </div>
-                    )}
 
-                    {isVirtualStream ? (
-                        <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                            <img src={TEST_ID_PHOTO} alt="Virtual" style={{ width: '150px', height: '150px', borderRadius: '50%', filter: 'brightness(0.5) sepia(0.5) contrast(1.2)', opacity: 0.8 }} />
-                        </div>
-                    ) : (
-                        <div style={{ width: '180px', height: '220px', border: '2px dashed rgba(255,255,255,0.3)', borderRadius: '50% 50% 40% 40%', zIndex: 1 }}></div>
-                    )}
-
-                    {/* Clean View: HUD Removed per user request */}
-
+                    {/* Scanning Animation */}
                     {(scanStatus === 'matching' || isEnrolling) && (
-                        <>
-                            <div className="scan-line" style={{ 
-                                position: 'absolute', 
-                                top: `${progress}%`, 
-                                left: 0, 
-                                width: '100%', 
-                                height: '4px', 
-                                background: 'var(--accent-blue)', 
-                                boxShadow: `0 0 15px var(--accent-blue)`,
-                                zIndex: 2
-                            }}></div>
-                        </>
+                        <div className="scan-line" style={{ 
+                            position: 'absolute', 
+                            top: `${progress}%`, 
+                            left: 0, 
+                            width: '100%', 
+                            height: '2px', 
+                            background: '#3b82f6', 
+                            boxShadow: '0 0 20px #3b82f6',
+                            zIndex: 2,
+                            transition: 'top 0.1s linear'
+                        }}></div>
+                    )}
+
+                    {/* AI Landmark Dots */}
+                    {isCameraActive && landmarks && (
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 5 }}>
+                            <div style={{ position: 'absolute', left: `${(landmarks.getLeftEye()[0].x / 640) * 320}px`, top: `${(landmarks.getLeftEye()[0].y / 480) * 320}px`, width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 15px #10b981' }}></div>
+                            <div style={{ position: 'absolute', left: `${(landmarks.getRightEye()[0].x / 640) * 320}px`, top: `${(landmarks.getRightEye()[0].y / 480) * 320}px`, width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 15px #10b981' }}></div>
+                            <div style={{ position: 'absolute', left: `${(landmarks.getNose()[0].x / 640) * 320}px`, top: `${(landmarks.getNose()[0].y / 480) * 320}px`, width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 15px #10b981' }}></div>
+                        </div>
                     )}
 
                     {scanStatus === 'success' && (
-                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
-                            <span style={{ fontSize: '5rem' }}>✅</span>
+                        <div style={{ position: 'absolute', inset: 0, background: 'rgba(16, 185, 129, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, animation: 'zoomIn 0.3s' }}>
+                            <div style={{ width: '120px', height: '120px', background: '#00c853', borderRadius: '12px', border: '5px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(0,200,83,0.5)' }}>
+                                <span style={{ fontSize: '6rem', color: '#fff' }}>✓</span>
+                            </div>
                         </div>
+                    )}
+
+                    {/* Dashboard Guide */}
+                    {!isCameraActive && !capturedImage && (
+                        <div style={{ width: '100%', height: '100%', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '50%', position: 'absolute', transform: 'scale(0.8)' }}></div>
                     )}
                 </div>
 
-                <div className="scan-controls">
-                    {isEnrolling && (
-                        <div style={{ color: 'var(--accent-blue)', fontWeight: '700', fontSize: '1.2rem' }}>
-                            {t('mappingLandmarks')} {progress}%
-                        </div>
-                    )}
-
-
-
-                    {scanStatus === 'matching' && (
-                        <div style={{ color: 'var(--accent-blue)', fontWeight: '700', fontSize: '1.2rem' }}>
-                            🔍 Analyzing Features... {progress}%
-                        </div>
-                    )}
-
-                    {scanStatus === 'idle' && !isEnrolling && (
+                <div className="scan-controls" style={{ minHeight: '120px' }}>
+                    {scanStatus === 'matching' || isEnrolling ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            <button onClick={startScan} style={{ 
-                                padding: '18px 40px', 
-                                borderRadius: '16px', 
-                                background: 'var(--accent-blue)', 
-                                color: '#fff', 
-                                border: 'none', 
-                                fontWeight: '800', 
-                                cursor: 'pointer',
-                                fontSize: '1.1rem'
-                            }}>
-                                📸 {t('startScan')}
-                            </button>
-                            {(user?.role === 'Faculty' || user?.role === 'Admin') && (
-                                <button onClick={() => setIsManualMode(true)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline' }}>
-                                    Mark Attendance Manually?
-                                </button>
-                            )}
+                            <div style={{ width: '200px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', margin: '0 auto', overflow: 'hidden' }}>
+                                <div style={{ width: `${progress}%`, height: '100%', background: '#3b82f6', transition: 'width 0.2s' }}></div>
+                            </div>
+                            <div style={{ color: '#3b82f6', fontWeight: '800', fontSize: '1.2rem', animation: 'pulse 1.5s infinite' }}>
+                                {scanMessage} {progress}%
+                            </div>
                         </div>
-                    )}
-
-                    {/* Liveness and Matching handles are above */}
-
-                    {scanStatus === 'success' && (
+                    ) : scanStatus === 'success' ? (
                         <div style={{ animation: 'fadeIn 0.5s ease' }}>
-                            <p style={{ color: '#10b981', fontWeight: '900', fontSize: '1.4rem', marginBottom: '15px' }}>🎉 {t('matchFound')}</p>
-                            
-                            {/* Side by Side Proof */}
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '20px' }}>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.6rem', color: '#64748b', marginBottom: '5px' }}>SCANNED</div>
-                                    <img src={capturedImage} style={{ width: '80px', height: '80px', borderRadius: '12px', border: '2px solid #3b82f6' }} alt="Scanned" />
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', color: '#10b981', fontSize: '1.5rem' }}>↔️</div>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.6rem', color: '#64748b', marginBottom: '5px' }}>DATABASE</div>
-                                    <img src={verifiedStudent?.faceImage || capturedImage} style={{ width: '80px', height: '80px', borderRadius: '12px', border: '2px solid #10b981' }} alt="Database" />
-                                </div>
-                            </div>
-
-                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '15px', borderRadius: '15px', border: '1px solid #10b981', marginBottom: '20px' }}>
-                                <div style={{ color: '#fff', fontWeight: '800', fontSize: '1.1rem' }}>{verifiedStudent?.name}</div>
-                                <div style={{ color: '#10b981', fontSize: '0.8rem', fontWeight: 'bold' }}>ATTENDANCE MARKED • {(matchConfidence * 100).toFixed(0)}% BIOMETRIC CONFIDANCE</div>
-                            </div>
-
-                            <button onClick={() => { setScanStatus('idle'); setCapturedImage(null); }} style={{ padding: '15px 40px', borderRadius: '30px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.3)' }}>NEXT SCAN</button>
+                            <h3 style={{ color: '#10b981', fontWeight: '900', fontSize: '2.2rem', marginBottom: '10px', textTransform: 'uppercase' }}>Match Found!</h3>
+                            <div style={{ color: '#fff', opacity: 0.8, fontSize: '1.2rem', marginBottom: '30px', fontWeight: '500' }}>{verifiedStudent?.name} - Marked Present</div>
+                            <button onClick={() => { setScanStatus('idle'); setCapturedImage(null); stopCamera(); }} style={{ padding: '15px 80px', borderRadius: '16px', background: '#3b82f6', color: '#fff', border: 'none', fontWeight: '900', cursor: 'pointer', fontSize: '1.2rem', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.3)' }}>OK</button>
                         </div>
-                    )}
-
-                    {scanStatus === 'failed' && (
+                    ) : scanStatus === 'failed' ? (
                         <div>
-                            <p style={{ color: '#ef4444', fontWeight: '800', fontSize: '1.2rem', marginBottom: '5px' }}>Low Confidence / No Match</p>
-                            {matchConfidence > 0 && <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>Confidence: {(matchConfidence * 100).toFixed(1)}% (Min 50% req.)</p>}
-                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                                <button onClick={() => { setScanStatus('idle'); setCapturedImage(null); }} style={{ padding: '12px 25px', borderRadius: '12px', background: 'var(--accent-blue)', color: '#fff', border: 'none', cursor: 'pointer' }}>Try Again</button>
-                                {(user?.role === 'Faculty' || user?.role === 'Admin') && (
-                                    <button onClick={() => setIsManualMode(true)} style={{ padding: '12px 25px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid var(--glass-border)', cursor: 'pointer' }}>Override</button>
-                                )}
+                            <p style={{ color: '#ef4444', fontWeight: '800', fontSize: '1.2rem', marginBottom: '15px' }}>Face Not Recognized</p>
+                            <button onClick={() => { setScanStatus('idle'); setCapturedImage(null); }} style={{ padding: '12px 25px', borderRadius: '12px', background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>Try Again</button>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', width: '100%' }}>
+                            <div style={{ position: 'relative', width: '100%' }}>
+                                <button onClick={startScan} style={{ 
+                                    width: '100%',
+                                    padding: '22px', 
+                                    paddingRight: '60px',
+                                    borderRadius: '20px', 
+                                    background: '#3b82f6', 
+                                    color: '#fff', 
+                                    border: 'none', 
+                                    fontWeight: '900', 
+                                    cursor: 'pointer',
+                                    fontSize: '1.2rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '15px',
+                                    boxShadow: '0 10px 25px rgba(59, 130, 246, 0.4)'
+                                }}>
+                                    <span style={{ fontSize: '1.5rem' }}>📸</span> START SCAN
+                                </button>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCameraIndex(prev => prev + 1);
+                                        startCamera();
+                                    }} 
+                                    style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '12px', padding: '10px', cursor: 'pointer', color: '#fff' }}
+                                    title="Switch Camera"
+                                >
+                                    🔄
+                                </button>
                             </div>
+                            
+                            <button 
+                                onClick={() => setIsManualMode(true)} 
+                                style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.95rem' }}
+                            >
+                                Mark Attendance Manually?
+                            </button>
                         </div>
                     )}
                 </div>
             </div>
-            
-            {/* Proactive Logic: Recent Activity Feed */}
-            {recentScans.length > 0 && (
-                <div className="glass-panel" style={{ marginTop: '30px', padding: '25px', borderRadius: '24px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        🕒 Recent Activity Logic
-                    </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {recentScans.map(scan => (
-                            <div key={scan.id} style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '10px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)' }}>
-                                <img src={scan.image} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} alt="Signature" />
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{scan.name}</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#10b981' }}>✅ Identified & Marked</div>
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{scan.time}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-            
+
             <canvas ref={canvasRef} style={{ display: 'none' }} />
-            <button onClick={() => { stopCamera(); setCapturedImage(null); setScanStatus('idle'); }} style={{ display: 'block', width: '100%', marginTop: '20px', background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textAlign: 'center' }}>Cancel Scanning</button>
+            
+            {isCameraActive && (
+                <button 
+                    onClick={() => { stopCamera(); setScanStatus('idle'); }} 
+                    style={{ display: 'block', width: '100%', marginTop: '30px', background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', textAlign: 'center' }}
+                >
+                    Cancel and Go Back
+                </button>
+            )}
+
+            <style>{`
+                @keyframes pulse {
+                    0% { opacity: 0.6; }
+                    50% { opacity: 1; }
+                    100% { opacity: 0.6; }
+                }
+                @keyframes zoomIn {
+                    from { transform: scale(0.5); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+            `}</style>
         </div>
     );
 };

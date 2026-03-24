@@ -2,7 +2,7 @@
     min-height: 100vh;
     padding-top: 80px;
     background: #0f172a;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .careers-hero {

@@ -1,6 +1,6 @@
 /* ===== Social Work Page ===== */
 .sw-page {
-    background: #fff;
+    background: var(--bg-primary);
 }
 
 .sw-hero {
@@ -28,10 +28,10 @@
 .sw-intro {
     max-width: 900px;
     margin: -40px auto 0;
-    background: white;
+    background: var(--bg-primary);
     padding: 50px;
     border-radius: 15px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-premium);
     position: relative;
     z-index: 2;
     text-align: center;
@@ -65,10 +65,10 @@
 }
 
 .sw-card {
-    background: #fff;
+    background: var(--bg-primary);
     border-radius: 18px;
     padding: 40px 30px 35px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-premium);
     border: 1px solid #eee;
     position: relative;
     text-align: left;
@@ -77,7 +77,7 @@
 
 .sw-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-premium);
 }
 
 .sw-card-tag {
@@ -120,7 +120,7 @@
 
 .sw-cta h2 {
     font-family: 'Playfair Display', serif;
-    color: #fff;
+    color: var(--text-primary);
     font-size: 2.2rem;
     margin-bottom: 12px;
 }
@@ -133,7 +133,7 @@
 
 .sw-cta-btn {
     display: inline-block;
-    background: #fff;
+    background: var(--bg-primary);
     color: #27ae60;
     padding: 15px 40px;
     border-radius: 50px;
@@ -143,14 +143,14 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-premium);
 }
 
 .sw-cta-btn:hover {
     background: #1a1a6e;
     color: #fff;
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-premium);
 }
 
 /* Responsive */

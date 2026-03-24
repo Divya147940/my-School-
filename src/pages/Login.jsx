@@ -108,10 +108,13 @@ const Login = () => {
   const [activePortal, setActivePortal] = useState(null);
   const [hardwareLocked, setHardwareLocked] = useState(false);
   const TEST_ID_PHOTO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  const [cameraIndex, setCameraIndex] = useState(0);
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanMessage, setScanMessage] = useState('ALIGN FACE IN FRAME');
+  const [scanTips, setScanTips] = useState('');
   const [loginId, setLoginId] = useState('');
+  const [landmarks, setLandmarks] = useState(null);
   const videoRef = React.useRef(null);
   const canvasRef = React.useRef(null);
 
@@ -121,33 +124,74 @@ const Login = () => {
     setHardwareLocked(false);
     // Next tick to ensure videoRef is rendered
     setTimeout(async () => {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            // Simulating 100.0% accurate biometric extraction
-            // This block is a placeholder for a silent fallback,
-            // as the actual biometric matching logic is in mockApi.js
-            // and the camera stream is simulated if hardware is unavailable.
-            setHardwareLocked(true);
-            setIsBiometric(true);
-            console.warn("Biometric hardware not available. Proceeding with simulated scan.");
-            return;
+        setIsScanning(false);
+        setScanProgress(0);
+        setLandmarks(null);
+        setScanMessage("ID ENTRY MODE"); 
+        setScanTips("Tip: Enter ID and then click START SCAN."); 
+        
+        // Kill existing streams to avoid lock
+        if (videoRef.current && videoRef.current.srcObject) {
+            videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+            videoRef.current.srcObject = null;
         }
 
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setHardwareLocked(true);
+            setIsBiometric(true);
+            console.warn("Biometric hardware not available.");
+            return;
+        }
+        
         const tiers = [
+            { video: { facingMode: { exact: 'user' } } },
             { video: { facingMode: 'user' } },
-            { video: true },
-            { video: { width: { ideal: 640 }, height: { ideal: 480 } } }
+            { video: true }
         ];
 
         let stream = null;
         let lastErr = null;
 
-        for (const constraints of tiers) {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                if (stream) break;
-            } catch (e) {
-                lastErr = e;
-                console.warn("Retry biometric camera...", e.name);
+        // Stage 1: Obtain permission and basic stream
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            
+            // If the user clicked Switch Camera, we just pick the next index
+            let targetDeviceId = null;
+            if (videoDevices.length > 0) {
+                // If it's the first time, try to find "front"
+                if (cameraIndex === 0) {
+                    const frontCam = videoDevices.find(d => 
+                        d.label.toLowerCase().includes('front') || 
+                        d.label.toLowerCase().includes('selfie') ||
+                        d.label.toLowerCase().includes('user')
+                    );
+                    if (frontCam) targetDeviceId = frontCam.deviceId;
+                } else {
+                    // Manual cycle
+                    targetDeviceId = videoDevices[cameraIndex % videoDevices.length].deviceId;
+                }
+            }
+
+            if (targetDeviceId) {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { deviceId: { exact: targetDeviceId } } 
+                });
+            }
+        } catch (e) {
+            console.warn("Camera selection failed, falling back to facingMode.");
+        }
+
+        if (!stream) {
+            for (const constraints of tiers) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    if (stream) break;
+                } catch (e) {
+                    lastErr = e;
+                    console.warn("Permission acquisition retry...", e.name);
+                }
             }
         }
 
@@ -178,69 +222,81 @@ const Login = () => {
     }, 150);
   };
 
-  const handleBiometricLogin = async () => {
-    if (!loginId) {
-        alert("Please enter your Unique ID first.");
-        return;
-    }
+  // High-Speed Biometric Scan Loop for Login
+  React.useEffect(() => {
+    let scanInterval;
+    if (isBiometric && !isAuthenticated && isScanning) {
+        setScanProgress(0);
+        setScanMessage("AI SEARCHING...");
 
-    setIsScanning(true);
-    setScanProgress(0);
-    setScanMessage("ALIGN FACE IN FRAME...");
-
-    // AI Face Analysis Sequence (Purely Face Focused)
-    setTimeout(() => { setScanProgress(30); setScanMessage("SCANNING FACE..."); }, 500);
-    setTimeout(() => { setScanProgress(60); setScanMessage("ANALYZING FEATURES..."); }, 1000);
-    setTimeout(() => { setScanProgress(90); setScanMessage("IDENTIFYING..."); }, 1500);
-    setTimeout(() => { setScanProgress(100); setScanMessage("MATCHING BIOMETRICS..."); }, 2000);
-
-    setTimeout(async () => {
-        if (videoRef.current && canvasRef.current) {
-            try {
+        scanInterval = setInterval(async () => {
+            if (videoRef.current && canvasRef.current) {
                 const video = videoRef.current;
                 const canvas = canvasRef.current;
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                const image = canvas.toDataURL('image/jpeg');
-
-                const result = activePortal.type === 'Faculty' 
-                    ? await mockApi.verifyFacultyBiometricLogin(loginId, image)
-                    : await mockApi.verifyStudentBiometricLogin(loginId, image);
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                const ctx = canvas.getContext('2d');
                 
-                // Stop camera ALWAYS after the AI processing is done
-                if (videoRef.current?.srcObject) {
-                    videoRef.current.srcObject.getTracks().forEach(t => t.stop());
-                    videoRef.current.srcObject = null;
-                }
+                // ADAPTIVE DIGITAL BOOST: 1.6 brightness + 1.3 contrast for harsh lighting
+                ctx.filter = 'brightness(1.6) contrast(1.3)';
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/jpeg');
 
-                if (result.success) {
-                    const authenticatedUser = result.faculty || result.student;
-                    login(authenticatedUser, "MOCK_JWT_TOKEN");
-                    navigate(activePortal.path);
-                } else {
-                    alert(result.message);
-                    setIsScanning(false);
-                    setScanProgress(0);
+                try {
+                    const detection = await mockApi.getFaceDescriptorFromBase64(dataUrl);
+                    if (detection) {
+                        setLandmarks(detection.landmarks);
+                        setScanProgress(prev => Math.min(95, prev + 15));
+                        setScanMessage("ANALYZING BIOMETRICS...");
+
+                        // Real-time Database Matching during scan
+                        // (If loginId is provided, we can be more specific, but user wants "instant")
+                        // Let's try to match against ALL contextually relevant users
+                        const matchResult = activePortal.type === 'Faculty' 
+                            ? await mockApi.matchFaceAcrossAllFaculty(detection.descriptor)
+                            : await mockApi.matchFaceAcrossAllStudents(detection.descriptor);
+
+                        if (matchResult && matchResult.confidence > 0.65) {
+                            setTimeout(() => {
+                                login(matchResult.user, "MOCK_JWT_TOKEN");
+                                navigate(activePortal.path);
+                            }, 500);
+                        } else {
+                            // If no match yet, keep scanning
+                        }
+                    } else {
+                        setLandmarks(null);
+                        setScanProgress(prev => Math.max(0, prev - 10));
+                        setScanMessage("FACE NOT DETECTED");
+                    }
+                } catch (err) {
+                    setScanMessage("AI SEARCHING...");
+                    setScanTips("Tip: Ensure your whole face is visible.");
+                    console.warn("Biometric scan skipped/error:", err);
                 }
-            } catch (err) {
-                console.error("Biometric Check Failed:", err);
-                // Ensure camera is released even on error
-                if (videoRef.current?.srcObject) {
-                    videoRef.current.srcObject.getTracks().forEach(t => t.stop());
-                    videoRef.current.srcObject = null;
-                }
-                alert(`AI Scan Error: ${err.message || 'Unknown Error'}\n\n1. Check your internet connection.\n2. Ensure your face is clearly visible.`);
-                setIsScanning(false);
-                setScanProgress(0);
             }
-        }
-    }, 2500); 
+        }, 600); // 600ms to reduce CPU load and let AI finish // 500ms for high-res model processing
+    }
+    return () => clearInterval(scanInterval);
+  }, [isBiometric, activePortal, isAuthenticated, isScanning]);
+
+  const handleBiometricLogin = async () => {
+    // Handled by auto-scan useEffect
+    setIsScanning(true);
+    setScanMessage("SEARCHING DATABASE...");
   };
 
 
   const handlePortalLogin = async (portal) => {
-    if (portal.type === 'Faculty' || portal.type === 'Student') {
+    if (portal.type === 'Student') {
+        // Temporarily bypassing biometric for Student Portal as requested
+        // Using Class 3 to show the new Junior World preview features
+        login({ id: 'SR2026', name: 'Junior Student (Cl-3)', role: 'Student', class: 'Class 3' }, "MOCK_JWT");
+        navigate(portal.path);
+        return;
+    }
+
+    if (portal.type === 'Faculty') {
         startBiometric(portal);
         return;
     }
@@ -327,35 +383,96 @@ const Login = () => {
             </h2>
             <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Enter your Unique ID and look into the camera.</p>
 
-            <div style={{ marginBottom: '25px', textAlign: 'left' }}>
+            <div style={{ marginBottom: '25px', textAlign: 'left', position: 'relative' }}>
                 <label style={{ display: 'block', color: '#3b82f6', fontSize: '0.75rem', fontWeight: '800', marginBottom: '8px', letterSpacing: '1px' }}>SYSTEM AUTH ID</label>
-                <input 
-                    type="text" 
-                    placeholder={activePortal?.type === 'Faculty' ? "e.g. T-001" : "e.g. SR2026"}
-                    value={loginId}
-                    onChange={(e) => setLoginId(e.target.value)}
-                    disabled={isScanning}
-                    style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59, 130, 246, 0.3)', color: '#fff', fontSize: '1rem', outline: 'none', transition: '0.3s' }}
-                    className="id-login-input"
-                />
+                <div style={{ position: 'relative' }}>
+                    <input 
+                        type="text" 
+                        placeholder={activePortal?.type === 'Faculty' ? "e.g. T-001" : "e.g. SR2026"}
+                        value={loginId}
+                        onChange={(e) => setLoginId(e.target.value)}
+                        style={{ width: '100%', padding: '15px', paddingRight: '50px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59, 130, 246, 0.3)', color: '#fff', fontSize: '1rem', outline: 'none' }}
+                        className="id-login-input"
+                    />
+                    <button 
+                        onClick={() => {
+                            setCameraIndex(prev => prev + 1);
+                            startBiometric(activePortal); 
+                        }} 
+                        title="Switch Camera"
+                        style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: '#fff', fontSize: '1rem' }}
+                    >
+                        🔄
+                    </button>
+                </div>
             </div>
+
+            {!isScanning && (
+                <div style={{ marginBottom: '30px' }}>
+                    <button 
+                        onClick={() => setIsScanning(true)}
+                        style={{ 
+                            width: '100%', 
+                            padding: '20px', 
+                            borderRadius: '16px', 
+                            background: '#3b82f6', 
+                            color: '#fff', 
+                            border: 'none', 
+                            fontWeight: '900', 
+                            cursor: 'pointer',
+                            fontSize: '1.2rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '15px',
+                            boxShadow: '0 10px 25px rgba(59, 130, 246, 0.4)'
+                        }}
+                    >
+                        <span style={{ fontSize: '1.5rem' }}>📸</span> START SCAN
+                    </button>
+                    <p style={{ marginTop: '15px', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>Enter your Unique ID first for faster matching</p>
+                </div>
+            )}
             
-            <div style={{ position: 'relative', width: '100%', borderRadius: '30px', overflow: 'hidden', background: '#000', marginBottom: '30px', aspectRatio: '4/3', border: '2px solid rgba(255,255,255,0.1)' }}>
-                <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', filter: isScanning ? 'sepia(1) hue-rotate(180deg) brightness(0.8)' : 'grayscale(100%) brightness(1.1)' }} />
+            <div className="scanner-viewport" style={{ 
+                width: '320px', 
+                height: '320px', 
+                margin: '0 auto 40px', 
+                borderRadius: '50%', 
+                border: '2px dashed rgba(255,255,255,0.15)',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                background: 'rgba(255,255,255,0.02)'
+            }}>
+                <div style={{ position: 'absolute', inset: 0, background: '#000', opacity: isScanning ? 0 : 0.8, transition: 'opacity 0.5s' }}></div>
                 
-                {/* Blinking Scanner Overlay */}
-                <div style={{ 
-                    position: 'absolute', 
-                    top: '50%', 
-                    left: '50%', 
-                    transform: 'translate(-50%, -50%)', 
-                    width: '260px', 
-                    height: '260px', 
-                    border: '4px solid ' + (isScanning ? '#3b82f6' : '#10b981'), 
-                    borderRadius: '50%', 
-                    borderStyle: 'dashed',
-                    animation: 'biometricBlink 1.5s infinite ease-in-out'
-                }}></div>
+                <video ref={videoRef} autoPlay playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                
+                {/* AI Landmark Dots */}
+                {isScanning && landmarks && (
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 5 }}>
+                        <div style={{ position: 'absolute', left: `${(landmarks.getLeftEye()[0].x / 640) * 320}px`, top: `${(landmarks.getLeftEye()[0].y / 480) * 320}px`, width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 15px #3b82f6' }}></div>
+                        <div style={{ position: 'absolute', left: `${(landmarks.getRightEye()[0].x / 640) * 320}px`, top: `${(landmarks.getRightEye()[0].y / 480) * 320}px`, width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 15px #3b82f6' }}></div>
+                        <div style={{ position: 'absolute', left: `${(landmarks.getNose()[0].x / 640) * 320}px`, top: `${(landmarks.getNose()[0].y / 480) * 320}px`, width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 15px #3b82f6' }}></div>
+                    </div>
+                )}
+
+                {isScanning && (
+                    <div className="scan-line" style={{ 
+                        position: 'absolute', 
+                        top: `${scanProgress}%`, 
+                        left: 0, 
+                        width: '100%', 
+                        height: '2px', 
+                        background: '#3b82f6', 
+                        boxShadow: '0 0 20px #3b82f6',
+                        zIndex: 2,
+                        transition: 'top 0.1s linear'
+                    }}></div>
+                )}
 
                 {isScanning && (
                     <div style={{ position: 'absolute', bottom: '20px', left: '10%', right: '10%', background: 'rgba(0,0,0,0.8)', padding: '15px', borderRadius: '15px', border: `1px solid ${scanProgress === 100 ? '#10b981' : '#3b82f6'}`, zIndex: 10 }}>
@@ -381,27 +498,21 @@ const Login = () => {
             
             <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                {/* Manual activation button removed - now handled by START SCAN above */}
+            
+            <div style={{ padding: '0 40px 40px' }}>
               <button 
                 onClick={() => {
                   if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
                   setIsBiometric(false);
                   setIsScanning(false);
+                  setLandmarks(null);
                 }} 
-                style={{ padding: '15px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 'bold' }}
+                style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}
               >
-                CANCEL
-              </button>
-              <button 
-                onClick={handleBiometricLogin} 
-                disabled={isScanning}
-                style={{ padding: '15px', borderRadius: '16px', background: isScanning ? 'rgba(59, 130, 246, 0.5)' : 'var(--accent-blue)', color: '#fff', border: 'none', cursor: isScanning ? 'wait' : 'pointer', fontWeight: '900' }}
-              >
-                {isScanning ? 'SCANNING...' : '🚀 START SCAN'}
+                CANCEL & CLOSE
               </button>
             </div>
-            
-                {/* Hardware bypass hidden but active */}
           </div>
         </div>
       )}

@@ -87,7 +87,7 @@
 .gal-card:hover {
     transform: scale(1.02) translateY(-5px);
     border-color: var(--accent-blue);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: var(--shadow-premium);
 }
 
 .gal-img-wrapper {
@@ -114,7 +114,7 @@
     align-items: center;
     justify-content: center;
     background: rgba(15, 23, 42, 0.8);
-    color: #fff;
+    color: var(--text-primary);
     gap: 15px;
 }
 
@@ -184,7 +184,7 @@
     max-width: 100%;
     max-height: 80vh;
     border-radius: 20px;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+    box-shadow: var(--shadow-premium);
 }
 
 .gal-lightbox-close {
@@ -193,7 +193,7 @@
     right: 0;
     background: none;
     border: none;
-    color: #fff;
+    color: var(--text-primary);
     font-size: 32px;
     cursor: pointer;
 }
@@ -201,7 +201,7 @@
 .gal-lightbox-info {
     margin-top: 30px;
     text-align: center;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .gal-lightbox-info h3 {

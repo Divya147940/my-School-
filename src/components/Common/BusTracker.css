@@ -33,7 +33,7 @@
 
 .bus-label {
     background: var(--accent-blue);
-    color: white;
+    color: var(--text-primary);
     font-size: 0.7rem;
     padding: 2px 8px;
     border-radius: 5px;

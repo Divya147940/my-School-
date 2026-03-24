@@ -1,6 +1,6 @@
 .health-container {
     padding: 20px;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .health-header {
@@ -36,7 +36,7 @@
 }
 
 .h-card label { display: block; color: #94a3b8; font-size: 0.75rem; margin-bottom: 5px; }
-.h-card .val { font-size: 1.5rem; font-weight: 800; margin: 0; color: #fff; }
+.h-card .val { font-size: 1.5rem; font-weight: 800; margin: 0; color: var(--text-primary); }
 
 .health-details-layout {
     display: grid;

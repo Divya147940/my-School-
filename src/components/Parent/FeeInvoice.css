@@ -1,6 +1,6 @@
 .fee-summary-view, .fee-checkout, .fee-success-view {
     padding: 20px;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .fee-header {
@@ -48,7 +48,7 @@
 .fee-checkout { max-width: 450px; margin: 0 auto; background: #1e293b; padding: 40px; border-radius: 24px; }
 .amount-highlight { font-size: 2.5rem; font-weight: 800; text-align: center; margin: 20px 0 30px; color: #3b82f6; }
 .payment-form { display: flex; flex-direction: column; gap: 15px; }
-.payment-form input { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 15px; border-radius: 12px; }
+.payment-form input { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); padding: 15px; border-radius: 12px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .payment-form button[type="submit"] { background: #10b981; color: #fff; border: none; padding: 18px; border-radius: 12px; font-weight: 800; cursor: pointer; }
 .cancel-btn { background: transparent; color: #94a3b8; border: none; cursor: pointer; margin-top: 10px; }
@@ -57,7 +57,7 @@
 .fee-success-view { text-align: center; padding: 50px 0; }
 .success-icon { font-size: 4rem; margin-bottom: 20px; }
 .invoice-actions { display: flex; justify-content: center; gap: 20px; margin-top: 40px; }
-.receipt-print { background: #fff; color: #000; padding: 40px; text-align: left; display: none; margin-top: 50px; border: 1px solid #ddd; }
+.receipt-print { background: var(--bg-primary); color: #000; padding: 40px; text-align: left; display: none; margin-top: 50px; border: 1px solid #ddd; }
 
 @media print {
     body * { visibility: hidden; }

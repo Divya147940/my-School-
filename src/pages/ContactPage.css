@@ -82,7 +82,7 @@
 }
 
 .cp-info-card a {
-    color: #fff;
+    color: var(--text-primary);
     text-decoration: none;
     font-weight: 700;
     transition: color 0.3s ease;
@@ -111,7 +111,7 @@
 }
 
 .cp-form-section h2 {
-    color: #fff;
+    color: var(--text-primary);
     font-size: 2.5rem;
     margin-bottom: 10px;
     font-weight: 800;
@@ -135,7 +135,7 @@
 }
 
 .cp-field label {
-    color: #fff;
+    color: var(--text-primary);
     font-size: 0.9rem;
     font-weight: 700;
     margin-bottom: 10px;
@@ -149,7 +149,7 @@
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     font-size: 1rem;
-    color: #fff;
+    color: var(--text-primary);
     background: rgba(15, 23, 42, 0.4);
     transition: all 0.3s ease;
 }
@@ -206,7 +206,7 @@
 .cp-send-another {
     padding: 14px 40px;
     background: var(--accent-blue);
-    color: white;
+    color: var(--text-primary);
     border: none;
     border-radius: 100px;
     cursor: pointer;
@@ -223,7 +223,7 @@
 }
 
 .cp-map-section h2 {
-    color: #fff;
+    color: var(--text-primary);
     font-size: 2.2rem;
     margin-bottom: 15px;
     font-weight: 800;
@@ -233,7 +233,7 @@
     border-radius: 24px;
     overflow: hidden;
     border: 1px solid var(--glass-border);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-premium);
 }
 
 .cp-direction-btn {
@@ -269,7 +269,7 @@
 }
 
 .cp-quick-connect h2 {
-    color: #fff;
+    color: var(--text-primary);
     font-size: clamp(28px, 4vw, 42px);
     margin-bottom: 40px;
     font-weight: 800;
@@ -281,7 +281,7 @@
     font-weight: 800;
     font-size: 15px;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-premium);
 }
 
 /* Responsive */

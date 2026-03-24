@@ -110,7 +110,7 @@
 
 .track-card p {
     font-size: 1.1rem;
-    color: #fff;
+    color: var(--text-primary);
     font-weight: 500;
 }
 

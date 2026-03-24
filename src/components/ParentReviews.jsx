@@ -5,7 +5,7 @@ import ReviewForm from './Common/ReviewForm';
 import './ParentReviews.css';
 
 const ParentReviews = () => {
-    const { theme } = useTheme();
+    const { isDark } = useTheme();
     const [reviews, setReviews] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -33,10 +33,10 @@ const ParentReviews = () => {
     if (reviews.length === 0) return null;
 
     return (
-        <section className={`reviews-section ${theme === 'light' ? 'light-mode' : ''}`}>
+        <section className={`reviews-section ${!isDark ? 'light-mode' : ''}`}>
             <div className="reviews-header">
                 <h2 className="reviews-title">Word from our Parents</h2>
-                <div className="section-dash"></div>
+                <div className="reviews-zigzag"></div>
                 <p className="section-subtitle">Real feedback from parents across the NSGI community.</p>
             </div>
 
@@ -84,9 +84,9 @@ const ParentReviews = () => {
                         onClick={() => setIsFormOpen(true)}
                         className="submit-custom-review-btn"
                         style={{
-                            background: 'transparent',
-                            color: 'white',
-                            border: '1px solid rgba(255,255,255,0.2)',
+                            background: 'var(--glass-glow)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--glass-border)',
                             padding: '10px 20px',
                             borderRadius: '30px',
                             fontWeight: '600',
@@ -104,7 +104,7 @@ const ParentReviews = () => {
                             <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/>
                         </svg>
                     </button>
-                    <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>
+                    <p style={{ marginTop: '10px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         Review will be sent to Admin for approval.
                     </p>
                 </div>

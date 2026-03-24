@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
   PieChart, Pie
 } from 'recharts';
@@ -24,6 +24,7 @@ import CommandPalette from '../components/CommandPalette';
 import SchoolCalendar from '../components/Common/SchoolCalendar';
 import AttendanceOps from '../components/Faculty/AttendanceOps';
 import StudentManagement from '../components/Faculty/StudentManagement';
+import ChatSystem from '../components/Common/ChatSystem';
 import FeeCollector from '../components/Common/FeeCollector';
 import LessonDiary from '../components/Common/LessonDiary';
 import TeacherResourceCenter from '../components/Faculty/TeacherResourceCenter';
@@ -31,6 +32,8 @@ import StudentAttendanceAudit from '../components/Common/StudentAttendanceAudit'
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Common/Toaster';
 import Skeleton from '../components/Common/Skeleton';
+import NotificationCenter from '../components/Common/NotificationCenter';
+import CommunicationPortal from '../components/Communication/CommunicationPortal';
 import './FacultyDashboard.css';
 
 const classPerformanceData = [
@@ -52,6 +55,7 @@ const FacultyDashboard = () => {
   const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState('Overview');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
@@ -83,6 +87,7 @@ const FacultyDashboard = () => {
     { id: 'Collect Student Fees', name: t('collectFee'), icon: '💰' },
     { id: 'Daily Lesson Diary', name: t('lessonDiary'), icon: '📝' },
     { id: 'Teacher Resource Center', name: language === 'hi' ? 'शिक्षक संसाधन केंद्र' : 'Teacher Resource Center', icon: '📁' },
+    { id: 'Communication Portal', name: language === 'hi' ? 'संचार पोर्टल' : 'Communication Portal', icon: '💬' },
     { id: 'Settings', name: language === 'hi' ? 'सेटिंग्स' : 'Settings', icon: '⚙️' }
   ];
 
@@ -139,9 +144,9 @@ const FacultyDashboard = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                       <XAxis dataKey="class" stroke="var(--text-secondary)" />
                       <YAxis stroke="var(--text-secondary)" />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                        cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                       />
                       <Bar dataKey="avg" radius={[10, 10, 0, 0]}>
                         {classPerformanceData.map((entry, index) => (
@@ -171,8 +176,8 @@ const FacultyDashboard = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip 
-                         contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                      <Tooltip
+                        contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -291,6 +296,8 @@ const FacultyDashboard = () => {
         return <div className="feature-section"><TeacherResourceCenter /></div>;
       case 'Calendar':
         return <div className="feature-section"><SchoolCalendar /></div>;
+      case 'Communication Portal':
+        return <div className="feature-section"><CommunicationPortal userRole="faculty" userId={user?.id || 'TEA2026-02'} userName={user?.name || 'Professor Divyanshi'} /></div>;
       case 'Settings':
         return (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
@@ -335,9 +342,9 @@ const FacultyDashboard = () => {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <button 
-            onClick={(e) => { e.preventDefault(); logout(); }} 
-            className="nav-link" 
+          <button
+            onClick={(e) => { e.preventDefault(); logout(); }}
+            className="nav-link"
             style={{ color: '#ef4444', background: 'transparent', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
           >
             <span className="nav-icon">🚪</span>
@@ -350,18 +357,34 @@ const FacultyDashboard = () => {
         <header className="content-header">
           <div>
             <h1>Faculty Dashboard</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Welcome back, Professor Divyanshi</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Welcome back, {user?.name || 'Faculty'} {user?.assignedClass ? `(Class ${user.assignedClass} In-charge)` : ''}</p>
           </div>
-          <div className="user-profile">
-            <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>DV</div>
+          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <button 
+              className="notif-trigger glass-panel" 
+              onClick={() => setIsNotifOpen(true)}
+              style={{ padding: '10px 15px', position: 'relative', cursor: 'pointer', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', borderRadius: '12px', color: 'inherit' }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>🔔</span>
+              <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: 'white', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '50px', fontWeight: '800' }}>5</span>
+            </button>
+            <div className="search-trigger glass-panel" onClick={() => setIsPaletteOpen(true)} style={{ cursor: 'pointer', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', borderRadius: '12px' }}>
+              <span>🔍</span>
+              <span className="search-hint">Press <kbd>Ctrl K</kbd> to search</span>
+            </div>
+            <div className="user-profile">
+              <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>DV</div>
+            </div>
           </div>
         </header>
 
         {renderContent()}
       </main>
 
-      <CommandPalette 
-        isOpen={isPaletteOpen} 
+      <NotificationCenter isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+
+      <CommandPalette
+        isOpen={isPaletteOpen}
         onClose={setIsPaletteOpen}
         portalName="Faculty"
         navItems={navItems.map(item => ({

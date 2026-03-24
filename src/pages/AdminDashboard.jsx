@@ -14,15 +14,20 @@ import ReportCardGenerator from '../components/Faculty/ReportCardGenerator';
 import AttendanceControl from '../components/Admin/AttendanceControl';
 import ReviewManager from '../components/Admin/ReviewManager';
 import FacultyManagement from '../components/Admin/FacultyManagement';
+import AdminStudentDirectory from '../components/Admin/AdminStudentDirectory';
+import AdminAttendanceDashboard from '../components/Admin/AdminAttendanceDashboard';
 import InquiryTracker from '../components/Admin/InquiryTracker';
 import FeeCollector from '../components/Common/FeeCollector';
 import StudentFeeLedger from '../components/Admin/StudentFeeLedger';
 import LessonDiary from '../components/Common/LessonDiary';
 import StudentAttendanceAudit from '../components/Common/StudentAttendanceAudit';
+import JuniorActivityCenter from '../components/Student/JuniorActivityCenter';
 import CommandPalette from '../components/CommandPalette';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Common/Toaster';
 import Skeleton from '../components/Common/Skeleton';
+import NotificationCenter from '../components/Common/NotificationCenter';
+import CommunicationPortal from '../components/Communication/CommunicationPortal';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -30,6 +35,7 @@ const AdminDashboard = () => {
   const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState('Overview');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
@@ -77,11 +83,14 @@ const AdminDashboard = () => {
 
   const navItems = [
     { name: 'Overview', icon: '💎' },
+    { name: 'Student Directory', icon: '🎓' },
+    { name: "Today's Attendance", icon: '📊' },
     { name: 'Fee management', icon: '💰' },
     { name: 'Leads & Inquiries', icon: '📥' },
     { name: 'Staff Payroll', icon: '💳' },
     { name: 'Elite Controls', icon: '🌟' },
     { name: 'Student Records', icon: '📁' },
+    { name: 'Communication Hub', icon: '💬' },
     { name: 'Notifications', icon: '📢' },
     { name: 'Bulk Send', icon: '🚀' },
     { name: 'Site Management', icon: '🌐' },
@@ -93,6 +102,7 @@ const AdminDashboard = () => {
     { name: 'Student Fee Audit', icon: '🔍' },
     { name: 'Attendance Audit', icon: '📊' },
     { name: 'Activity Tracker', icon: '🕵️' },
+    { name: 'Junior World Preview', icon: '🎨' },
     { name: 'Security Audit', icon: '🚨' },
     { name: 'System Backup', icon: '🛡️' },
     { name: 'Settings', icon: '⚙️' }
@@ -163,6 +173,10 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
+      case 'Student Directory':
+        return <div className="feature-box"><AdminStudentDirectory /></div>;
+      case "Today's Attendance":
+        return <div className="feature-box"><AdminAttendanceDashboard /></div>;
       case 'Fee management':
         return <div className="feature-box"><FeeManagement /></div>;
       case 'Leads & Inquiries':
@@ -192,6 +206,8 @@ const AdminDashboard = () => {
         );
       case 'Student Records':
         return <div className="feature-box"><RecordManagement /></div>;
+      case 'Communication Hub':
+        return <div className="feature-box"><CommunicationPortal userRole="admin" userId={user?.id || 'ADMIN-01'} userName={user?.name || 'Administrator'} /></div>;
       case 'Notifications':
         return <div className="feature-box"><AdminNotifications /></div>;
       case 'Bulk Send':
@@ -387,6 +403,12 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
+      case 'Junior World Preview':
+        return (
+          <div className="feature-box" style={{ background: 'transparent', padding: 0 }}>
+             <JuniorActivityCenter />
+          </div>
+        );
       case 'Settings':
         return (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
@@ -448,13 +470,29 @@ const AdminDashboard = () => {
             <h1>Administrative Portal</h1>
             <p style={{ color: '#94a3b8' }}>Management Dashboard</p>
           </div>
-          <div className="user-profile">
-            <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>AD</div>
+          <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <button 
+              className="notif-trigger glass-panel" 
+              onClick={() => setIsNotifOpen(true)}
+              style={{ padding: '10px 15px', position: 'relative', cursor: 'pointer', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', borderRadius: '12px', color: 'inherit' }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>🔔</span>
+              <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: 'white', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '50px', fontWeight: '800' }}>8</span>
+            </button>
+            <div className="search-trigger glass-panel" onClick={() => setIsPaletteOpen(true)} style={{ cursor: 'pointer', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', borderRadius: '12px' }}>
+              <span>🔍</span>
+              <span className="search-hint">Press <kbd>Ctrl K</kbd> to search</span>
+            </div>
+            <div className="user-profile">
+              <div className="avatar" style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>AD</div>
+            </div>
           </div>
         </header>
 
         {renderContent()}
       </main>
+
+      <NotificationCenter isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
 
       <CommandPalette 
         isOpen={isPaletteOpen} 

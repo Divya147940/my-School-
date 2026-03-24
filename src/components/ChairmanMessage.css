@@ -15,7 +15,7 @@
     padding: 60px 80px;
     position: relative;
     border-left: 6px solid #b33921; /* Reddish accent border */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-premium);
 }
 
 /* Chairman Image Area */
@@ -29,7 +29,7 @@
     border-radius: 50%;
     overflow: hidden;
     border: 5px solid #fff;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-premium);
 }
 
 .chairman-img-fluid {

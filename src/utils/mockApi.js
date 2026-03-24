@@ -96,10 +96,10 @@ const defaultData = {
     }
   ],
   qrSettings: {
-    schoolLocation: { lat: 26.2167, lng: 81.2333 }, // Example: Raebareli
-    rangeMeter: 10,
-    morning: { start: '07:00', end: '09:00' },
-    evening: { start: '15:00', end: '17:00' }
+    schoolLocation: { lat: 26.2167, lng: 81.2333 }, // Raebareli Location Example
+    rangeMeter: 1000, // Increased for easier testing
+    morning: { start: '06:00', end: '11:00' },
+    evening: { start: '14:00', end: '18:00' }
   },
   attendanceHub: [
     { id: 1, studentName: 'Aman Gupta', class: '10A', status: 'Pending', time: '-' },
@@ -115,15 +115,41 @@ const defaultData = {
     { id: 'TEA2026-01', name: 'Dr. Sharma', subject: 'Mathematics', role: 'faculty', contact: 'sharma@nsgi.edu' },
     { id: 'TEA2026-02', name: 'Professor Divyanshi', subject: 'Science', role: 'faculty', contact: '9876543210' },
   ],
+  achievers: [
+    { id: 1, name: 'Aman Gupta', class: '10A', achievement: '1st Prize in Inter-School Science Fair', type: 'Science', image: '🏆', date: 'March 2026' },
+    { id: 2, name: 'Priya Singh', class: '9B', achievement: 'District Level Badminton Champion', type: 'Sports', image: '🏸', date: 'February 2026' },
+    { id: 3, name: 'Kabir Khan', class: '12C', achievement: '98% in CBSE Board Pre-Mock', type: 'Academic', image: '📜', date: 'March 2026' }
+  ],
+  storeOrders: [],
+  healthRecords: {
+    'STU2026-001': {
+      bloodGroup: 'B+',
+      height: '142 cm',
+      weight: '38 kg',
+      allergies: 'Dust, Peanuts',
+      emergencyContactName: 'Mr. Gupta (Father)',
+      emergencyContactPhone: '+91 98765 43210',
+      medicalHistory: 'Asthma'
+    }
+  },
   studentRegistry: [
     { id: 'STU2026-001', name: 'Aman Gupta', class: '10A', rollNo: 1, role: 'student', parentName: 'Deepak Gupta', contact: '9988776655', isFaceEnrolled: false },
+    { id: 'STU2026-002', name: 'Priya Singh', class: '9B', rollNo: 2, role: 'student', parentName: 'Suman Singh', contact: '8877665544', isFaceEnrolled: false },
   ],
-  feeLedger: [
-    { id: 'TXN1001', studentId: 'STU2026-001', studentName: 'Aman Gupta', amount: 5000, mode: 'Online', status: 'Success', date: '2026-03-15 10:30 AM', collectedBy: 'System' },
-    { id: 'TXN1002', studentId: 'STU2026-001', studentName: 'Aman Gupta', amount: 2000, mode: 'Cash', status: 'Success', date: '2026-03-16 02:15 PM', collectedBy: 'Professor Divyanshi' },
+  fees: [
+    { id: 1, student: 'Aman Gupta', class: '10A', total: 45000, paid: 40000, status: 'Partial' },
+    { id: 2, student: 'Priya Singh', class: '9B', total: 40000, paid: 15000, status: 'Pending' },
+  ],
+  attendanceHub: [
+    { id: 1, studentName: 'Aman Gupta', class: '10A', status: 'Pending', time: '-' },
+    { id: 2, studentName: 'Priya Singh', class: '9B', status: 'Pending', time: '-' },
   ],
   lessonLogs: [
     { id: 'LOG101', date: '2026-03-18', teacherId: 'TEA2026-02', teacherName: 'Professor Divyanshi', subject: 'Science', topic: 'Photosynthesis', summary: 'Explained the light-dependent and light-independent reactions in plants.' }
+  ],
+  liveClasses: [
+    { id: 1, class_name: 'Class 10', subject: 'Mathematics', topic: 'Live: Quadratic Equations', start_time: new Date(Date.now() - 600000).toISOString(), meeting_link: 'https://meet.google.com/abc-defg-hij', teacher_name: 'Prof. Divyanshi' },
+    { id: 2, class_name: 'Class 10', subject: 'Science', topic: 'Upcoming: Physics Revision', start_time: new Date(Date.now() + 7200000).toISOString(), meeting_link: 'https://meet.google.com/xyz-pqrs-tuv', teacher_name: 'Dr. Sharma' }
   ],
   qrAttendanceLogs: [],
   faculty: [
@@ -218,6 +244,79 @@ const defaultData = {
     description: 'Aman has shown exceptional performance in the National Science Olympiad and maintains a 100% attendance record. His dedication to both academics and co-curricular activities is an inspiration to all students.',
     photo: 'https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=400',
     achievements: ['Gold Medalist - Science Olympiad', '100% Attendance', 'Class 10-A Topper']
+  },
+  dailyStory: {
+    title: "The Brave Little Elephant",
+    content: "Once upon a time, there was a small elephant named Appu. He lived in a big green forest. Today, Appu reached a big river. Should he cross it to meet his friend, or wait for the rain to stop?",
+    audioUrl: "#",
+    image: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&q=80&w=400",
+    choices: [
+        { id: 'A', text: 'Cross the River 🐘🌊', result: 'Appu bravely crossed the river and found a hidden treasure! Everyone clapped!' },
+        { id: 'B', text: 'Wait for Rain 🐘🌧️', result: 'Appu waited and met a wise old owl who taught him a magic song!' }
+    ]
+  },
+  stickerWall: [
+    { id: 1, sticker: '🌟', label: 'Super Star', date: '2026-03-20' },
+    { id: 2, sticker: '🐘', label: 'Animal Lover', date: '2026-03-21' },
+    { id: 3, sticker: '🎨', label: 'Picasso Jr.', date: '2026-03-22' }
+  ],
+  phonicsData: [
+    { letter: 'A', word: 'Apple', emoji: '🍎', color: '#ef4444' },
+    { letter: 'B', word: 'Ball', emoji: '🏀', color: '#f59e0b' },
+    { letter: 'C', word: 'Cat', emoji: '🐱', color: '#3b82f6' },
+    { letter: 'D', word: 'Dog', emoji: '🐶', color: '#10b981' },
+    { letter: 'E', word: 'Elephant', emoji: '🐘', color: '#8b5cf6' },
+    { letter: 'F', word: 'Fish', emoji: '🐟', color: '#ec4899' },
+  ],
+
+  toddlerActivities: {
+    animals: [
+      { id: 1, name: 'Cow', emoji: '🐮', sound: 'Mochhh!', color: '#f87171' },
+      { id: 2, name: 'Lion', emoji: '🦁', sound: 'Roarrr!', color: '#fbbf24' },
+      { id: 3, name: 'Cat', emoji: '🐱', sound: 'Meowww!', color: '#60a5fa' },
+      { id: 4, name: 'Monkey', emoji: '🐵', sound: 'Ooh-aah!', color: '#10b981' }
+    ],
+    colorMixes: [
+      { c1: 'Red', c2: 'Blue', result: 'Purple', emoji1: '🔴', emoji2: '🔵', resEmoji: '🟣' },
+      { c1: 'Yellow', c2: 'Red', result: 'Orange', emoji1: '🟡', emoji2: '🔴', resEmoji: '🟠' },
+      { c1: 'Blue', c2: 'Yellow', result: 'Green', emoji1: '🔵', emoji2: '🟡', resEmoji: '🟢' },
+      { c1: 'White', c2: 'Red', result: 'Pink', emoji1: '⚪', emoji2: '🔴', resEmoji: '🌸' }
+    ],
+    planets: [
+      { name: 'Mercury', icon: '☄️', info: 'Closest to the Sun and very small!' },
+      { name: 'Venus', icon: '🪐', info: 'The hottest planet in our solar system!' },
+      { name: 'Earth', icon: '🌍', info: 'Our beautiful home with water and life!' },
+      { name: 'Mars', icon: '🔴', info: 'The Red Planet! It has big volcanoes!' },
+      { name: 'Jupiter', icon: '🌌', info: 'The biggest planet! It is a gas giant!' },
+      { name: 'Saturn', icon: '🪐', info: 'Famous for its beautiful rings!' }
+    ],
+    shapeChallenge: [
+      { id: 1, shape: 'Square', icon: '🟦', silhouette: '⬛' },
+      { id: 2, shape: 'Circle', icon: '🟡', silhouette: '⚫' },
+      { id: 3, shape: 'Triangle', icon: '🔺', silhouette: '🔼' },
+      { id: 4, shape: 'Star', icon: '⭐', silhouette: '✨' }
+    ]
+  },
+  cartoonData: {
+    dressUp: [
+      { id: 1, name: 'Hat', emoji: '🎩' },
+      { id: 2, name: 'Sunglasses', emoji: '🕶️' },
+      { id: 3, name: 'Crown', emoji: '👑' },
+      { id: 4, name: 'Ribbon', emoji: '🎀' }
+    ],
+    sounds: [
+      { id: 1, name: 'Boing', icon: '🌀', sound: 'boing.mp3' },
+      { id: 2, name: 'Tada', icon: '🎉', sound: 'tada.mp3' },
+      { id: 3, name: 'Giggle', icon: '😆', sound: 'giggle.mp3' },
+      { id: 4, name: 'Magic', icon: '🪄', sound: 'magic.mp3' }
+    ],
+    phrases: [
+      "I love playing with you! 🍭",
+      "You are a superstar! ⭐",
+      "Let's dance together! 💃",
+      "Hahah! That tickles! 😂"
+    ],
+    messages: []
   }
 };
 
@@ -525,6 +624,45 @@ export const mockApi = {
     };
   },
 
+  // Students
+  getStudents: () => getDB().studentRegistry || [],
+  addStudent: (student) => {
+    const db = getDB();
+    const newStudent = { 
+        id: `STU${new Date().getFullYear()}-${String(db.studentRegistry.length + 1).padStart(3, '0')}`, 
+        role: 'student', 
+        isFaceEnrolled: false,
+        ...student 
+    };
+    
+    // 1. Add to registry
+    db.studentRegistry.unshift(newStudent);
+    
+    // 2. Create Fee Record
+    if (!db.fees) db.fees = [];
+    db.fees.unshift({
+        id: db.fees.length + 1,
+        student: newStudent.name,
+        class: newStudent.class,
+        total: 45000, // Default fee
+        paid: 0,
+        status: 'Pending'
+    });
+    
+    // 3. Add to Attendance Hub
+    if (!db.attendanceHub) db.attendanceHub = [];
+    db.attendanceHub.unshift({
+        id: db.attendanceHub.length + 1,
+        studentName: newStudent.name,
+        class: newStudent.class,
+        status: 'Pending',
+        time: '-'
+    });
+    
+    saveDB(db);
+    return newStudent;
+  },
+
   // Generic Initial Data
   getInitialData: () => getDB(),
 
@@ -596,6 +734,60 @@ export const mockApi = {
     const db = getDB();
     db.reportCards.unshift({ id: Date.now(), date: new Date().toISOString().split('T')[0], ...card });
     saveDB(db);
+  },
+
+  publishResults: (examData) => {
+    const db = getDB();
+    const { examType, className, results } = examData;
+    const now = new Date().toISOString().split('T')[0];
+
+    results.forEach(res => {
+        // 1. Create/Update Report Card entry
+        const rcIndex = db.reportCards.findIndex(rc => rc.studentName === res.name && rc.examType === examType);
+        const subjectEntry = { name: 'Mathematics', marks: parseInt(res.marks), total: parseInt(res.total) };
+        
+        if (rcIndex !== -1) {
+            const subIndex = db.reportCards[rcIndex].subjects.findIndex(s => s.name === subjectEntry.name);
+            if (subIndex !== -1) db.reportCards[rcIndex].subjects[subIndex] = subjectEntry;
+            else db.reportCards[rcIndex].subjects.push(subjectEntry);
+        } else {
+            db.reportCards.unshift({
+                id: `RC-${Date.now()}-${res.id}`,
+                studentName: res.name,
+                class: className,
+                examType,
+                subjects: [subjectEntry],
+                date: now
+            });
+        }
+
+        // 2. Trigger Gamification XP (Logic: 90% + = 100 XP)
+        const percentage = (res.marks / res.total) * 100;
+        if (percentage >= 90) {
+            const student = db.leaderboard.find(s => s.name === res.name);
+            if (student) student.points += 100;
+            
+            db.notifications.unshift({
+                id: `BONUS-${Date.now()}-${res.id}`,
+                title: '🏆 Achievement Unlocked!',
+                content: `Congratulations ${res.name}! You scored ${percentage.toFixed(1)}% in ${examType}. Enjoy 100 Bonus XP!`,
+                type: 'Success',
+                date: now
+            });
+        }
+
+        // 3. Parent Notification
+        db.notifications.unshift({
+            id: `RES-${Date.now()}-${res.id}`,
+            title: `📣 Result Published: ${examType}`,
+            content: `Dear Parent, ${res.name}'s result for ${examType} is now available. Score: ${res.marks}/${res.total} (${percentage.toFixed(1)}%).`,
+            type: 'Notice',
+            date: now
+        });
+    });
+
+    saveDB(db);
+    return { success: true };
   },
 
   // Health / Bio Data
@@ -737,6 +929,7 @@ export const mockApi = {
   deleteFaculty: (id) => {
     const db = getDB();
     db.faculty = (db.faculty || []).filter(f => f.id !== id);
+    db.facultyRegistry = (db.facultyRegistry || []).filter(f => f.id !== id);
     saveDB(db);
     return { status: 'success' };
   },
@@ -893,14 +1086,15 @@ export const mockApi = {
     return { status: 'success', time: now };
   },
 
-  onboardFaculty: async (name, subject, dob = null, parentName = null, faceImage = null) => {
+  onboardFaculty: async (name, subject, assignedClass, dob = null, parentName = null, faceImage = null) => {
     const data = getDB();
     if (!data.facultyRegistry) data.facultyRegistry = [];
 
     let descriptor = null;
     if (faceImage) {
         console.log("%c[AI ANALYSIS] STARTING FACIAL FEATURE EXTRACTION...", "color: #3b82f6; font-weight: bold;");
-        const extracted = await getFaceDescriptorFromBase64(faceImage);
+        const detection = await getFaceDescriptorFromBase64(faceImage);
+        const extracted = detection ? detection.descriptor : null;
         if (!extracted) {
              throw new Error("BIOMETRIC ERROR: No face could be detected in the image. Please capture again fully in frame.");
         }
@@ -912,12 +1106,21 @@ export const mockApi = {
         descriptor = Array.from(extracted); // Serialize Float32Array
     }
 
-    const fCount = (data.facultyRegistry?.length || 0) + 1;
-    const newId = `T${String(fCount).padStart(3, '0')}`;
+    const joinYear = new Date().getFullYear();
+    const prefix = `TEA-${joinYear}`;
+    let counter = 1;
+    let newId = `${prefix}-${String(counter).padStart(3, '0')}`;
+    
+    // Ensure uniqueness
+    while ((data.facultyRegistry || []).some(f => f.id === newId)) {
+        counter++;
+        newId = `${prefix}-${String(counter).padStart(3, '0')}`;
+    }
     const newFaculty = { 
         id: newId, 
         name, 
         subject, 
+        assignedClass,
         role: 'Faculty', 
         dob, 
         parentName, 
@@ -962,7 +1165,8 @@ export const mockApi = {
     
     let descriptorArray = null;
     if (faceImage) {
-        const extracted = await getFaceDescriptorFromBase64(faceImage);
+        const detection = await getFaceDescriptorFromBase64(faceImage);
+        const extracted = detection ? detection.descriptor : null;
         if (!extracted) {
              throw new Error("BIOMETRIC ERROR: No face could be detected. Ensure clear lighting.");
         }
@@ -1145,7 +1349,8 @@ export const mockApi = {
 
     // High-Fidelity Biometric Analysis (128-d Vector)
     if (faceImage && faceImage.startsWith('data:image')) {
-        const liveArray = await getFaceDescriptorFromBase64(faceImage);
+        const detection = await getFaceDescriptorFromBase64(faceImage);
+        const liveArray = detection ? detection.descriptor : null;
         if (!liveArray) {
             return { success: false, message: "NO FACE DETECTED: Move to a well-lit area and align face." };
         }
@@ -1155,13 +1360,14 @@ export const mockApi = {
         
         const distance = compareFaces(liveDescriptor, enrolledDescriptor);
         
-        // Strict Match: 0.40 is the high-security threshold for vladmandic/face-api
-        if (distance !== null && distance < 0.40) { 
+        // Lenient Match: Increased from 0.40 to 0.60 for better reliability in varying light
+        if (distance !== null && distance < 0.60) { 
+            const confidence = Math.max(0, 1 - (distance / 0.60)); // Normalize confidence to the new threshold
             return { 
                 success: true, 
                 faculty,
-                confidence: 1 - distance,
-                message: `IDENTITY VERIFIED: Welcome, ${faculty.name} (Conf: ${Math.round((1 - distance) * 100)}%).` 
+                confidence: confidence,
+                message: `IDENTITY VERIFIED: Welcome, ${faculty.name} (Conf: ${Math.round(confidence * 100)}%).` 
             };
         }
         return { success: false, message: `ACCESS DENIED: Biometric Mismatch. [Loss: ${distance?.toFixed(2)}]` };
@@ -1203,7 +1409,8 @@ export const mockApi = {
 
     // High-Fidelity Biometric Analysis
     if (faceImage && faceImage.startsWith('data:image')) {
-        const liveArray = await getFaceDescriptorFromBase64(faceImage);
+        const detection = await getFaceDescriptorFromBase64(faceImage);
+        const liveArray = detection ? detection.descriptor : null;
         if (!liveArray) {
             return { success: false, message: "NO FACE DETECTED: Look directly into the camera." };
         }
@@ -1213,12 +1420,14 @@ export const mockApi = {
         
         const distance = compareFaces(liveDescriptor, enrolledDescriptor);
         
-        if (distance !== null && distance < 0.45) { // Strict distance
+        // Lenient Match: Increased from 0.45 to 0.60 for better reliability
+        if (distance !== null && distance < 0.60) { 
+            const confidence = Math.max(0, 1 - (distance / 0.60));
             return { 
                 success: true, 
                 student,
-                confidence: 1 - distance,
-                message: `ACCESS GRANTED: Hello ${student.name} (Conf: ${Math.round((1 - distance) * 100)}%).` 
+                confidence: confidence,
+                message: `ACCESS GRANTED: Hello ${student.name} (Conf: ${Math.round(confidence * 100)}%).` 
             };
         }
         return { success: false, message: `SECURITY ALERT: Biometric Mismatch [Loss: ${distance?.toFixed(2)}]` };
@@ -1237,10 +1446,10 @@ export const mockApi = {
 
     if (!capturedImage) return { success: false, message: "No image captured." };
 
-    const liveArray = await getFaceDescriptorFromBase64(capturedImage);
-    if (!liveArray) return { success: false, message: "No Face Detected in Camera." };
+    const detection = await getFaceDescriptorFromBase64(capturedImage);
+    if (!detection) return { success: false, message: "No Face Detected in Camera." };
     
-    const liveDescriptor = new Float32Array(liveArray);
+    const liveDescriptor = new Float32Array(detection.descriptor);
     let bestMatch = null;
     let minDistance = 0.50; // More lenient matching
 
@@ -1279,10 +1488,10 @@ export const mockApi = {
 
     if (!capturedImage) return { success: false, message: "No image captured." };
 
-    const liveArray = await getFaceDescriptorFromBase64(capturedImage);
-    if (!liveArray) return { success: false, message: "No Face Detected in Camera." };
+    const detection = await getFaceDescriptorFromBase64(capturedImage);
+    if (!detection) return { success: false, message: "No Face Detected in Camera." };
     
-    const liveDescriptor = new Float32Array(liveArray);
+    const liveDescriptor = new Float32Array(detection.descriptor);
     let bestMatch = null;
     let minDistance = 0.50;
 
@@ -1416,7 +1625,7 @@ export const mockApi = {
     const newAssignment = { 
       ...assignment, 
       id: Date.now(), 
-      status: 'Active', 
+      status: 'Pending', 
       submissions: 0,
       totalStudents: 30, // Mock class size
       date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) 
@@ -1439,13 +1648,20 @@ export const mockApi = {
     }
     return data.assignments[index];
   },
-  submitWork: (assignmentId, studentName) => {
+  submitWork: (assignmentId, studentName, submissionData) => {
     const data = getDB();
     const index = data.assignments.findIndex(a => a.id === assignmentId);
     if (index !== -1) {
       data.assignments[index].submissions = (data.assignments[index].submissions || 0) + 1;
-      // Also mark as completed in student's local view if we had a per-student assignment table
-      // For now we simulate by updating the global assignment status for this demo's simplicity
+      
+      if (!data.assignments[index].submissionsList) data.assignments[index].submissionsList = [];
+      data.assignments[index].submissionsList.push({ 
+          studentName, 
+          data: submissionData, 
+          date: new Date().toLocaleString() 
+      });
+
+      // Mark as completed for this demo
       data.assignments[index].status = 'Completed'; 
       saveDB(data);
     }
@@ -1515,8 +1731,262 @@ export const mockApi = {
     saveDB(db);
   },
 
+  // Live Classes
+  getLiveClasses: (className) => {
+    const data = getDB();
+    if (!className) return data.liveClasses || [];
+    return (data.liveClasses || []).filter(c => c.class_name === className);
+  },
+
+  addLiveClass: (classData) => {
+    const data = getDB();
+    if (!data.liveClasses) data.liveClasses = [];
+    const newClass = {
+      ...classData,
+      id: Date.now(),
+      status: 'Scheduled'
+    };
+    data.liveClasses.push(newClass);
+    saveDB(data);
+    return newClass;
+  },
+
+  getDailyStory: () => getDB().dailyStory,
+  getStickers: () => getDB().stickerWall || [],
+  getPhonics: () => getDB().phonicsData || [],
+
+  saveVoiceDiary: (studentId, audioData) => {
+      const db = getDB();
+      if (!db.voiceDiaries) db.voiceDiaries = [];
+      db.voiceDiaries.unshift({ id: Date.now(), studentId, date: new Date().toISOString() });
+      saveDB(db);
+      return { success: true };
+  },
+  triggerGateAlert: (studentName) => {
+      const db = getDB();
+      if (!db.gateAlerts) db.gateAlerts = [];
+      db.gateAlerts.push({ id: Date.now(), studentName, time: new Date().toLocaleTimeString() });
+      saveDB(db);
+      // Also send notification to teacher
+      const teacherNotif = {
+          id: Date.now(),
+          type: 'GateAlert',
+          title: 'Parent at Gate!',
+          message: `Parent of ${studentName} is waiting at the main gate for pickup.`,
+          time: 'Just Now',
+          priority: 'high'
+      };
+      if (!db.notifications) db.notifications = [];
+      db.notifications.unshift(teacherNotif);
+      saveDB(db);
+      return { success: true };
+  },
+  getGateAlerts: () => getDB().gateAlerts || [],
+  getJuniorGallery: () => {
+      const db = getDB();
+      const drawings = (db.juniorDrawings || []).map(d => ({ ...d, type: 'drawing', icon: '🎨' }));
+      const voices = (db.voiceDiaries || []).map(v => ({ ...v, type: 'voice', icon: '🎤', data: 'Audio Diary' }));
+      return [...drawings, ...voices].sort((a, b) => b.id - a.id);
+  },
+  getDailyGift: () => {
+      const gifts = ['🦄 Unicorn Dust', '🌈 Rainbow Badge', '🍿 Popcorn Treat', '🎭 Super Hero Mask', '🍭 Magic Candy'];
+      return gifts[Math.floor(Math.random() * gifts.length)];
+  },
+  saveJuniorDrawing: (drawingData) => {
+      const db = getDB();
+      if (!db.juniorDrawings) db.juniorDrawings = [];
+      db.juniorDrawings.unshift({ id: Date.now(), data: drawingData, date: new Date().toISOString() });
+      saveDB(db);
+      return { success: true };
+  },
+
+  getFastTrackCurriculum: () => [
+    { day: 1, title: 'Alphabet Adventure', category: 'Language', video: 'https://www.youtube.com/embed/HQHnS_2P-3M', task: 'Identify and say A, B, C' },
+    { day: 2, title: 'Phonics Fun', category: 'Language', video: 'https://www.youtube.com/embed/BELlZKpi1Zs', task: 'Make the sounds of A to E' },
+    { day: 3, title: 'Z-A Journey', category: 'Language', video: 'https://www.youtube.com/embed/XqZsoesa55w', task: 'Learn F to J sounds' },
+    { day: 4, title: 'Word Wizard', category: 'Language', video: 'https://www.youtube.com/embed/36n93jvjkDs', task: 'K to O sounds and words' },
+    { day: 5, title: 'Number Magic', category: 'Math', video: 'https://www.youtube.com/embed/DR-cfDsHCGA', task: 'Count from 1 to 5' },
+    { day: 6, title: 'Counting Stars', category: 'Math', video: 'https://www.youtube.com/embed/6RfIKqkvHTY', task: 'Learn numbers 6 to 10' },
+    { day: 7, title: 'Addition Party', category: 'Math', video: 'https://www.youtube.com/embed/uRoJ5E-Xx9s', task: 'Simple 1+1 and 1+2' },
+    { day: 8, title: 'Shape Shifter', category: 'Math', video: 'https://www.youtube.com/embed/XU3PsR8Y_X0', task: 'Identify Circle and Square' },
+    { day: 9, title: 'Animal Kingdom', category: 'Nature', video: 'https://www.youtube.com/embed/5IOoYI3A_gY', task: 'Identify 5 land animals' },
+    { day: 10, title: 'Water World', category: 'Nature', video: 'https://www.youtube.com/embed/6_6vPSc5uUo', task: 'Fish and sea creatures' },
+    { day: 11, title: 'Birdy Buddies', category: 'Nature', video: 'https://www.youtube.com/embed/jZ_yZ-L_Y_I', task: 'Identify Sparrow and Peacock' },
+    { day: 12, title: 'Weather Watch', category: 'Nature', video: 'https://www.youtube.com/embed/L7I_lY_L6_M', task: 'Rain, Sun, and Snow' },
+    { day: 13, title: 'Color Carnival', category: 'Creative', video: 'https://www.youtube.com/embed/AswYQ1vY0eE', task: 'Learn Red, Blue, Yellow' },
+    { day: 14, title: 'Painting Clouds', category: 'Creative', video: 'https://www.youtube.com/embed/_0D9JmNImEw', task: 'Mix Red and Yellow' },
+    { day: 15, title: 'Drawing Faces', category: 'Creative', video: 'https://www.youtube.com/embed/7Kj_uLpS_Zk', task: 'Draw a happy face' },
+    { day: 16, title: 'Doodle Day', category: 'Creative', video: 'https://www.youtube.com/embed/v7qS_Z_Xz8M', task: 'Trace a simple house' },
+    { day: 17, title: 'Hello & Thank You', category: 'Citizen', video: 'https://www.youtube.com/embed/rP1jV6p6_U8', task: 'Learn Magic Words' },
+    { day: 18, title: 'Sharing is Caring', category: 'Citizen', video: 'https://www.youtube.com/embed/pCHYIs4x-oU', task: 'Learn to share toys' },
+    { day: 19, title: 'Healthy Bites', category: 'Citizen', video: 'https://www.youtube.com/embed/V6_V2G7t6i0', task: 'Identify Healthy Food' },
+    { day: 20, title: 'Super Hero Graduation', category: 'Citizen', video: 'https://www.youtube.com/embed/fN1Cyr0ZK9M', task: 'Final Revision and Party!' }
+  ],
+
+  saveFastTrackProgress: (day) => {
+    const db = getDB();
+    if (!db.fastTrackProgress) db.fastTrackProgress = 0;
+    if (day > db.fastTrackProgress) {
+        db.fastTrackProgress = day;
+        saveDB(db);
+    }
+    return db.fastTrackProgress;
+  },
+
+  getFastTrackProgress: () => getDB().fastTrackProgress || 0,
+
+  getToddlerData: () => getDB().toddlerActivities,
+  getCartoonData: () => getDB().cartoonData,
+  getColorMixes: () => getDB().toddlerActivities.colorMixes,
+  getPlanets: () => getDB().toddlerActivities.planets,
+  getShapeChallenge: () => getDB().toddlerActivities.shapeChallenge,
+
   clearDB: () => {
     localStorage.removeItem(STORAGE_KEY);
     window.location.reload();
+  },
+  getAlphabetData: () => [
+    { l: 'A', w: 'Apple', h: 'Seb', e: '🍎' }, { l: 'B', w: 'Ball', h: 'Gend', e: '⚽' },
+    { l: 'C', w: 'Cat', h: 'Billi', e: '🐱' }, { l: 'D', w: 'Dog', h: 'Kutta', e: '🐶' },
+    { l: 'E', w: 'Elephant', h: 'Hathi', e: '🐘' }, { l: 'F', w: 'Fish', h: 'Machli', e: '🐟' },
+    { l: 'G', w: 'Grapes', h: 'Angoor', e: '🍇' }, { l: 'H', w: 'Horse', h: 'Ghoda', e: '🐎' },
+    { l: 'I', w: 'Ice Cream', h: 'Baraf Malai', e: '🍦' }, { l: 'J', w: 'Jug', h: 'Jug', e: '🏺' },
+    { l: 'K', w: 'Kite', h: 'Patang', e: '🪁' }, { l: 'L', w: 'Lion', h: 'Sher', e: '🦁' },
+    { l: 'M', w: 'Mango', h: 'Aam', e: '🥭' }, { l: 'N', w: 'Nose', h: 'Naak', e: '👃' },
+    { l: 'O', w: 'Orange', h: 'Santra', e: '🍊' }, { l: 'P', w: 'Parrot', h: 'Tota', e: '🦜' },
+    { l: 'Q', w: 'Queen', h: 'Rani', e: '👸' }, { l: 'R', w: 'Rabbit', h: 'Khargosh', e: '🐰' },
+    { l: 'S', w: 'Sun', h: 'Sooraj', e: '☀️' }, { l: 'T', w: 'Tiger', h: 'Baagh', e: '🐅' },
+    { l: 'U', w: 'Umbrella', h: 'Chhatri', e: '☂️' }, { l: 'V', w: 'Van', h: 'Gadi', e: '🚐' },
+    { l: 'W', w: 'Watch', h: 'Ghadi', e: '⌚' }, { l: 'X', w: 'Xylophone', h: 'Baaja', e: '🎹' },
+    { l: 'Y', w: 'Yak', h: 'Yak', e: '🐂' }, { l: 'Z', w: 'Zebra', h: 'Zebra', e: '🦓' }
+  ],
+  getCountingData: () => Array.from({ length: 100 }, (_, i) => i + 1),
+  getTablesData: (num) => Array.from({ length: 10 }, (_, i) => ({ mult: i + 1, res: num * (i + 1) })),
+  getCategoryData: (cat) => {
+    const data = {
+      fruits: [
+        { n: 'Mango', h: 'Aam', e: '🥭' }, { n: 'Apple', h: 'Seb', e: '🍎' },
+        { n: 'Banana', h: 'Kela', e: '🍌' }, { n: 'Grapes', h: 'Angoor', e: '🍇' },
+        { n: 'Orange', h: 'Santra', e: '🍊' }, { n: 'Papaya', h: 'Papita', e: '🍈' }
+      ],
+      animals: [
+        { n: 'Lion', h: 'Sher', e: '🦁' }, { n: 'Tiger', h: 'Baagh', e: '🐅' },
+        { n: 'Elephant', h: 'Hathi', e: '🐘' }, { n: 'Rabbit', h: 'Khargosh', e: '🐰' },
+        { n: 'Cow', h: 'Gaushala', e: '🐄' }, { n: 'Dog', h: 'Kutta', e: '🐶' }
+      ],
+      birds: [
+        { n: 'Parrot', h: 'Tota', e: '🦜' }, { n: 'Peacock', h: 'Mor', e: '🦚' },
+        { n: 'Sparrow', h: 'Chidiya', e: '🐦' }, { n: 'Crow', h: 'Kaua', e: '🐦‍⬛' },
+        { n: 'Owl', h: 'Ullu', e: '🦉' }, { n: 'Duck', h: 'Badtakh', e: '🦆' }
+      ],
+      days: [
+        { n: 'Monday', h: 'Somvaar', e: '📅' }, { n: 'Tuesday', h: 'Mangalvaar', e: '📅' },
+        { n: 'Wednesday', h: 'Budhvaar', e: '📅' }, { n: 'Thursday', h: 'Guruvaar', e: '📅' },
+        { n: 'Friday', h: 'Shukravaar', e: '📅' }, { n: 'Saturday', h: 'Shanivaar', e: '📅' },
+        { n: 'Sunday', h: 'Ravivaar', e: '🎉' }
+      ]
+    };
+    return data[cat] || [];
+  },
+  getMasteryMath: (type) => {
+    const a = Math.floor(Math.random() * 20) + 10;
+    const b = Math.floor(Math.random() * 9) + 1;
+    if (type === 'sub') return { a, b, ans: a - b, op: '-' };
+    const res = a * b;
+    return { a: res, b: a, ans: b, op: '÷' };
+  },
+  getHindiVarnamala: () => [
+    { l: 'अ', w: 'Anar', e: '🍎', h: 'अ से अनार' }, { l: 'आ', w: 'Aam', e: '🥭', h: 'आ से आम' },
+    { l: 'इ', w: 'Imli', e: '🍂', h: 'इ से इमली' }, { l: 'ई', w: 'Eekh', e: '🎋', h: 'ई से ईख' },
+    { l: 'उ', w: 'Ullu', e: '🦉', h: 'उ से उल्लू' }, { l: 'ऊ', w: 'Oon', e: '🧶', h: 'ऊ से ऊन' },
+    { l: 'ए', w: 'Ek', e: '1️⃣', h: 'ए से एक' }, { l: 'ऐ', w: 'Ainak', e: '👓', h: 'ऐ से ऐनक' },
+    { l: 'ओ', w: 'Okhli', e: '🥣', h: 'ओ से ओखली' }, { l: 'औ', w: 'Aurat', e: '👤', h: 'औ से औरत' },
+    { l: 'क', w: 'Kabutar', e: '🐦', h: 'क से कबूतर' }, { l: 'ख', w: 'Khargosh', e: '🐰', h: 'ख से खरगोश' },
+    { l: 'ग', w: 'Gamla', e: '🪴', h: 'ग से गमला' }, { l: 'घ', w: 'Ghar', e: '🏠', h: 'घ से घर' },
+    { l: 'च', w: 'Chammach', e: '🥄', h: 'च से चम्मच' }, { l: 'छ', w: 'Chhatri', e: '☂️', h: 'छ से छतरी' },
+    { l: 'ज', w: 'Jag', e: '🏺', h: 'ज से जग' }, { l: 'झ', w: 'Jhanda', e: '🚩', h: 'झ से झंडा' },
+    { l: 'ट', w: 'Tamatar', e: '🍅', h: 'ट से टमाटर' }, { l: 'ठ', w: 'Thathera', e: '🔨', h: 'ठ से ठठेरा' },
+    { l: 'ड', w: 'Damru', e: '🥁', h: 'ड से डमरू' }, { l: 'ढ', w: 'Dholl', e: '🥁', h: 'ढ से ढोल' },
+    { l: 'त', w: 'Tarbooz', e: '🍉', h: 'त से तरबूज' }, { l: 'थ', w: 'Tharmas', e: '🍼', h: 'थ से थरमस' },
+    { l: 'द', w: 'Dawaat', e: '🧪', h: 'द से दवात' }, { l: 'ध', w: 'Dhanush', e: '🏹', h: 'ध से धनुष' },
+    { l: 'न', w: 'Nal', e: '🚰', h: 'न से नल' }, { l: 'प', w: 'Patang', e: '🪁', h: 'प से पतंग' },
+    { l: 'फ', w: 'Fal', e: '🍎', h: 'फ से फल' }, { l: 'ब', w: 'Bakri', e: '🐐', h: 'ब से बकरी' },
+    { l: 'भ', w: 'Bhalu', e: '🐻', h: 'भ से भालू' }, { l: 'म', w: 'Machli', e: '🐟', h: 'म से मछली' },
+    { l: 'य', w: 'Yog', e: '🧘', h: 'य से योग' }, { l: 'र', w: 'Rath', e: '🏇', h: 'र से रथ' },
+    { l: 'ल', w: 'Lattoo', e: '🪀', h: 'ल से लट्टू' }, { l: 'व', w: 'Vat', e: '🌳', h: 'व से वट' },
+    { l: 'श', w: 'Shalgam', e: '🥗', h: 'श से शलगम' }, { l: 'ष', w: 'Shatkon', e: '⬢', h: 'ष से षट्कोण' },
+    { l: 'स', w: 'Seb', e: '🍎', h: 'स से सेब' }, { l: 'ह', w: 'Hathi', e: '🐘', h: 'ह से हाथी' }
+  ],
+
+  // --- Unified Communication System ---
+  sendMessage: (msg) => {
+    const db = getDB();
+    if (!db.messages) db.messages = [];
+    const newMsg = {
+      id: `MSG-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      status: 'sent',
+      ...msg
+    };
+    db.messages.unshift(newMsg);
+    saveDB(db);
+    return newMsg;
+  },
+
+  getMessages: (filters = {}) => {
+    const db = getDB();
+    let msgs = db.messages || [];
+    
+    if (filters.role === 'student') {
+      return msgs.filter(m => 
+        (m.targetClasses && m.targetClasses.includes(filters.className)) || 
+        m.recipientId === filters.userId ||
+        m.senderId === filters.userId
+      );
+    }
+    
+    if (filters.role === 'faculty') {
+      return msgs.filter(m => 
+        m.senderId === filters.userId || 
+        m.recipientId === filters.userId ||
+        (m.targetClasses && m.senderRole === 'admin')
+      );
+    }
+
+    if (filters.role === 'admin') {
+      return msgs;
+    }
+
+    return msgs;
+  },
+
+  getRecipientInfo: (uniqueId) => {
+    const db = getDB();
+    const id = uniqueId.toUpperCase();
+    const student = db.studentRegistry.find(s => s.id.toUpperCase() === id);
+    if (student) return { name: student.name, role: 'student' };
+    const faculty = db.facultyRegistry.find(f => f.id.toUpperCase() === id);
+    if (faculty) return { name: faculty.name, role: 'faculty' };
+    return null;
+  },
+
+  searchRecipient: (query) => {
+    if (!query) return [];
+    const db = getDB();
+    const q = query.toLowerCase();
+    
+    const facultyMatches = (db.facultyRegistry || []).filter(f => 
+      f.name.toLowerCase().includes(q) || f.id.toLowerCase().includes(q)
+    ).map(f => ({ id: f.id, name: f.name, role: 'faculty' }));
+
+    const studentMatches = (db.studentRegistry || []).filter(s => 
+      s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)
+    ).map(s => ({ id: s.id, name: s.name, role: 'student' }));
+
+    return [...facultyMatches, ...studentMatches];
+  },
+
+  getAvailableClasses: () => {
+    return ['10A', '10B', '9A', '9B', '8A', '7A', '6A', '5A', '4A', '3A', '2A', '1A', 'Nursery', 'LKG', 'UKG'];
   }
 };

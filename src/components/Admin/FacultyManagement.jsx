@@ -8,6 +8,7 @@ const FacultyManagement = () => {
     const { addToast } = useToast();
     const [name, setName] = useState('');
     const [subject, setSubject] = useState('');
+    const [assignedClass, setAssignedClass] = useState('');
     const [parentName, setParentName] = useState('');
     const [dob, setDob] = useState('');
     const [capturedImage, setCapturedImage] = useState(null);
@@ -16,6 +17,11 @@ const FacultyManagement = () => {
     const [hardwareLocked, setHardwareLocked] = useState(false);
     const [recentFaculty, setRecentFaculty] = useState(null);
     const [isVirtualStream, setIsVirtualStream] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
+    const [scanProgress, setScanProgress] = useState(0);
+    const [landmarks, setLandmarks] = useState(null);
+    const [scanMessage, setScanMessage] = useState('ALIGNING...');
+    const [scanTips, setScanTips] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisProgress, setAnalysisProgress] = useState(0);
     
@@ -104,10 +110,80 @@ const FacultyManagement = () => {
                 setIsCameraOpen(true);
                 setHardwareLocked(true); 
                 setEnrollmentSource('BIOMETRIC');
-                addToast("Physical Camera Locked - Using Biometric Simulation.", "warning");
             }
         }, 300); // Increased delay for stability
     };
+
+    // Automated scanning loop for Faculty registration
+    useEffect(() => {
+        let scanInterval;
+        if (isCameraOpen && !capturedImage) {
+            setIsScanning(true);
+            setScanProgress(0);
+            scanInterval = setInterval(async () => {
+                if (videoRef.current && canvasRef.current) {
+                    const canvas = canvasRef.current;
+                    canvas.width = video.videoWidth || 640;
+                    canvas.height = video.videoHeight || 480;
+                    const ctx = canvas.getContext('2d');
+                    // ADAPTIVE DIGITAL BOOST: 1.6 brightness + 1.3 contrast for harsh lighting
+                    ctx.filter = 'brightness(1.6) contrast(1.3)';
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const dataUrl = canvas.toDataURL('image/jpeg');
+
+                    try {
+                        const detection = await mockApi.getFaceDescriptorFromBase64(dataUrl);
+                        if (detection) {
+                            setLandmarks(detection.landmarks);
+                            setScanTips('');
+                            setScanMessage(scanProgress < 50 ? "HOLD STILL..." : "LOCKING FEATURES...");
+                            let progress = 30;
+                            if (detection.landmarks) progress += 40;
+                            
+                            if (progress >= 70) {
+                                setScanProgress(prev => Math.min(100, prev + 15));
+                            } else {
+                                setScanProgress(prev => Math.max(10, prev - 5));
+                            }
+
+                            // Auto-capture on 100%
+                            if (scanProgress >= 100) {
+                                const box = detection.detection.box;
+                                const pad = 40;
+                                const cropCanvas = document.createElement('canvas');
+                                cropCanvas.width = box.width + pad * 2;
+                                cropCanvas.height = box.height + pad * 2;
+                                const cropCtx = cropCanvas.getContext('2d');
+                                
+                                cropCtx.drawImage(
+                                    video, 
+                                    box.x - pad, box.y - pad, box.width + pad * 2, box.height + pad * 2, 
+                                    0, 0, cropCanvas.width, cropCanvas.height
+                                );
+                                
+                                setCapturedImage(cropCanvas.toDataURL('image/jpeg'));
+                                setEnrollmentSource('CAMERA');
+                                stopCamera();
+                                addToast("Teacher Biometrics Locked Successfully!", "success");
+                            }
+                        } else {
+                            setLandmarks(null);
+                            setScanProgress(prev => Math.max(0, prev - 10));
+                            setScanMessage("FACE NOT DETECTED");
+                            setScanTips("Tip: Ensure light is on your face and your camera is clean.");
+                        }
+                    } catch (err) {
+                        setScanMessage("AI SEARCHING...");
+                        setScanTips("Tip: Hold still and ensure your whole face is visible.");
+                        console.warn("Faculty scan skipped/error:", err);
+                    }
+                }
+            }, 600); // 600ms to reduce CPU load and let AI finish // 500ms for high-res model processing
+        } else {
+            setIsScanning(false);
+        }
+        return () => clearInterval(scanInterval);
+    }, [isCameraOpen, capturedImage, scanProgress]);
 
     const stopCamera = () => {
         if (videoRef.current && videoRef.current.srcObject) {
@@ -139,7 +215,7 @@ const FacultyManagement = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (!name || !subject || !dob || !parentName) {
+        if (!name || !subject || !assignedClass || !dob || !parentName) {
             addToast("All fields are required", "error");
             return;
         }
@@ -169,7 +245,7 @@ const FacultyManagement = () => {
                 }
             }, 300);
 
-            const faculty = await mockApi.onboardFaculty(name, subject, dob, parentName, capturedImage);
+            const faculty = await mockApi.onboardFaculty(name, subject, assignedClass, dob, parentName, capturedImage);
             
             clearInterval(interval);
             setAnalysisProgress(100);
@@ -179,6 +255,7 @@ const FacultyManagement = () => {
                 setFacultyList(prev => [...prev, faculty]);
                 setName('');
                 setSubject('');
+                setAssignedClass('');
                 setParentName('');
                 setDob('');
                 setCapturedImage(null);
@@ -236,6 +313,19 @@ const FacultyManagement = () => {
                             />
                         </div>
                         <div>
+                            <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '10px' }}>Assigned Class</label>
+                            <select 
+                                value={assignedClass}
+                                onChange={(e) => setAssignedClass(e.target.value)}
+                                style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: '#fff' }}
+                            >
+                                <option value="" style={{ background: '#1e293b' }}>Select Class</option>
+                                {['LKG', 'UKG', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'].map(c => (
+                                    <option key={c} value={c} style={{ background: '#1e293b' }}>Class {c}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
                             <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '10px' }}>Date of Birth</label>
                             <input 
                                 type="date" 
@@ -282,54 +372,51 @@ const FacultyManagement = () => {
                                 
                                 {/* Clean View: HUD Removed per user request */}
 
-                                {/* Circular Scanner Frame */}
+                                {/* Circular Face Guide */}
                                 <div style={{ 
                                     position: 'absolute', 
                                     top: '50%', 
                                     left: '50%', 
                                     transform: 'translate(-50%, -50%)', 
-                                    width: '260px', 
-                                    height: '260px', 
-                                    border: '2px solid rgba(16, 185, 129, 0.5)', 
+                                    width: '240px', 
+                                    height: '240px', 
+                                    border: '3px solid ' + (scanProgress > 80 ? '#10b981' : (scanProgress > 40 ? '#fbbf24' : 'rgba(255,255,255,0.2)')), 
                                     borderRadius: '50%', 
-                                    boxShadow: '0 0 0 1000px rgba(0,0,0,0.4)',
+                                    boxShadow: '0 0 0 1000px rgba(0,0,0,0.6)',
                                     pointerEvents: 'none'
                                 }}>
-                                    {/* HUD Legend Removed per user request */}
+                                    <div style={{ position: 'absolute', top: '15%', left: 0, right: 0, textAlign: 'center', color: '#fff', fontSize: '0.6rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                        {isScanning ? 'AI SCANNING...' : 'POSITION FACE'}
+                                    </div>
                                 </div>
 
-                                <style>{`
-                                    @keyframes scannerBlink {
-                                        0%, 100% { opacity: 0.3; }
-                                        50% { opacity: 1; }
-                                    }
-                                    @keyframes pulseBtn {
-                                        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-                                        70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-                                        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-                                    }
-                                `}</style>
+                                {/* AI Landmark Dots */}
+                                {isScanning && landmarks && (
+                                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+                                        <div style={{ position: 'absolute', left: `${(landmarks.getLeftEye()[0].x / 640) * 100}%`, top: `${(landmarks.getLeftEye()[0].y / 480) * 100}%`, width: '4px', height: '4px', background: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 10px #3b82f6' }}></div>
+                                        <div style={{ position: 'absolute', left: `${(landmarks.getRightEye()[0].x / 640) * 100}%`, top: `${(landmarks.getRightEye()[0].y / 480) * 100}%`, width: '4px', height: '4px', background: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 10px #3b82f6' }}></div>
+                                        <div style={{ position: 'absolute', left: `${(landmarks.getNose()[0].x / 640) * 100}%`, top: `${(landmarks.getNose()[0].y / 480) * 100}%`, width: '4px', height: '4px', background: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 10px #3b82f6' }}></div>
+                                    </div>
+                                )}
 
-                                <div style={{ position: 'absolute', bottom: '20px', left: '0', right: '0', display: 'flex', justifyContent: 'center', gap: '15px' }}>
-                                    <button 
-                                        type="button" 
-                                        onClick={capturePhoto} 
-                                        style={{ 
-                                            padding: '12px 25px', 
-                                            borderRadius: '30px', 
-                                            background: '#3b82f6', 
-                                            color: '#fff', 
-                                            border: 'none', 
-                                            fontWeight: '800', 
-                                            cursor: 'pointer',
-                                            animation: 'pulseBtn 2s infinite',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px'
-                                        }}>
-                                        📸 ✅ BIOMETRIC SNAP
-                                    </button>
-                                    <button type="button" onClick={stopCamera} style={{ padding: '12px 20px', borderRadius: '30px', background: 'rgba(239, 68, 68, 0.8)', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>CANCEL</button>
+                                {isScanning && (
+                                    <div style={{ position: 'absolute', bottom: '60px', left: '0', right: '0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                                        <div style={{ width: '70%', height: '6px', background: 'rgba(255,255,255,0.2)', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
+                                            <div style={{ width: `${scanProgress}%`, height: '100%', background: scanProgress > 80 ? '#10b981' : 'var(--accent-blue)', transition: 'width 0.3s ease-out' }}></div>
+                                        </div>
+                                        <div style={{ color: '#fff', fontWeight: '900', fontSize: '0.9rem', textShadow: '0 2px 10px rgba(0,0,0,0.5)', letterSpacing: '1px' }}>
+                                            {scanMessage} {scanProgress}%
+                                        </div>
+                                        {scanTips && (
+                                            <div style={{ marginTop: '10px', color: '#fbbf24', fontSize: '0.75rem', fontWeight: 'bold', background: 'rgba(0,0,0,0.6)', padding: '5px 15px', borderRadius: '20px', animation: 'fadeIn 0.5s' }}>
+                                                {scanTips}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div style={{ position: 'absolute', bottom: '15px', right: '15px' }}>
+                                    <button type="button" onClick={stopCamera} style={{ padding: '8px 15px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.8)', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)', fontSize: '0.8rem' }}>CANCEL</button>
                                 </div>
                             </div>
                         )}
@@ -421,7 +508,7 @@ const FacultyManagement = () => {
                                 <div>
                                     <div style={{ fontWeight: '700' }}>{f.name}</div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {f.subject} • {f.id}
+                                        {f.subject} • Class {f.assignedClass} • {f.id}
                                         {f.isFaceEnrolled && (
                                             <span style={{ color: '#10b981', fontSize: '0.65rem', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.2)', fontWeight: 'bold' }}>✓ BIOMETRIC</span>
                                         )}

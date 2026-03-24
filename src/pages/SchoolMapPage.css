@@ -27,9 +27,9 @@
   position: relative;
   max-width: 1000px;
   width: 100%;
-  background: white;
+  background: var(--bg-primary);
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-premium);
   overflow: hidden;
   padding: 20px;
 }
@@ -76,7 +76,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #1e40af;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-premium);
   opacity: 0.8;
   transition: opacity 0.3s ease;
 }
@@ -103,10 +103,10 @@
 }
 
 .detail-card {
-  background: white;
+  background: var(--bg-primary);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-premium);
   border-left: 5px solid #3b82f6;
   transition: transform 0.3s ease;
 }

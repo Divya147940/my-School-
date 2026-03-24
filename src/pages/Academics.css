@@ -48,12 +48,12 @@
     position: relative;
     z-index: 10;
     text-align: center;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    box-shadow: var(--shadow-premium);
 }
 
 .acad-intro h2 {
     font-size: 32px;
-    color: #fff;
+    color: var(--text-primary);
     margin-bottom: 25px;
 }
 
@@ -71,7 +71,7 @@
 
 .acad-section-title {
     font-size: 42px;
-    color: #fff;
+    color: var(--text-primary);
     text-align: center;
     margin-bottom: 10px;
 }
@@ -110,7 +110,7 @@
 
 .acad-prog-header {
     padding: 40px 30px;
-    color: #fff;
+    color: var(--text-primary);
     text-align: center;
 }
 
@@ -145,7 +145,7 @@
 }
 
 .acad-prog-body h4 {
-    color: #fff;
+    color: var(--text-primary);
     font-size: 16px;
     margin-bottom: 20px;
     font-weight: 700;
@@ -175,7 +175,7 @@
 
 .acad-features-title {
     font-size: 42px;
-    color: #fff;
+    color: var(--text-primary);
     text-align: center;
     margin-bottom: 10px;
 }
@@ -218,7 +218,7 @@
 }
 
 .acad-feature-card h3 {
-    color: #fff;
+    color: var(--text-primary);
     font-size: 22px;
     margin-bottom: 16px;
 }
@@ -236,7 +236,7 @@
 
 .acad-exam-section h2 {
     font-size: 42px;
-    color: #fff;
+    color: var(--text-primary);
     margin-bottom: 80px;
 }
 

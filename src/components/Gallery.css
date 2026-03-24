@@ -79,7 +79,7 @@
 .slider-content {
     max-width: 800px;
     text-align: left;
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
 /* Staggered Animations */
@@ -137,7 +137,7 @@
     font-weight: 800;
     line-height: 1.05;
     margin: 0 0 24px 0;
-    color: #fff;
+    color: var(--text-primary);
     letter-spacing: -2px;
     text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
@@ -182,7 +182,7 @@
 
 .slider-cta.primary {
     background: linear-gradient(135deg, var(--accent-blue), #2563eb);
-    color: #fff;
+    color: var(--text-primary);
     box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
 }
 
@@ -194,7 +194,7 @@
 .slider-cta.secondary {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(12px);
-    color: #fff;
+    color: var(--text-primary);
     border: 1px solid var(--glass-border);
 }
 
@@ -220,7 +220,7 @@
     border: 1px solid rgba(255, 255, 255, 0.25);
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(15px);
-    color: #fff;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -260,7 +260,7 @@
 .wheel {
     width: 3px;
     height: 8px;
-    background: #fff;
+    background: var(--bg-primary);
     border-radius: 2px;
     position: absolute;
     top: 8px;

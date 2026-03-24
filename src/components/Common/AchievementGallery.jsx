@@ -22,8 +22,8 @@ const AchievementGallery = () => {
                         <div className="achievement-icon-box" data-type={item.type}>
                             <span className="ach-icon">
                                 {item.image && (item.image.startsWith('http') || item.image.startsWith('data:')) ? 
-                                    <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : 
-                                    item.image || '🏆'
+                                    <img src={item.image} alt={item.name} className="ach-photo-img" /> : 
+                                    <span className="ach-emoji">{item.image || '🏆'}</span>
                                 }
                             </span>
                         </div>

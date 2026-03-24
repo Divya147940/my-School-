@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useLanguage } from '../../context/LanguageContext';
 import FeeReceipt from './FeeReceipt';
+import PaymentGateway from './PaymentGateway';
 
 const ParentFees = () => {
     const { t, language } = useLanguage();
@@ -12,6 +13,7 @@ const ParentFees = () => {
     const [showReceipt, setShowReceipt] = useState(false);
     const [selectedTxn, setSelectedTxn] = useState(null);
     const [transactionId, setTransactionId] = useState('');
+    const [showPaymentGateway, setShowPaymentGateway] = useState(false);
     const [history, setHistory] = useState([]);
 
     useEffect(() => {
@@ -34,15 +36,14 @@ const ParentFees = () => {
 
     const handlePayment = (fee) => {
         setSelectedFee(fee);
-        setPaymentState('processing');
-        
-        // Simulate network delay for premium feel
-        setTimeout(() => {
-            mockApi.payFee(fee.id);
-            setTransactionId('NSGI' + Math.random().toString(36).substr(2, 9).toUpperCase());
-            setPaymentState('success');
-            fetchFees();
-        }, 2500);
+        setShowPaymentGateway(true);
+    };
+
+    const handlePaymentSuccess = () => {
+        mockApi.payFee(selectedFee.id);
+        setTransactionId('NSGI' + Math.random().toString(36).substr(2, 9).toUpperCase());
+        setShowPaymentGateway(false);
+        fetchFees();
     };
 
     if (loading) return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '50px' }}>{language === 'hi' ? 'लोड हो रहा है...' : 'Loading fees...'}</div>;
@@ -51,29 +52,13 @@ const ParentFees = () => {
 
     return (
         <div className="parent-fees">
-            {/* Mock Payment Gateway Modal */}
-            {paymentState !== 'idle' && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-                    <div className="glass-panel" style={{ background: 'var(--bg-secondary)', padding: '40px', borderRadius: '32px', maxWidth: '450px', width: '100%', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', border: '1px solid var(--glass-border)' }}>
-                        {paymentState === 'processing' ? (
-                            <>
-                                <div className="loader" style={{ width: '80px', height: '80px', border: '5px solid var(--glass-border)', borderTop: '5px solid var(--accent-blue)', borderRadius: '50%', margin: '0 auto 30px', animation: 'spin 1s linear infinite' }}></div>
-                                <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>{t('processingPayment')}</h2>
-                                <p style={{ color: 'var(--text-secondary)' }}>{t('totalAmount')}: ₹{selectedFee?.amount}</p>
-                            </>
-                        ) : (
-                            <>
-                                <div style={{ fontSize: '5rem', marginBottom: '20px', animation: 'scaleUp 0.5s ease-out' }}>✅</div>
-                                <h2 style={{ fontSize: '2rem', marginBottom: '10px', color: '#10b981' }}>{t('paymentSuccess')}</h2>
-                                <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>{t('transactionId')}: <b>{transactionId}</b></p>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                    <button onClick={() => setPaymentState('idle')} style={{ padding: '15px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid var(--glass-border)', cursor: 'pointer', fontWeight: '700' }}>DONE</button>
-                                    <button style={{ padding: '15px', borderRadius: '16px', background: 'var(--accent-blue)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '800' }}>{t('downloadReceipt')}</button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
+            {/* Payment Gateway Modal */}
+            {showPaymentGateway && (
+                <PaymentGateway 
+                    amount={selectedFee?.amount} 
+                    onSuccess={handlePaymentSuccess} 
+                    onClose={() => setShowPaymentGateway(false)} 
+                />
             )}
 
             {/* Transaction History Section */}

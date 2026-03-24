@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../Common/Toaster';
+import HandwritingCanvas from '../Common/HandwritingCanvas';
 import './AssignmentPortal.css';
 
 const StudentAssignments = () => {
@@ -12,14 +13,31 @@ const StudentAssignments = () => {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
     const [filter, setFilter] = useState('All');
+    const [submissionMode, setSubmissionMode] = useState('upload'); // 'upload' or 'handwriting'
 
     useEffect(() => {
-        setAssignments(mockApi.getAssignments());
+        const load = () => {
+            console.log("Syncing assignments from storage...");
+            setAssignments(mockApi.getAssignments());
+        };
+        load();
+        
+        // Auto-sync if teacher adds in another tab
+        window.addEventListener('storage', load);
+        // Refresh when clicking back onto the dashboard
+        window.addEventListener('focus', load);
+        
+        return () => {
+            window.removeEventListener('storage', load);
+            window.removeEventListener('focus', load);
+        };
     }, []);
 
     const subjects = ['All', ...new Set(assignments.map(a => a.subject))];
 
-    const handleUpload = (id) => {
+    const [pendingData, setPendingData] = useState(null);
+
+    const handleUpload = (id, dataToUpload) => {
         setIsUploading(true);
         let progress = 0;
         const interval = setInterval(() => {
@@ -28,7 +46,7 @@ const StudentAssignments = () => {
                 clearInterval(interval);
                 setUploadProgress(100);
                 setTimeout(() => {
-                    mockApi.submitWork(id, 'Student');
+                    mockApi.submitWork(id, 'Aman Gupta', dataToUpload);
                     setAssignments(mockApi.getAssignments());
                     setSubmittingId(null);
                     setIsUploading(false);
@@ -93,19 +111,46 @@ const StudentAssignments = () => {
                             <div className="upload-zone">
                                 {!isUploading ? (
                                     <>
-                                        <div className="drop-area">
-                                            <div className="upload-icon">📤</div>
-                                            <p>{language === 'hi' ? 'फाइल यहाँ डालें' : 'Drop homework file here'}</p>
-                                            <span>(PDF, DOCX, JPG)</span>
-                                        </div>
-                                        <div className="upload-actions">
-                                            <button className="confirm-btn" onClick={() => handleUpload(asm.id)}>
-                                                {language === 'hi' ? 'सबमिट करें' : 'Confirm Submission'}
+                                        <div className="submission-mode-selector" style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
+                                            <button 
+                                                className={`filter-chip ${submissionMode === 'upload' ? 'active' : ''}`}
+                                                onClick={() => setSubmissionMode('upload')}
+                                            >
+                                                📁 {language === 'hi' ? 'फाइल अपलोड' : 'File Upload'}
                                             </button>
-                                            <button className="cancel-link" onClick={() => setSubmittingId(null)}>
-                                                {language === 'hi' ? 'रद्द करें' : 'Cancel'}
+                                            <button 
+                                                className={`filter-chip ${submissionMode === 'handwriting' ? 'active' : ''}`}
+                                                onClick={() => setSubmissionMode('handwriting')}
+                                            >
+                                                ✍️ {language === 'hi' ? 'स्क्रीन पर लिखें' : 'Write on Screen'}
                                             </button>
                                         </div>
+
+                                        {submissionMode === 'upload' ? (
+                                            <>
+                                                <div className="drop-area">
+                                                    <div className="upload-icon">📤</div>
+                                                    <p>{language === 'hi' ? 'फाइल यहाँ डालें' : 'Drop homework file here'}</p>
+                                                    <span>(PDF, DOCX, JPG)</span>
+                                                </div>
+                                                <div className="upload-actions">
+                                                    <button className="confirm-btn" onClick={() => handleUpload(asm.id)}>
+                                                        {language === 'hi' ? 'सबमिट करें' : 'Confirm Submission'}
+                                                    </button>
+                                                    <button className="cancel-link" onClick={() => setSubmittingId(null)}>
+                                                        {language === 'hi' ? 'रद्द करें' : 'Cancel'}
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <HandwritingCanvas 
+                                                language={language}
+                                                onCancel={() => setSubmittingId(null)}
+                                                onSave={(allPages) => {
+                                                    handleUpload(asm.id, allPages);
+                                                }}
+                                            />
+                                        )}
                                     </>
                                 ) : (
                                     <div className="upload-progress-container">

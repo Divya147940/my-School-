@@ -112,7 +112,7 @@ export const translations = {
         subjects: "Subjects",
         facilities_title: "Our Facilities",
         team_title: "Meet Our Visionary Team",
-        legacy: "Celebrating 13 Years of Educational Legacy",
+        legacy: "Celebrating 15 Years of Educational Legacy",
         chairman_msg: "Chairman's Message"
     },
     hi: {
@@ -215,7 +215,7 @@ export const translations = {
         facultyPortal: "Shri Jageshwar Memorial Educational Institute प्रबंधन हब",
         chairman_heading: "Chairman's Message",
         chairman_quote: "शिक्षा वह हथियार है जिससे आप दुनिया को बदल सकते हैं।",
-        chairman_text: "प्रिय अभिभावकों और विद्यार्थियों, श्री जागेश्वर मेमोरियल एजुकेशनल इंस्टीट्यूट में आपका स्वागत है। हमारा संस्थान बच्चों के सर्वांगीण विकास के लिए समर्पित है। हम न केवल शैक्षणिक उत्कृष्टता पर ध्यान देते हैं, बल्कि नैतिक मूल्यों, अनुशासन और व्यावहारिक कौशल को भी बढ़ावा देते हैं। हमारा लक्ष्य है कि हर विद्यार्थी आत्मविश्वास और ज्ञान के साथ अपने भविष्य का निर्माण कर सके।",
+        chairman_text: "प्रिय अभिभावकों और विद्यार्थियों, श्री जागेश्वर मेमोरियल एजुकेशनल इंस्टीट्यूट में आपका स्वागत है। शंभू परशाद और फूल मती के महान विजन से शुरू हुई यह संस्था आज अपनी सफलता के 15 गौरवशाली वर्ष पूरे कर चुकी है। हमारा संस्थान बच्चों के सर्वांगीण विकास के लिए समर्पित है। हमारा लक्ष्य है कि हर विद्यार्थी आत्मविश्वास और ज्ञान के साथ अपने भविष्य का निर्माण कर सके।",
         read_more: "विवरण पढ़ें",
         searchPlaceholder: "रिकॉर्ड खोजें...",
         noRecords: "कोई रिकॉर्ड नहीं मिला",
@@ -228,7 +228,7 @@ export const translations = {
         subjects: "विषय",
         facilities_title: "हमारी सुविधाएँ",
         team_title: "हमारी दूरदर्शी टीम",
-        legacy: "शिक्षा के 13 वर्षों की विरासत",
+        legacy: "शिक्षा के 15 वर्षों की विरासत",
         chairman_msg: "अध्यक्ष का संदेश"
     }
 };

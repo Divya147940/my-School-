@@ -13,7 +13,7 @@ import StudentSpotlight from '../components/Home/StudentSpotlight';
 import AlumniHallOfFame from '../components/Home/AlumniHallOfFame';
 import QuickInquiry from '../components/Home/QuickInquiry';
 import HomeInquirySection from '../components/Home/HomeInquirySection';
-import LegacyTimeline from '../components/Home/LegacyTimeline';
+import LegacyTimeline from '../components/Home/LegacyTimelineV3';
 import FacultyShowcase from '../components/Home/FacultyShowcase';
 
 function Home() {
@@ -22,7 +22,7 @@ function Home() {
     
     useSEO(
         t('home'),
-        "Welcome to Shri Jageshwar Memorial Educational Institute. Providing excellence in education for over 13 years."
+        "Welcome to Shri Jageshwar Memorial Educational Institute. Providing excellence in education for over 15 years."
     );
 
     return (

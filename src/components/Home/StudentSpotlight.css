@@ -87,7 +87,7 @@
     border: 8px solid rgba(255, 255, 255, 0.15);
     position: relative;
     z-index: 1;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-premium);
     transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
     cursor: pointer;
 }
@@ -116,7 +116,7 @@
 .student-name {
     font-size: 3.5rem;
     font-weight: 900;
-    color: white;
+    color: var(--text-primary);
     margin-bottom: 15px;
     letter-spacing: -1px;
     background: linear-gradient(to right, #fff, #94a3b8);

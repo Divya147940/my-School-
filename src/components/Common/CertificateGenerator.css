@@ -40,7 +40,7 @@
 .certificate-template-card.silver:hover { border-color: #94a3b8; box-shadow: 0 10px 30px rgba(148, 163, 184, 0.2); }
 
 .cert-mini-icon { font-size: 3rem; margin-bottom: 20px; }
-.certificate-template-card h3 { font-size: 1.1rem; margin-bottom: 20px; color: #fff; }
+.certificate-template-card h3 { font-size: 1.1rem; margin-bottom: 20px; color: var(--text-primary); }
 
 .view-btn {
     width: 100%;
@@ -79,7 +79,7 @@
 }
 
 .certificate-premium-render {
-    background: #fff;
+    background: var(--bg-primary);
     color: #1a365d;
     padding: 60px;
     aspect-ratio: 1.414/1;

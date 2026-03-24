@@ -19,7 +19,7 @@
     border: 1px solid var(--glass-border);
     border-radius: 24px;
     padding: 40px 32px;
-    color: #fff;
+    color: var(--text-primary);
     min-height: 200px;
     display: flex;
     flex-direction: column;
@@ -31,7 +31,7 @@
     transform: translateY(-8px);
     border-color: rgba(59, 130, 246, 0.4);
     background: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-premium);
 }
 
 .contact-info-header {

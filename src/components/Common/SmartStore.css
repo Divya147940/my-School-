@@ -1,6 +1,6 @@
 .store-container {
     padding: 20px;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .store-header {
@@ -90,7 +90,7 @@
     align-items: center;
 }
 
-.p-price { font-weight: 800; color: #fff; font-size: 1.1rem; }
+.p-price { font-weight: 800; color: var(--text-primary); font-size: 1.1rem; }
 
 .p-bottom button {
     background: #3b82f600;

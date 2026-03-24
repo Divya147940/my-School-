@@ -37,7 +37,7 @@
 }
 
 .info-card, .map-card, .stops-card {
-  background: white;
+  background: var(--bg-primary);
   border-radius: 15px;
   padding: 1.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -199,7 +199,7 @@
 
 .completed .stop-index {
   background: #059669;
-  color: white;
+  color: var(--text-primary);
 }
 
 .active .stop-index {

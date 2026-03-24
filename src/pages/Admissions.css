@@ -135,7 +135,7 @@
 }
 
 .adm-form-section h2 {
-    color: #fff;
+    color: var(--text-primary);
     font-size: clamp(28px, 4vw, 42px);
     margin-bottom: 15px;
     font-weight: 800;
@@ -159,7 +159,7 @@
 }
 
 .adm-field label {
-    color: #fff;
+    color: var(--text-primary);
     font-size: 0.9rem;
     font-weight: 700;
     margin-bottom: 12px;
@@ -173,7 +173,7 @@
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     font-size: 1rem;
-    color: #fff;
+    color: var(--text-primary);
     background: rgba(15, 23, 42, 0.4);
     transition: all 0.3s ease;
 }
@@ -223,7 +223,7 @@
 }
 
 .adm-payment-section h2 {
-    color: #fff;
+    color: var(--text-primary);
     font-size: clamp(28px, 4vw, 42px);
     margin-bottom: 15px;
     font-weight: 800;

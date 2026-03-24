@@ -43,7 +43,7 @@
     display: flex;
     gap: 60px;
     padding: 80px;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-premium);
     position: relative;
     z-index: 5;
     border-left: 8px solid #b33921;
@@ -65,7 +65,7 @@
     border-radius: 30px;
     overflow: hidden;
     border: 8px solid #fff;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-premium);
     margin-bottom: 25px;
 }
 

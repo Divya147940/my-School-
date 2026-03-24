@@ -44,7 +44,7 @@
 
 .fac-intro h2 {
     font-size: 36px;
-    color: #fff;
+    color: var(--text-primary);
     margin-bottom: 24px;
 }
 
@@ -83,7 +83,7 @@
 .fac-card:hover {
     transform: translateY(-10px);
     border-color: var(--accent-blue);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: var(--shadow-premium);
 }
 
 .fac-card-badge {
@@ -107,7 +107,7 @@
 .fac-card-title {
     font-size: 24px;
     font-weight: 700;
-    color: #fff;
+    color: var(--text-primary);
     margin-bottom: 16px;
 }
 
@@ -130,7 +130,7 @@
 
 .fac-cta h2 {
     font-size: 36px;
-    color: #fff;
+    color: var(--text-primary);
     margin-bottom: 15px;
 }
 
