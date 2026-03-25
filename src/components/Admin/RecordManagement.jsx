@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useToast } from '../Common/Toaster';
 import { useTheme } from '../../context/ThemeContext';
+import SecurityPinModal from '../Common/SecurityPinModal';
 
 const RecordManagement = () => {
     const { addToast } = useToast();
@@ -17,6 +18,7 @@ const RecordManagement = () => {
         parentName: '',
         contact: ''
     });
+    const [pinModal, setPinModal] = useState({ isOpen: false, onVerified: null, actionName: '' });
 
     const loadData = () => {
         const db = mockApi.getDB();
@@ -26,10 +28,6 @@ const RecordManagement = () => {
         });
         setStudents(db.studentRegistry || []);
     };
-
-    useEffect(() => {
-        loadData();
-    }, []);
 
     const handleAddStudent = (e) => {
         e.preventDefault();
@@ -47,6 +45,22 @@ const RecordManagement = () => {
         } catch (err) {
             addToast("Failed to add student", "error");
         }
+    };
+
+    const handleDeleteClick = (studentId, studentName) => {
+        setPinModal({
+            isOpen: true,
+            actionName: `Delete Student: ${studentName}`,
+            onVerified: () => {
+                try {
+                    mockApi.deleteStudent(studentId);
+                    addToast(`Student ${studentName} deleted successfully.`, "success");
+                    loadData();
+                } catch (err) {
+                    addToast("Failed to delete student", "error");
+                }
+            }
+        });
     };
 
     const filteredStudents = students.filter(s => 
@@ -168,6 +182,7 @@ const RecordManagement = () => {
                                 <th style={{ padding: '15px' }}>Class</th>
                                 <th style={{ padding: '15px' }}>Parent</th>
                                 <th style={{ padding: '15px' }}>Contact</th>
+                                <th style={{ padding: '15px' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -178,17 +193,32 @@ const RecordManagement = () => {
                                     <td style={{ padding: '15px' }}>{s.class}</td>
                                     <td style={{ padding: '15px', opacity: 0.8 }}>{s.parentName}</td>
                                     <td style={{ padding: '15px', opacity: 0.8 }}>{s.contact}</td>
+                                    <td style={{ padding: '15px' }}>
+                                        <button 
+                                            onClick={() => handleDeleteClick(s.id, s.name)}
+                                            style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                             {filteredStudents.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>No students found matching your search.</td>
+                                    <td colSpan="6" style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>No students found matching your search.</td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
             </div>
+            
+            <SecurityPinModal 
+                isOpen={pinModal.isOpen}
+                onClose={() => setPinModal({ ...pinModal, isOpen: false })}
+                onVerified={pinModal.onVerified}
+                actionName={pinModal.actionName}
+            />
         </div>
     );
 };

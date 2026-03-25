@@ -38,8 +38,10 @@ import Fees from './pages/Fees';
 import AIAssistant from './components/Common/AIAssistant';
 import NewsTicker from './components/Common/NewsTicker';
 import FloatingContact from './components/Common/FloatingContact';
+import IdentityLock from './components/Common/IdentityLock';
 import './App.css';
 import ErrorBoundary from './components/Common/ErrorBoundary';
+import ScreenWatermark from './components/Common/ScreenWatermark';
 
 function App() {
   return (
@@ -48,6 +50,7 @@ function App() {
         <ThemeProvider>
           <ToastProvider>
             <AuthProvider>
+              <ScreenWatermark />
               <Router>
           <div className="app">
             <ErrorBoundary fallback={null}>
@@ -127,6 +130,7 @@ function App() {
             <ErrorBoundary fallback={null}>
               <AIAssistant />
             </ErrorBoundary>
+            <IdentityLock />
           </div>
             </Router>
             </AuthProvider>

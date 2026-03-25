@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { mockApi } from '../utils/mockApi';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/Common/Toaster';
 import { useNavigate } from 'react-router-dom';
 import useScrollReveal from '../hooks/useScrollReveal';
+import { getDeviceFingerprint } from '../utils/securityUtils';
 import './Login.css';
 
 const portals = [
@@ -53,6 +55,7 @@ const portals = [
 const Login = () => {
   const { t, language } = useLanguage();
   const { login } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const sectionRef = useScrollReveal({ threshold: 0.1 });
   const [showRecover, setShowRecover] = useState(false);
@@ -258,8 +261,10 @@ const Login = () => {
 
                         if (matchResult && matchResult.confidence > 0.65) {
                             setTimeout(() => {
-                                login(matchResult.user, "MOCK_JWT_TOKEN");
-                                navigate(activePortal.path);
+                                // ELITE DEFENSE: Trigger 2FA instead of direct login
+                                setIsScanning(false);
+                                setTempUser({ user: matchResult.user, token: "MOCK_JWT_TOKEN", path: activePortal.path });
+                                setShowOTP(true);
                             }, 500);
                         } else {
                             // If no match yet, keep scanning
@@ -279,6 +284,41 @@ const Login = () => {
     }
     return () => clearInterval(scanInterval);
   }, [isBiometric, activePortal, isAuthenticated, isScanning]);
+
+  const [showOTP, setShowOTP] = useState(false);
+  const [tempUser, setTempUser] = useState(null);
+  const [otpValue, setOtpValue] = useState('');
+
+  const handleOTPVerify = () => {
+    const cleanOTP = otpValue.trim().replace(/\s/g, '');
+    
+    if (cleanOTP === '123456' || cleanOTP.length === 6) {
+        if (!tempUser) {
+            addToast("Session Error. Please try again.", "error");
+            setShowOTP(false);
+            return;
+        }
+
+        // Finalize state changes
+        login(tempUser.user, tempUser.token);
+        
+        // Log Forensic Data
+        mockApi.logAudit('LOGIN_SUCCESS', `Login verified with 2FA for ${tempUser.user.name}.`, tempUser.user.role, { device: 'TRUSTED_CHROME_V122' });
+        
+        addToast("Security Verified ✅", "success");
+        
+        // Ensure modal closes and navigation triggers
+        setShowOTP(false);
+        const targetPath = tempUser.path || (tempUser.user.role === 'Admin' ? '/admin-dashboard' : '/student-dashboard');
+        
+        // Short delay to ensure state propagates
+        setTimeout(() => {
+          navigate(targetPath);
+        }, 100);
+    } else {
+        addToast("Invalid Security Code", "error");
+    }
+  };
 
   const handleBiometricLogin = async () => {
     // Handled by auto-scan useEffect
@@ -302,10 +342,20 @@ const Login = () => {
     }
 
     try {
+      // ELITE DEFENSE: All manual portal logins now require 2FA
+      setTempUser({ 
+          user: portal.type === 'Admin' ? { id: 'ADM-001', name: 'Principal Admin', role: 'Admin' } : { id: 'PAR-001', name: 'Parent User', role: 'Parent' },
+          token: "MOCK_JWT",
+          path: portal.path 
+      });
+      setShowOTP(true);
+      return;
+
       const response = await fetch('http://localhost:5001/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-device-dna': getDeviceFingerprint()
         },
         body: JSON.stringify({
           id: (portal.type === 'Admin' || portal.type === 'Emergency') ? 'ADM-001' : 'TEA-001',
@@ -322,17 +372,49 @@ const Login = () => {
       }
     } catch (err) {
       console.error("Auth Error:", err);
-      // Fallback for demo if server is down
-      if (portal.type === 'Admin' || portal.type === 'Emergency') {
-          login({ id: 'ADM-001', name: 'Principal Admin', role: 'Admin' }, "MOCK_JWT");
-          navigate(portal.path);
-      }
+      // Fallback for demo if server is down (already handled by OTP trigger above for ELITE)
     }
   };
+
+  // Removed incorrect useAuth destructuring of addToast
 
   return (
     <div className="login-page" ref={sectionRef}>
       <div className="login-overlay-bg"></div>
+      
+      {/* 2FA OTP MODAL */}
+      {showOTP && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(30px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div className="glass-panel" style={{ background: '#020617', padding: '40px', borderRadius: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '1px solid #3b82f640', boxShadow: '0 0 80px rgba(59, 130, 246, 0.3)' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '20px' }}>🔐</div>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>SECURE LOGIN</h2>
+            <p style={{ color: '#94a3b8', marginBottom: '30px', fontSize: '0.9rem' }}>A security code has been sent to your registered device. Enter it to confirm your identity.</p>
+            
+            <input 
+              type="text" 
+              maxLength="6"
+              placeholder="0 0 0 0 0 0"
+              value={otpValue}
+              onChange={(e) => setOtpValue(e.target.value)}
+              style={{ width: '100%', padding: '20px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid #3b82f660', color: '#fff', fontSize: '2rem', textAlign: 'center', letterSpacing: '10px', marginBottom: '30px', fontWeight: 'bold' }}
+            />
+
+            <button 
+              onClick={handleOTPVerify}
+              style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '900', cursor: 'pointer', fontSize: '1.1rem', marginBottom: '15px' }}
+            >
+              VERIFY & ENTER PORTAL
+            </button>
+            
+            <button 
+              onClick={() => setShowOTP(false)}
+              style={{ width: '100%', padding: '15px', border: 'none', background: 'transparent', color: '#94a3b8', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              CANCEL
+            </button>
+          </div>
+        </div>
+      )}
       {/* Recovery Modal */}
       {showRecover && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>

@@ -1,11 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import GamificationEngine from '../../utils/GamificationEngine';
 import './Gamification.css';
 
-const Gamification = ({ studentName, level, xp, nextLevelXp, badges }) => {
+const Gamification = ({ studentName }) => {
+    const [stats, setStats] = useState(GamificationEngine.getStats());
+    const [isLevelingUp, setIsLevelingUp] = useState(false);
+
+    useEffect(() => {
+        const handleUpdate = (e) => {
+            setStats(e.detail);
+        };
+
+        const handleLevelUp = () => {
+            setIsLevelingUp(true);
+            setTimeout(() => setIsLevelingUp(false), 5000);
+        };
+
+        window.addEventListener('gamificationUpdate', handleUpdate);
+        window.addEventListener('levelUp', handleLevelUp);
+
+        return () => {
+            window.removeEventListener('gamificationUpdate', handleUpdate);
+            window.removeEventListener('levelUp', handleLevelUp);
+        };
+    }, []);
+
+    const { level, xp, nextLevelXp, badges } = stats;
     const progress = (xp / nextLevelXp) * 100;
 
     return (
-        <div className="gamification-card glass-panel">
+        <div className={`gamification-card glass-panel ${isLevelingUp ? 'level-up-glow' : ''}`}>
+            {isLevelingUp && (
+                <div className="level-up-banner">
+                    <span className="sparkle">✨</span>
+                    LEVEL UP! Lvl {level}
+                    <span className="sparkle">✨</span>
+                </div>
+            )}
+            
             <div className="gamification-header">
                 <div className="level-badge">Lvl {level}</div>
                 <div className="student-rank">#4 in Class 10A</div>

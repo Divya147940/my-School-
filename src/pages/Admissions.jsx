@@ -24,6 +24,7 @@ function Admissions() {
         phone: '',
         email: '',
         category: '',
+        website_url: '', // HONEYPOT FIELD (Hidden)
     });
 
     const [submitted, setSubmitted] = useState(false);
@@ -64,6 +65,23 @@ function Admissions() {
         if (!validateForm()) {
             addToast("Please correct the errors in the form.", "error");
             return;
+        }
+
+        // --- HONEYPOT CHECK ---
+        if (formData.website_url) {
+            console.warn("🚨 BOT DETECTED: Honeypot field filled.");
+            addToast("Your submission has been flagged. Please try again or contact support.", "error");
+            // Sync bot strike to backend
+            fetch('http://localhost:5001/api/security/report-strike', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'BOT_HONEYPOT_HIT',
+                    userRole: 'Guest',
+                    details: 'Admissions Form Honeypot Triggered'
+                })
+            }).catch(e => {});
+            return; // Silently stop or show error
         }
 
         setLoading(true);
@@ -240,6 +258,19 @@ function Admissions() {
                             <div className="adm-field">
                                 <label>Email / ईमेल</label>
                                 <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="email@example.com" />
+                            </div>
+                            
+                            {/* HONEYPOT FIELD - Hidden from real users, bots will fill it */}
+                            <div style={{ display: 'none' }} aria-hidden="true">
+                                <label>Do not fill this field if you are a human</label>
+                                <input 
+                                    type="text" 
+                                    name="website_url" 
+                                    value={formData.website_url} 
+                                    onChange={handleChange} 
+                                    tabIndex="-1" 
+                                    autoComplete="off" 
+                                />
                             </div>
                         </div>
                         <div className="adm-field adm-field-full">

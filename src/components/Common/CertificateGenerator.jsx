@@ -112,6 +112,12 @@ const CertificateGenerator = ({ studentName = 'Aman Gupta' }) => {
                                             <div className="label">Date Issued</div>
                                         </div>
                                     </div>
+
+                                    {/* GUARDIAN SUITE 2.0: DIGITAL VERIFICATION SEAL */}
+                                    <div style={{ marginTop: '30px', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem', color: '#64748b', fontFamily: 'monospace' }}>
+                                        <div>VERIFICATION ID: NSGI-{btoa(selectedCert.id + studentName).substring(0, 12).toUpperCase()}</div>
+                                        <div>SECURED BY GUARDIAN SUITE 2.0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -10,17 +10,36 @@ export const AuthProvider = ({ children }) => {
 
   const [token, setToken] = useState(() => localStorage.getItem('NSGI_AUTH_TOKEN'));
 
+  useEffect(() => {
+    if (!token || !user) return;
+
+    // Periodic Session Integrity & Expiry Check
+    const checkSession = () => {
+        const result = mockApi.verifySession(token);
+        if (!result.valid) {
+            console.warn(`⛔ SESSION VOID: ${result.error}`);
+            logout();
+            alert("Your session has expired or been invalidated for security. Please login again.");
+        }
+    };
+
+    const interval = setInterval(checkSession, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, [token, user]);
+
   const login = (userData, userToken) => {
-    // Role Normalization: Always ensure role is Title Case (e.g. 'Student', 'Faculty')
+    // Generate Secure Session Token if one isn't provided (for mock/demo consistency)
+    const secureToken = userToken || mockApi.generateSessionToken(userData.id);
+
     const normalizedUser = userData ? {
         ...userData,
         role: userData.role ? (userData.role.charAt(0).toUpperCase() + userData.role.slice(1).toLowerCase()) : 'Student'
     } : null;
 
     setUser(normalizedUser);
-    setToken(userToken);
+    setToken(secureToken);
     localStorage.setItem('NSGI_AUTH_USER', JSON.stringify(normalizedUser));
-    localStorage.setItem('NSGI_AUTH_TOKEN', userToken);
+    localStorage.setItem('NSGI_AUTH_TOKEN', secureToken);
   };
 
   const logout = () => {
@@ -32,6 +51,14 @@ export const AuthProvider = ({ children }) => {
 
   const secureApi = async (url, options = {}) => {
     const currentToken = token || localStorage.getItem('NSGI_AUTH_TOKEN');
+    
+    // Pre-flight check
+    const session = mockApi.verifySession(currentToken);
+    if (!session.valid) {
+        logout();
+        throw new Error("SESSION_EXPIRED");
+    }
+
     const headers = {
       ...options.headers,
       'Authorization': `Bearer ${currentToken}`,

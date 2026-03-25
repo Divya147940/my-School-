@@ -9,8 +9,8 @@ import photo5 from '../assets/gallery/photo5.png';
 import campus1 from '../assets/gallery/campus1.png';
 
 const galleryImages = [
-    { src: photo3, alt: 'Annual Day Celebration' },
-    { src: photo5, alt: 'Award Ceremony' },
+    { src: '/assets/gallery/gallery_1.jpg', alt: 'School Playground' },
+    { src: '/assets/gallery/gallery_2.jpg', alt: 'School Trip' },
 ];
 
 const videoThumbs = [

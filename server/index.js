@@ -20,12 +20,19 @@ const __dirname = path.dirname(__filename);
 const JWT_SECRET = process.env.JWT_SECRET || 'nsgi-super-secret-key-2026';
 
 // --- SECURITY AUDIT LOGGING ---
-const AUDIT_FILE = path.join(__dirname, 'security_audit.json');
+const securityAuditFile = path.join(__dirname, 'security_audit.json');
+const BAN_THRESHOLD = 5; // Strikes before automatic ban
+const SECURITY_PIN = "1234"; // Default PIN for demonstration
+
+// Initialize ban list from audit log if needed (simplified for mock)
+let banList = new Set();
+let strikesByIP = {};
+
 const logSecurityAction = (action) => {
     let logs = [];
     try {
-        if (fs.existsSync(AUDIT_FILE)) {
-            logs = JSON.parse(fs.readFileSync(AUDIT_FILE, 'utf8'));
+        if (fs.existsSync(securityAuditFile)) {
+            logs = JSON.parse(fs.readFileSync(securityAuditFile, 'utf8'));
         }
     } catch (e) { console.error('Audit read error', e); }
 
@@ -35,7 +42,7 @@ const logSecurityAction = (action) => {
         ...action
     });
 
-    fs.writeFileSync(AUDIT_FILE, JSON.stringify(logs.slice(0, 50), null, 2));
+    fs.writeFileSync(securityAuditFile, JSON.stringify(logs.slice(0, 50), null, 2));
 };
 
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -73,6 +80,24 @@ app.use(helmet()); // Security headers
 app.use(cookieParser()); // Parse cookies
 app.use(express.json());
 
+// --- MIDDLEWARE: IP JAIL ---
+const checkIPJail = (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress;
+    if (banList.has(ip)) {
+        return res.status(403).json({ 
+            error: "IP_BANNED", 
+            message: "Your IP has been permanently banned due to multiple security violations." 
+        });
+    }
+    next();
+};
+
+app.use(checkIPJail); // Apply jail check early
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true
+}));
+
 // Rate Limiter for Auth Routes
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -80,18 +105,40 @@ const authLimiter = rateLimit({
     message: { status: 'error', message: 'Too many login attempts, please try again after 15 minutes' }
 });
 
-app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
-    credentials: true
-}));
 
-// --- RBAC MIDDLEWARE ---
+// --- RBAC & SESSION SECURITY ---
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1] || req.cookies?.token;
     if (!token) return res.status(401).json({ status: 'error', message: 'Access Denied: No Token Provided' });
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
+        
+        // --- IP-SESSION BINDING (Guardian Suite 2.0) ---
+        const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+        if (decoded.ip && decoded.ip !== clientIp) {
+            logSecurityAction({
+                type: 'SESSION_HIJACK_ATTEMPT',
+                user: decoded.id,
+                ip: clientIp,
+                details: `Session accessed from different IP. Original: ${decoded.ip}, Current: ${clientIp}`
+            });
+            return res.status(401).json({ status: 'error', message: 'Security Alert: Session binding mismatch.' });
+        }
+
+        // --- DEVICE DNA VERIFICATION ---
+        const clientDNA = req.headers['x-device-dna'];
+        if (decoded.deviceDNA && clientDNA && decoded.deviceDNA !== clientDNA) {
+            logSecurityAction({
+                type: 'DEVICE_MISMATCH',
+                details: `Identity hijacking suspect: Device DNA mismatch. JWT: ${decoded.deviceDNA}, Client: ${clientDNA}`,
+                user: decoded.username,
+                ip: req.ip,
+                severity: 'CRITICAL'
+            });
+            // We don't block yet (to avoid locking out users on browser updates) but we flag it
+        }
+
         req.user = decoded;
         next();
     } catch (err) {
@@ -235,16 +282,28 @@ app.get('/api/students/search/:id', async (req, res) => {
 // --- AUTHENTICATION ENDPOINTS ---
 app.post('/api/auth/login', authLimiter, async (req, res) => {
     const { id, role } = req.body;
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
     
     try {
-        const token = jwt.sign({ id, role }, JWT_SECRET, { expiresIn: '8h' });
+        // Embed IP in token for session pinning
+        const token = jwt.sign(
+            { 
+                id: id, 
+                username: id, // Assuming 'id' can serve as a placeholder for username if not explicitly available
+                role: role, 
+                ip: clientIp,
+                deviceDNA: req.headers['x-device-dna'] || 'unknown'
+            },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
         
         logSecurityAction({
             type: 'LOGIN_SUCCESS',
             user: id,
             role: role,
-            ip: req.ip || '127.0.0.1',
-            details: `Successful login as ${role}`
+            ip: clientIp,
+            details: `Successful login as ${role} (Session Pinned to IP)`
         });
 
         res.cookie('token', token, {
@@ -263,7 +322,7 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
         logSecurityAction({
             type: 'LOGIN_FAILURE',
             user: id,
-            ip: req.ip || '127.0.0.1',
+            ip: clientIp,
             error: err.message
         });
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
@@ -507,6 +566,64 @@ app.post('/api/live-classes', async (req, res) => {
     } catch (err) {
         console.error('Live class schedule error:', err.message);
         res.status(500).json({ status: 'error', message: err.message || 'Failed to schedule live class' });
+    }
+});
+
+// --- ADVANCED SECURITY FORENSICS ---
+app.get('/api/v1/security/canary', (req, res) => {
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+    logSecurityAction({
+        type: 'CRITICAL_CANARY_HIT',
+        ip: clientIp,
+        details: 'Attempt to access ghost administrative endpoint detected.',
+        severity: 'CRITICAL'
+    });
+    // Return fake sensitive data to lure the attacker
+    res.json({
+        status: 'ok',
+        config: {
+            debug: true,
+            backup_key_rotation: 'v1_legacy',
+            internal_db_endpoint: '10.0.0.25:5432'
+        }
+    });
+});
+
+// --- SECURITY: REPORT STRIKE ---
+app.post('/api/security/report-strike', (req, res) => {
+    const { type, details, userRole } = req.body;
+    const ip = req.ip || req.connection.remoteAddress;
+
+    // Track strikes per IP
+    strikesByIP[ip] = (strikesByIP[ip] || 0) + 1;
+    
+    let isBanned = false;
+    if (strikesByIP[ip] >= BAN_THRESHOLD) {
+        banList.add(ip);
+        isBanned = true;
+    }
+
+    logSecurityAction(`FRONTEND_STRIKE_${type}`, { 
+        details: `${details}${isBanned ? ' [AUTO-BANNED]' : ''}`, 
+        ip, 
+        userRole,
+        strikeCount: strikesByIP[ip]
+    }, isBanned ? 'CRITICAL' : 'HIGH');
+
+    res.json({ success: true, strikeCount: strikesByIP[ip], banned: isBanned });
+});
+
+// --- SECURITY: VERIFY PIN (Action-Level MFA) ---
+app.post('/api/security/verify-pin', (req, res) => {
+    const { pin } = req.body;
+    const ip = req.ip || req.connection.remoteAddress;
+
+    if (pin === SECURITY_PIN) {
+        logSecurityAction('MFA_PIN_SUCCESS', { details: 'Action authorized via PIN', ip }, 'INFO');
+        res.json({ success: true });
+    } else {
+        logSecurityAction('MFA_PIN_FAILURE', { details: `Invalid PIN attempt: ${pin}`, ip }, 'WARNING');
+        res.status(401).json({ success: false, message: 'Invalid PIN' });
     }
 });
 

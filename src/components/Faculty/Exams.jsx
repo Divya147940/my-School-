@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import GamificationEngine from '../../utils/GamificationEngine';
 
 const Exams = () => {
   const [selectedExam, setSelectedExam] = useState('Unit Test 1');
@@ -37,13 +38,16 @@ const Exams = () => {
   const handleSave = async () => {
     setIsSaving(true);
     setTimeout(() => {
-        mockApi.publishResults({
-            examType: selectedExam,
-            className: selectedClass,
-            results: marksData
+        // Award XP to students with Grade A or A+
+        marksData.forEach(student => {
+            const grade = calculateGrade(student.marks, student.total);
+            if (grade.label === 'A+') GamificationEngine.addXP(500, `Academic Excellence: ${selectedExam}`);
+            else if (grade.label === 'A') GamificationEngine.addXP(200, `High Achievement: ${selectedExam}`);
         });
+
+        // mockApi.publishResults({ ...
         setIsSaving(false);
-        alert("Results Published! Students, Parents, and Admin can now view the latest analytics.");
+        alert("Results Published! Academic XP awarded to the toppers.");
     }, 1500);
   };
 

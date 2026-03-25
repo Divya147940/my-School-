@@ -117,3 +117,48 @@
     background: rgba(255,255,255,0.1);
     border-color: var(--accent-blue);
 }
+
+/* Level Up Animations */
+.level-up-glow {
+    animation: levelUpPulse 2s infinite alternate;
+    border-color: #fbbf24 !important;
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.4);
+}
+
+.level-up-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(251, 191, 36, 0.95);
+    color: #000;
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-weight: 900;
+    font-size: 1.2rem;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: bannerPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sparkle {
+    display: inline-block;
+    animation: rotateSparkle 1.5s infinite linear;
+    margin: 0 10px;
+}
+
+@keyframes levelUpPulse {
+    0% { transform: scale(1); box-shadow: 0 0 10px rgba(251, 191, 36, 0.2); }
+    100% { transform: scale(1.02); box-shadow: 0 0 40px rgba(251, 191, 36, 0.6); }
+}
+
+@keyframes bannerPop {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(-20deg); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes rotateSparkle {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

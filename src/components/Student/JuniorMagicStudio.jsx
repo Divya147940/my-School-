@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import JuniorDashboardAnimations from '../Common/JuniorDashboardAnimations';
+import GamificationEngine from '../../utils/GamificationEngine';
 import './JuniorActivityCenter.css'; // Reusing established junior styles
 
 const JuniorMagicStudio = () => {
@@ -7,6 +8,7 @@ const JuniorMagicStudio = () => {
     const [activePoem, setActivePoem] = useState(null);
     const [score, setScore] = useState(0);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [floatingXPs, setFloatingXPs] = useState([]);
     
     // Logic Puzzles State
     const [puzzleTask, setPuzzleTask] = useState(null);
@@ -59,9 +61,17 @@ const JuniorMagicStudio = () => {
         audio.play().catch(() => {});
     };
 
-    const triggerConfetti = () => {
+    const spawnXp = (amount) => {
+        const id = Date.now();
+        setFloatingXPs(prev => [...prev, { id, amount, x: 40 + Math.random() * 20, y: 40 + Math.random() * 20 }]);
+        setTimeout(() => setFloatingXPs(prev => prev.filter(f => f.id !== id)), 1500);
+    };
+
+    const triggerConfetti = (xpAmount = 150) => {
         setScore(s => s + 10);
         setShowConfetti(true);
+        GamificationEngine.addXP(xpAmount, `Magic Studio: ${activeSection}`);
+        spawnXp(xpAmount);
         playMagicSound('correct');
         setTimeout(() => setShowConfetti(false), 3000);
     };
@@ -350,6 +360,16 @@ const JuniorMagicStudio = () => {
                         🎊✨🏆
                     </div>
                 )}
+
+                {floatingXPs.map(f => (
+                    <div 
+                        key={f.id} 
+                        className="floating-xp-pop"
+                        style={{ left: `${f.x}%`, top: `${f.y}%` }}
+                    >
+                        +{f.amount} XP
+                    </div>
+                ))}
             </main>
 
             <footer style={{ marginTop: '50px', textAlign: 'center' }}>

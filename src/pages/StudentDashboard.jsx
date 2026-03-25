@@ -46,6 +46,8 @@ import JuniorDiscoveryHub from '../components/Student/JuniorDiscoveryHub';
 import JuniorBrainBoost from '../components/Student/JuniorBrainBoost';
 import JuniorDashboardAnimations from '../components/Common/JuniorDashboardAnimations';
 import MessageInbox from '../components/Communication/MessageInbox';
+import DataMask from '../components/Common/DataMask';
+import { maskAadhar, maskPhone } from '../utils/securityUtils';
 import './StudentDashboard.css';
 
 const performanceData = [
@@ -221,14 +223,12 @@ const StudentDashboard = () => {
             <div className="premium-row" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '30px', marginBottom: '30px' }}>
               <Gamification 
                 studentName={studentInfo.name}
-                level={studentInfo.level}
-                xp={studentInfo.xp}
-                nextLevelXp={studentInfo.nextLevelXp}
-                badges={studentInfo.badges}
               />
               <div className="quick-stats glass-panel" style={{ padding: '25px', borderRadius: '24px', display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--accent-blue)' }}>{studentInfo.attendance}</div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--accent-blue)' }}>
+                        <DataMask value={studentInfo.attendance} maskFunc={(v) => 'XX%'} />
+                    </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Attendance</div>
                 </div>
                 <div style={{ height: '40px', width: '1px', background: 'var(--glass-border)' }}></div>
@@ -521,7 +521,9 @@ const StudentDashboard = () => {
         <header className="content-header">
           <div>
             <h1>Dashboard</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Welcome back, {studentInfo.name} (Class {studentInfo.class})</p>
+            <p style={{ color: 'var(--text-secondary)' }}>
+                Welcome back, {studentInfo.name} | Roll: <DataMask value={studentInfo.roll} maskFunc={(v) => 'S***'} />
+            </p>
           </div>
           <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <button 

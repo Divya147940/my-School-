@@ -1,32 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { mockApi } from '../../utils/mockApi';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../Common/Toaster';
 import './StudentLeave.css';
 
 const StudentLeave = () => {
+  const { user } = useAuth();
   const { addToast } = useToast();
   const [history, setHistory] = useState([]);
+  const [form, setForm] = useState({ type: 'Bimari (Sick Leave)', start: '', end: '', reason: '' });
 
   useEffect(() => {
-    setHistory(mockApi.getLeaves().filter(l => l.name.includes('Aman Gupta')));
-  }, []);
-
-  const [form, setForm] = useState({ type: 'Sick Leave', start: '', end: '', reason: '' });
+    const savedRequests = JSON.parse(localStorage.getItem('leave_requests') || '[]');
+    setHistory(savedRequests.filter(r => r.studentId === user?.id));
+  }, [user?.id]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const req = { 
-      name: 'Aman Gupta (Student)', 
-      type: form.type, 
+    if (!form.start || !form.end || !form.reason) {
+        addToast('Please fill all fields!', 'error');
+        return;
+    }
+
+    const newRequest = {
+      id: Date.now(),
+      studentId: user.id,
+      studentName: user.name,
+      studentRoll: user.rollNumber,
+      class: user.class,
+      type: form.type,
       start: form.start,
       end: form.end,
-      duration: `${form.start} to ${form.end}`, 
-      reason: form.reason 
+      reason: form.reason,
+      status: 'Pending',
+      appliedAt: new Date().toLocaleDateString()
     };
-    mockApi.addLeaveRequest(req);
-    setHistory(mockApi.getLeaves().filter(l => l.name.includes('Aman Gupta')));
-    setForm({ type: 'Sick Leave', start: '', end: '', reason: '' });
-    addToast('Leave request sent to Admin!', 'success');
+
+    const allRequests = JSON.parse(localStorage.getItem('leave_requests') || '[]');
+    const updatedAll = [newRequest, ...allRequests];
+    localStorage.setItem('leave_requests', JSON.stringify(updatedAll));
+    
+    setHistory(prev => [newRequest, ...prev]);
+    setForm({ type: 'Bimari (Sick Leave)', start: '', end: '', reason: '' });
+    addToast('Aaapki leave ki request Teacher ko bhej di gayi hai! 📝', 'success');
   };
 
   return (
@@ -42,8 +57,8 @@ const StudentLeave = () => {
                 onChange={e => setForm({...form, type: e.target.value})}
                 className="premium-input"
               >
-                <option>Sick Leave</option>
-                <option>Casual Leave</option>
+                <option>Bimari (Sick Leave)</option>
+                <option>Zaruri Kaam (Casual Leave)</option>
                 <option>Emergency</option>
                 <option>Other</option>
               </select>
@@ -51,7 +66,7 @@ const StudentLeave = () => {
             
             <div className="form-row">
               <div className="form-group">
-                <label>From Date</label>
+                <label>Kab se? (From)</label>
                 <input 
                   type="date" required 
                   value={form.start} onChange={e => setForm({...form, start: e.target.value})}
@@ -59,7 +74,7 @@ const StudentLeave = () => {
                 />
               </div>
               <div className="form-group">
-                <label>To Date</label>
+                <label>Kab tak? (To)</label>
                 <input 
                   type="date" required 
                   value={form.end} onChange={e => setForm({...form, end: e.target.value})}
@@ -69,9 +84,9 @@ const StudentLeave = () => {
             </div>
 
             <div className="form-group">
-              <label>Reason for Leave</label>
+              <label>Kyun? (Reason)</label>
               <textarea 
-                placeholder="Explain why you need leave..." required 
+                placeholder="Vajh likhein..." required 
                 value={form.reason} onChange={e => setForm({...form, reason: e.target.value})}
                 className="premium-input text-area"
               />
@@ -84,7 +99,7 @@ const StudentLeave = () => {
         </div>
 
         <div className="leave-history-section">
-          <h3 className="section-title">📋 Application History</h3>
+          <h3 className="section-title">📋 My Applications</h3>
           <div className="history-list">
             {history.length > 0 ? (
               history.map(item => (
@@ -101,10 +116,11 @@ const StudentLeave = () => {
                     <span>📅 {item.end}</span>
                   </div>
                   <p className="leave-reason">"{item.reason}"</p>
+                  <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '10px' }}>Applied on: {item.appliedAt}</div>
                 </div>
               ))
             ) : (
-              <div className="no-history">No previous records found.</div>
+              <div className="no-history">Koi puraani application nahi mili.</div>
             )}
           </div>
         </div>
@@ -114,3 +130,4 @@ const StudentLeave = () => {
 };
 
 export default StudentLeave;
+

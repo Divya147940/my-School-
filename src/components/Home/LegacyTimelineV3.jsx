@@ -2,6 +2,7 @@ import React from 'react';
 import './LegacyTimeline.css';
 import { useLanguage } from '../../context/LanguageContext';
 import foundersImg from '../../assets/founders.png';
+import chairmanImg from '../../assets/chairman.png';
 
 const timelineData = [
     {
@@ -11,7 +12,7 @@ const timelineData = [
             en: 'Our journey began with Shambhu Parshad and Phool Mati, whose vision laid the foundation of this temple of learning.', 
             hi: 'हमारी प्रेरणादायक यात्रा की शुरुआत श्री शंभू परशाद और श्रीमती फूल मती के महान संकल्प से हुई, जिन्होंने इस विद्या के मंदिर की नींव रखी।' 
         },
-        image: foundersImg
+        image: foundersImg // Keep original working founders image
     },
     {
         year: '2015',
@@ -20,7 +21,7 @@ const timelineData = [
             en: 'Marking 5 years of excellence, our students achieved 100% success in board examinations for the first time.', 
             hi: 'सफलता के प्रथम सोपान: हमारे छात्रों ने अपनी कड़ी मेहनत से विद्यालय का नाम रोशन किया और शत-प्रतिशत परीक्षा परिणाम हासिल किए।' 
         },
-        image: 'https://images.unsplash.com/photo-1523050335456-adabc2246744?auto=format&fit=crop&q=80&w=400'
+        image: '/assets/journey/journey_3.jpg'
     },
     {
         year: '2019',
@@ -29,7 +30,7 @@ const timelineData = [
             en: '10 years of service to Raebareli, expanding our infrastructure with advanced labs and sports arenas.', 
             hi: '10 वर्षों का निरंतर सेवा भाव: अत्याधुनिक प्रयोगशालाओं और खेल सुविधाओं के साथ हमने अपने विद्यार्थियों के सर्वांगीण विकास की राह प्रशस्त की।' 
         },
-        image: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=400'
+        image: '/assets/journey/journey_4.jpg'
     },
     {
         year: '2023',
@@ -38,7 +39,7 @@ const timelineData = [
             en: 'Transitioned to a smart ecosystem, integrating AI and modern technology into the traditional classroom.', 
             hi: 'हमने शिक्षा को आधुनिक तकनीक और स्मार्ट क्लासरूम के साथ जोड़कर एक नए डिजिटल युग की शुरुआत की।' 
         },
-        image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400'
+        image: '/assets/journey/journey_1.jpg'
     },
     {
         year: '2026',
@@ -47,7 +48,7 @@ const timelineData = [
             en: 'Celebrating 15 years of transforming lives. Today, we stand as the region\'s most trusted innovative institution.', 
             hi: 'जीवन बदलने के 15 वर्ष: आज हम क्षेत्र के सबसे उन्नत और विश्वसनीय शिक्षण संस्थान के रूप में नई ऊंचाइयों को छू रहे हैं।' 
         },
-        image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&q=80&w=400'
+        image: '/assets/journey/journey_5.jpg'
     }
 ];
 
@@ -69,7 +70,12 @@ const LegacyTimelineV3 = () => {
                         <div className="timeline-card-side v3-card-side">
                             <div className="timeline-card glass-panel">
                                 <div className="timeline-img-wrapper">
-                                    <img src={item.image} alt={item.year} className="v3-milestone-img" />
+                                    <img 
+                                        src={item.image} 
+                                        alt={item.year} 
+                                        className="v3-milestone-img" 
+                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=Milestone+Coming+Soon'; }}
+                                    />
                                     <div className="img-overlay"></div>
                                 </div>
                                 <div className="timeline-content">

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import JuniorDashboardAnimations from '../Common/JuniorDashboardAnimations';
+import GamificationEngine from '../../utils/GamificationEngine';
 import './JuniorActivityCenter.css';
 
 const JuniorBrainBoost = () => {
     const [activeTab, setActiveTab] = useState('memory'); // memory, logic, skills, nature
     const [score, setScore] = useState(0);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [floatingXPs, setFloatingXPs] = useState([]);
 
     // --- Speech & Sound ---
     const speak = (text, lang = 'en-IN') => {
@@ -18,8 +20,18 @@ const JuniorBrainBoost = () => {
         window.speechSynthesis.speak(utterance);
     };
 
-    const triggerWin = () => {
+    const spawnXp = (amount) => {
+        const id = Date.now();
+        const x = 40 + Math.random() * 20; // Near center
+        const y = 40 + Math.random() * 20;
+        setFloatingXPs(prev => [...prev, { id, amount, x, y }]);
+        setTimeout(() => setFloatingXPs(prev => prev.filter(f => f.id !== id)), 1500);
+    };
+
+    const triggerWin = (xpAmount = 100) => {
         setShowConfetti(true);
+        GamificationEngine.addXP(xpAmount, `Completed ${activeTab} in Brain Boost`);
+        spawnXp(xpAmount);
         const audio = new Audio('https://www.soundjay.com/misc/sounds/magic-chime-01.mp3');
         audio.volume = 0.3;
         audio.play().catch(() => {});
@@ -244,6 +256,16 @@ const JuniorBrainBoost = () => {
                         🎉✨🎊
                     </div>
                 )}
+
+                {floatingXPs.map(f => (
+                    <div 
+                        key={f.id} 
+                        className="floating-xp-pop"
+                        style={{ left: `${f.x}%`, top: `${f.y}%` }}
+                    >
+                        +{f.amount} XP
+                    </div>
+                ))}
 
             </main>
         </div>

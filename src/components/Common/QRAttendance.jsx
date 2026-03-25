@@ -3,14 +3,24 @@ import { mockApi } from '../../utils/mockApi';
 import './QRAttendance.css';
 
 const QRAttendance = ({ user }) => {
-    const [status, setStatus] = useState('Idle'); // Idle, Scanning, Success, Error
+    const [status, setStatus] = useState('Idle'); // Idle, Biometric, Scanning, Success, Error
     const [message, setMessage] = useState('');
     const [currentTime, setCurrentTime] = useState(new Date());
     const [attendanceLog, setAttendanceLog] = useState(null);
     const [settings, setSettings] = useState(mockApi.getQRSettings());
+    const [currentSignature, setCurrentSignature] = useState(mockApi.generateQRSignature());
+    const [biometricProgress, setBiometricProgress] = useState(0);
+    
+    const videoRef = React.useRef(null);
+    const canvasRef = React.useRef(null);
 
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+            // Refresh signature every 10s to ensure user always has a fresh one before scanning
+            setCurrentSignature(mockApi.generateQRSignature());
+        }, 10000);
+
         const logs = mockApi.getQRAttendance(user.name);
         const today = new Date().toISOString().split('T')[0];
         const todayLog = logs.find(l => l.date === today);
@@ -34,9 +44,70 @@ const QRAttendance = ({ user }) => {
         return R * c; // in metres
     };
 
+    const startBiometric = async () => {
+        // Step 0: Check Device DNA
+        const currentDna = mockApi.getDeviceDNA();
+        if (!mockApi.isDeviceAuthorized(user.id, currentDna)) {
+            setStatus('Error');
+            setMessage('UNAUTHORIZED DEVICE: Attendance must be marked from your registered phone.');
+            mockApi.logAudit('SECURITY_ALERT', `Unauthorized device attempt for attendance by ${user.name}`, user.role, { dna: currentDna });
+            return;
+        }
+
+        setStatus('Biometric');
+        setMessage('Align face for Identity Verification...');
+        setBiometricProgress(0);
+
+        setTimeout(async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                if (videoRef.current) videoRef.current.srcObject = stream;
+            } catch (err) {
+                setStatus('Error');
+                setMessage('Camera access denied. Biometrics required for attendance.');
+            }
+        }, 100);
+    };
+
+    useEffect(() => {
+        let bioInterval;
+        if (status === 'Biometric' && videoRef.current) {
+            bioInterval = setInterval(async () => {
+                if (videoRef.current && canvasRef.current) {
+                    const video = videoRef.current;
+                    const canvas = canvasRef.current;
+                    canvas.width = video.videoWidth || 640;
+                    canvas.height = video.videoHeight || 480;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const dataUrl = canvas.toDataURL('image/jpeg');
+
+                    try {
+                        const detection = await mockApi.getFaceDescriptorFromBase64(dataUrl);
+                        if (detection) {
+                            setBiometricProgress(prev => Math.min(100, prev + 25));
+                            if (biometricProgress >= 100) {
+                                // Close Camera
+                                if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+                                handleScan(); // Proceed to GPS/QR Check
+                            }
+                        } else {
+                            setBiometricProgress(prev => Math.max(0, prev - 10));
+                            // Periodic log for persistent failure
+                            if (biometricProgress === 0 && Math.random() > 0.9) {
+                                mockApi.logAudit('BIOMETRIC_FAIL', `Unrecognised face or biometric mismatch.`, user.role, { userId: user.id });
+                            }
+                        }
+                    } catch (e) { console.warn("Bio-scan error:", e); }
+                }
+            }, 500);
+        }
+        return () => clearInterval(bioInterval);
+    }, [status, biometricProgress]);
+
     const handleScan = () => {
         setStatus('Scanning');
-        setMessage('Verifying Location...');
+        setMessage('Verifying Location & Signature...');
 
         if (!navigator.geolocation) {
             setStatus('Error');
@@ -55,6 +126,15 @@ const QRAttendance = ({ user }) => {
                 if (dist > settings.rangeMeter) {
                     setStatus('Error');
                     setMessage(`Out of Range! You are ${Math.round(dist)}m away. Range: ${settings.rangeMeter}m.`);
+                    mockApi.logAudit('SECURITY_LOCATION_FAIL', `Out-of-range scan attempt. Dist: ${Math.round(dist)}m`, user.role, { distance: dist, threshold: settings.rangeMeter });
+                    return;
+                }
+
+                // PHASE 5: AI GPS Clone Detection (Anti-Spoofing)
+                const gpsResult = mockApi.checkGpsSecurity({ lat: latitude, lng: longitude });
+                if (gpsResult.status === 'WARP_DETECTED') {
+                    setStatus('Error');
+                    setMessage(`❌ SECURITY ALERT: GPS Anomaly (Warp) detected! Attempt flagged for forensic review.`);
                     return;
                 }
 
@@ -73,15 +153,22 @@ const QRAttendance = ({ user }) => {
                     return;
                 }
 
-                // Log Attendance
-                const updatedLog = mockApi.logQRAttendance({
+                // Log Attendance with Dynamic Signature
+                const result = mockApi.logQRAttendance({
                     name: user.name,
                     role: user.role,
                     type,
-                    time: timeStr
+                    time: timeStr,
+                    signature: currentSignature // SECURE: Send the signature for verification
                 });
 
-                setAttendanceLog(updatedLog);
+                if (result.error === 'QR_EXPIRED') {
+                    setStatus('Error');
+                    setMessage('Signature Expired! Please refresh and try again. Sharing QR photos is prohibited.');
+                    return;
+                }
+
+                setAttendanceLog(result);
                 setStatus('Success');
                 setMessage(`${type === 'morning' ? 'Check-in' : 'Check-out'} Successful!`);
                 
@@ -136,12 +223,29 @@ const QRAttendance = ({ user }) => {
                 {attendanceLog?.complete ? '🏆 Full Day Attendance Completed' : '⌛ Complete both tasks for full credit'}
             </div>
 
+            {status === 'Biometric' && (
+                <div className="biometric-scanner-window">
+                    <video ref={videoRef} autoPlay playsInline muted />
+                    <div className="bio-overlay">
+                        <div className="bio-ring" style={{ borderColor: biometricProgress > 80 ? '#10b981' : '#3b82f6' }}></div>
+                        <div className="bio-progress-bar">
+                            <div className="bio-fill" style={{ width: `${biometricProgress}%` }}></div>
+                        </div>
+                        <p>IDENTITY VERIFICATION: {biometricProgress}%</p>
+                    </div>
+                </div>
+            )}
+
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+
             <button 
-                className={`scan-btn ${status === 'Scanning' ? 'disabled' : ''}`}
-                onClick={handleScan}
-                disabled={status === 'Scanning'}
+                className={`scan-btn ${['Scanning', 'Biometric'].includes(status) ? 'disabled' : ''}`}
+                onClick={status === 'Idle' ? startBiometric : handleScan}
+                disabled={['Scanning', 'Biometric'].includes(status)}
             >
-                {status === 'Scanning' ? 'Verifying...' : 'Scan School QR Code'}
+                {status === 'Scanning' ? 'Verifying...' : 
+                 status === 'Biometric' ? 'Verifying Identity...' : 
+                 'Scan School QR Code'}
             </button>
 
             <div className="range-hint">

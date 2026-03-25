@@ -130,3 +130,72 @@
     font-size: 0.8rem;
     color: #64748b;
 }
+
+/* PHASE 3: BIOMETRIC STYLES */
+.biometric-scanner-window {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 20px auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(59, 130, 246, 0.3);
+    background: #000;
+}
+
+.biometric-scanner-window video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(1.2) contrast(1.1);
+}
+
+.bio-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.2);
+}
+
+.bio-ring {
+    width: 240px;
+    height: 240px;
+    border: 2px solid #3b82f6;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: 0.3s;
+}
+
+.bio-progress-bar {
+    position: absolute;
+    bottom: 40px;
+    width: 60%;
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bio-fill {
+    height: 100%;
+    background: #3b82f6;
+    transition: width 0.3s ease-out;
+}
+
+.bio-overlay p {
+    position: absolute;
+    bottom: 15px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}

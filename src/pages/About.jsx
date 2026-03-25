@@ -112,6 +112,68 @@ function About() {
                 </div>
             </div>
 
+            {/* Our Journey Section */}
+            <div className="journey-section reveal-on-scroll">
+                <div className="section-header center">
+                    <h2 className="premium-gradient-text">{language === 'hi' ? 'हमारी यात्रा' : 'Our Journey'}</h2>
+                    <p className="section-subtitle">Milestones that shaped our institution</p>
+                </div>
+
+                <div className="journey-timeline">
+                    {[
+                        {
+                            title: language === 'hi' ? 'शुरुआती दिन: खेल और विकास' : 'Early Days: Play & Growth',
+                            desc: language === 'hi' ? 'हमारे संस्थान की नींव बच्चों के आनंद और समग्र विकास के विजन के साथ रखी गई थी।' : 'Our foundation was laid with a vision for joy and holistic development of children.',
+                            img: 'journey_1.jpg',
+                            side: 'left'
+                        },
+                        {
+                            title: language === 'hi' ? 'विविधता और नेतृत्व' : 'Visionary Leadership',
+                            desc: language === 'hi' ? 'संस्थापकों की टीम ने शिक्षा के प्रति एक समर्पित और अनुशासित दृष्टिकोण अपनाया।' : 'Our founding team brought a dedicated and disciplined approach to modern education.',
+                            img: 'journey_2.jpg',
+                            side: 'right'
+                        },
+                        {
+                            title: language === 'hi' ? 'उपलब्धि और पहचान' : 'Recognition & Excellence',
+                            desc: language === 'hi' ? 'छात्रों की कड़ी मेहनत को पुरस्कार और सम्मान के माध्यम से सराहा गया।' : "Celebrating student excellence through prestigious award ceremonies and recognition.",
+                            img: 'journey_3.jpg',
+                            side: 'left'
+                        },
+                        {
+                            title: language === 'hi' ? 'प्रयोग और नवाचार' : 'Scientific Innovation',
+                            desc: language === 'hi' ? 'विज्ञान और तकनीकी नवाचारों के माध्यम से भविष्य की तैयारी।' : 'Preparing for the future through hands-on science exhibitions and innovative learning.',
+                            img: 'journey_4.jpg',
+                            side: 'right'
+                        },
+                        {
+                            title: language === 'hi' ? 'प्रकृति के साथ शिक्षा' : 'Outdoor Excellence',
+                            desc: language === 'hi' ? 'खुले वातावरण में शिक्षा प्रदान कर व्यवहारिक ज्ञान को बढ़ाना।' : 'Enhancing practical knowledge through unique outdoor learning experiences in nature.',
+                            img: 'journey_5.jpg',
+                            side: 'left'
+                        }
+                    ].map((item, idx) => (
+                        <div key={idx} className={`journey-item ${item.side}`}>
+                            <div className="journey-content glass-panel">
+                                <div className="journey-img-container">
+                                    <img 
+                                        src={`/assets/journey/${item.img}`} 
+                                        alt={item.title} 
+                                        className="journey-img" 
+                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=Milestone+Coming+Soon'; }} 
+                                    />
+                                    <div className="img-overlay"></div>
+                                </div>
+                                <div className="journey-text">
+                                    <h3>{item.title}</h3>
+                                    <p>{item.desc}</p>
+                                </div>
+                            </div>
+                            <div className="timeline-dot"></div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Facilities Section */}
             <div className="facilities-section">
                 <div className="reveal-on-scroll">

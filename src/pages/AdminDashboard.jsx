@@ -28,6 +28,8 @@ import { useToast } from '../components/Common/Toaster';
 import Skeleton from '../components/Common/Skeleton';
 import NotificationCenter from '../components/Common/NotificationCenter';
 import CommunicationPortal from '../components/Communication/CommunicationPortal';
+import SecurityDashboard from '../components/Admin/SecurityDashboard';
+import SecurityPinModal from '../components/Common/SecurityPinModal';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -42,6 +44,15 @@ const AdminDashboard = () => {
   const [backupHistory, setBackupHistory] = useState([]);
   const [securityLogs, setSecurityLogs] = useState([]);
   const [isBackingUp, setIsBackingUp] = useState(false);
+  const [pinModal, setPinModal] = useState({ isOpen: false, onVerified: null, actionName: '' });
+
+  const triggerSecureAction = (action, name) => {
+    setPinModal({
+      isOpen: true,
+      onVerified: action,
+      actionName: name
+    });
+  };
 
   const fetchBackupHistory = async () => {
     try {
@@ -111,6 +122,23 @@ const AdminDashboard = () => {
 
 
   const renderContent = () => {
+    const dbStatus = mockApi.getAuditLogs(); // This triggers getDB internally which sets tampered flag
+    // We need to re-fetch the raw db state to see the flag
+    const rawDB = JSON.parse(localStorage.getItem('NSGI_MOCK_DATA') || '{}');
+    if (rawDB.tamper_detected) {
+        return (
+            <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: '#000', color: '#ff4444', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '20px' }}>
+                <h1 style={{ fontSize: '4rem', marginBottom: '20px' }}>⚠️ SYSTEM COMPROMISED</h1>
+                <h2 style={{ letterSpacing: '5px', marginBottom: '30px' }}>IRON SHIELD: TAMPER DETECTED</h2>
+                <div style={{ border: '1px solid #ff4444', padding: '30px', borderRadius: '20px', background: 'rgba(255,0,0,0.1)' }}>
+                    <p style={{ fontSize: '1.2rem', marginBottom: '20px' }}>Manual database manipulation detected via browser console / developer tools.</p>
+                    <p style={{ color: '#fff' }}>For security reasons, this portal has been LOCKED.</p>
+                </div>
+                <button onClick={() => { localStorage.clear(); window.location.reload(); }} style={{ marginTop: '40px', padding: '15px 30px', background: '#ff4444', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>🚨 RESET SECURE DATABASE</button>
+            </div>
+        );
+    }
+
     if (loading) {
       return (
         <div className="overview-content">
@@ -247,18 +275,20 @@ const AdminDashboard = () => {
                 </div>
                 <button 
                   onClick={async () => {
-                    setIsBackingUp(true);
-                    addToast("Triggering server-side backup...", "info");
-                    try {
-                      const res = await secureApi('http://localhost:5001/api/admin/run-backup', { method: 'POST' });
-                      const result = await res.json();
-                      if (result.status === 'success') {
-                        addToast("Cloud Backup Success!", "success");
-                        fetchBackupHistory();
-                      } else throw new Error(result.message);
-                    } catch (e) {
-                      addToast(e.message, "error");
-                    } finally { setIsBackingUp(false); }
+                    triggerSecureAction(async () => {
+                        setIsBackingUp(true);
+                        addToast("Triggering server-side backup...", "info");
+                        try {
+                          const res = await secureApi('http://localhost:5001/api/admin/run-backup', { method: 'POST' });
+                          const result = await res.json();
+                          if (result.status === 'success') {
+                            addToast("Cloud Backup Success!", "success");
+                            fetchBackupHistory();
+                          } else throw new Error(result.message);
+                        } catch (e) {
+                          addToast(e.message, "error");
+                        } finally { setIsBackingUp(false); }
+                    }, "Initiate Server-Side Cloud Backup");
                   }}
                   disabled={isBackingUp}
                   style={{ width: '100%', marginTop: '15px', padding: '12px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: 'bold', cursor: isBackingUp ? 'wait' : 'pointer', opacity: isBackingUp ? 0.7 : 1 }}
@@ -271,14 +301,16 @@ const AdminDashboard = () => {
                 <h4 style={{ marginBottom: '5px' }}>💾 Local Tools</h4>
                 <button 
                   onClick={() => {
-                    const data = JSON.stringify(localStorage.getItem('NSGI_MOCK_DATA'));
-                    const blob = new Blob([data], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `NSGI_Backup_${new Date().toISOString().split('T')[0]}.json`;
-                    a.click();
-                    addToast("Local JSON Exported!", "success");
+                    triggerSecureAction(() => {
+                        const data = JSON.stringify(localStorage.getItem('NSGI_MOCK_DATA'));
+                        const blob = new Blob([data], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `NSGI_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                        a.click();
+                        addToast("Local JSON Exported!", "success");
+                    }, "Export Local Database JSON");
                   }}
                   style={{ padding: '12px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.05)', color: '#10b981', border: '1px solid #10b98130', cursor: 'pointer', fontSize: '0.9rem' }}
                 >
@@ -339,68 +371,8 @@ const AdminDashboard = () => {
         );
       case 'Security Audit':
         return (
-          <div className="overview-content">
-            <div className="feature-box">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                <h3 className="box-title" style={{ margin: 0 }}>🚨 ADVANCED SECURITY AUDIT LOGS</h3>
-                <button 
-                  onClick={fetchSecurityLogs}
-                  style={{ padding: '8px 16px', borderRadius: '10px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid #3b82f630', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  🔄 REFRESH AUDIT
-                </button>
-              </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '30px' }}>
-                <div style={{ padding: '20px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid #10b98130' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 'bold' }}>ACTIVE SESSIONS</div>
-                  <div style={{ fontSize: '1.8rem', fontWeight: '900' }}>{Math.floor(Math.random() * 5) + 1}</div>
-                </div>
-                <div style={{ padding: '20px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid #3b82f630' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#3b82f6', fontWeight: 'bold' }}>PROTECTION LEVEL</div>
-                  <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#3b82f6' }}>MAXIMIZED 🔥</div>
-                </div>
-                <div style={{ padding: '20px', borderRadius: '16px', background: 'rgba(245, 158, 11, 0.05)', border: '1px solid #f59e0b30' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 'bold' }}>SECURITY SCORE</div>
-                  <div style={{ fontSize: '1.8rem', fontWeight: '900' }}>99/100</div>
-                </div>
-              </div>
-
-              <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Timestamp</th>
-                      <th>Event</th>
-                      <th>User ID</th>
-                      <th>IP Address</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {securityLogs.length > 0 ? securityLogs.map((log) => (
-                      <tr key={log.id}>
-                        <td style={{ fontSize: '0.8rem' }}>{new Date(log.timestamp).toLocaleString()}</td>
-                        <td style={{ fontWeight: 'bold' }}>{log.type}</td>
-                        <td>{log.user}</td>
-                        <td style={{ color: 'var(--text-secondary)' }}>{log.ip}</td>
-                        <td>
-                          <span className={`badge badge-${log.type.includes('SUCCESS') ? 'paid' : 'pending'}`}>
-                            {log.type.includes('SUCCESS') ? 'Authorized' : 'Refused'}
-                          </span>
-                        </td>
-                      </tr>
-                    )) : (
-                      <tr>
-                        <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-                          No security events recorded yet.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div className="feature-box">
+             <SecurityDashboard />
           </div>
         );
       case 'Junior World Preview':
@@ -502,6 +474,13 @@ const AdminDashboard = () => {
           ...item,
           action: () => setActiveTab(item.name)
         }))}
+      />
+
+      <SecurityPinModal 
+        isOpen={pinModal.isOpen} 
+        onClose={() => setPinModal({ ...pinModal, isOpen: false })}
+        onVerified={pinModal.onVerified}
+        actionName={pinModal.actionName}
       />
     </div>
   );

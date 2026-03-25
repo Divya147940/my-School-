@@ -3,6 +3,7 @@ import { mockApi } from '../../utils/mockApi';
 import { useAuth } from '../../context/AuthContext';
 import JuniorDashboardAnimations from '../Common/JuniorDashboardAnimations';
 import { useTheme } from '../../context/ThemeContext';
+import MagicKidsWorld from './MagicKidsWorld';
 import './JuniorActivityCenter.css';
 
 const JuniorActivityCenter = () => {
@@ -111,8 +112,10 @@ const JuniorActivityCenter = () => {
     };
 
     useEffect(() => {
-        const juniorAcademics = ['Class 1', 'Class 2', 'Class 3', '1', '2', '3'];
-        if (user && juniorAcademics.includes(user.class)) {
+        const juniorClasses = ['Nursery', 'LKG', 'UKG', '0', 'Class 1', 'Class 2', '1', '2'];
+        if (user && juniorClasses.includes(user.class)) {
+            setActiveSection('magic-kids');
+        } else if (user && ['Class 3', '3'].includes(user.class)) {
             setActiveSection('shala');
         }
     }, [user]);
@@ -382,7 +385,28 @@ const JuniorActivityCenter = () => {
     return (
         <div className="junior-activity-center magic-reveal" style={{ minHeight: '90vh', background: 'var(--bg-primary)', padding: '20px', position: 'relative', color: 'var(--text-primary)' }}>
             <JuniorDashboardAnimations />
-            <div className="section-tabs stagger-1" style={{ display: 'flex', gap: '15px', marginBottom: '25px', justifyContent: 'center' }}>
+            <div className="section-tabs stagger-1" style={{ display: 'flex', gap: '15px', marginBottom: '25px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button 
+                    onClick={() => { setActiveSection('magic-kids'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'magic-kids' ? 'linear-gradient(135deg, #ffd700, #ff69b4, #00bfff)' : 'var(--glass-bg)',
+                        color: activeSection === 'magic-kids' ? '#1a1a1a' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'magic-kids' ? '0 0 25px rgba(255,215,0,0.6)' : 'none',
+                        animation: activeSection === 'magic-kids' ? 'none' : 'mkwTabPulse 2s ease-in-out infinite',
+                        order: -1
+                    }}
+                >
+                    🪄 Jadu Ki Duniya
+                </button>
                 <button 
                     onClick={() => { setActiveSection('drawing'); playMagicSound('chime'); }}
                     style={{ 
@@ -725,7 +749,12 @@ const JuniorActivityCenter = () => {
 
 
             <div className="center-content glass-panel magic-reveal stagger-3" style={{ padding: '40px', borderRadius: '40px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(20px)', minHeight: '60vh', color: 'var(--text-primary)' }}>
+                {activeSection === 'magic-kids' && (
+                    <MagicKidsWorld />
+                )}
+
                 {activeSection === 'drawing' && (
+
                     <div style={{ textAlign: 'center' }}>
                         <h2 style={{ marginBottom: '20px', color: 'var(--text-primary)' }}>Magic Drawing Slate ✨</h2>
                         <div style={{ background: theme === 'dark' ? '#0f172a' : '#f1f5f9', borderRadius: '20px', display: 'inline-block', padding: '10px', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1)' }}>
@@ -2001,7 +2030,7 @@ const JuniorActivityCenter = () => {
                                                 if (path.t === transportPair.type) {
                                                     speak(`Wah! ${transportPair.name} ${path.n} par chalti hai! ⭐`);
                                                     setGameScore(s => s + 50);
-                                                    const next = [{vehicle:'🚢', type:'water', name:'Ship'}, {vehicle:'✈️', type:'sky', name:'Plane'}, {vehicle:'🚆', type:'road', name:'Train', type:'road'}][Math.floor(Math.random()*3)];
+                                                    const next = [{vehicle:'🚢', type:'water', name:'Ship'}, {vehicle:'✈️', type:'sky', name:'Plane'}, {vehicle:'🚆', type:'road', name:'Train'}][Math.floor(Math.random()*3)];
                                                     setTransportPair(next);
                                                 } else {
                                                     speak("Nahi! Socho!");

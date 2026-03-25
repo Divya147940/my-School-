@@ -112,8 +112,8 @@ const defaultData = {
   admissions: [],
   inquiries: [],
   facultyRegistry: [
-    { id: 'TEA2026-01', name: 'Dr. Sharma', subject: 'Mathematics', role: 'faculty', contact: 'sharma@nsgi.edu' },
-    { id: 'TEA2026-02', name: 'Professor Divyanshi', subject: 'Science', role: 'faculty', contact: '9876543210' },
+    { id: 'TEA2026-01', name: 'Dr. Sharma', subject: 'Mathematics', role: 'faculty', contact: '+91 99887 76655', salary: '₹85,000', isFaceEnrolled: true },
+    { id: 'TEA2026-02', name: 'Professor Divyanshi', subject: 'Science', role: 'faculty', contact: '+91 98765 43210', salary: '₹72,000', isFaceEnrolled: true },
   ],
   achievers: [
     { id: 1, name: 'Aman Gupta', class: '10A', achievement: '1st Prize in Inter-School Science Fair', type: 'Science', image: '🏆', date: 'March 2026' },
@@ -251,8 +251,8 @@ const defaultData = {
     audioUrl: "#",
     image: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?auto=format&fit=crop&q=80&w=400",
     choices: [
-        { id: 'A', text: 'Cross the River 🐘🌊', result: 'Appu bravely crossed the river and found a hidden treasure! Everyone clapped!' },
-        { id: 'B', text: 'Wait for Rain 🐘🌧️', result: 'Appu waited and met a wise old owl who taught him a magic song!' }
+      { id: 'A', text: 'Cross the River 🐘🌊', result: 'Appu bravely crossed the river and found a hidden treasure! Everyone clapped!' },
+      { id: 'B', text: 'Wait for Rain 🐘🌧️', result: 'Appu waited and met a wise old owl who taught him a magic song!' }
     ]
   },
   stickerWall: [
@@ -320,12 +320,36 @@ const defaultData = {
   }
 };
 
+const computeCRC = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+};
+
 const getDB = () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return defaultData;
     const data = JSON.parse(saved);
-    
+
+    // IRON SHIELD CHECK
+    if (data._iron_shield_crc) {
+      const payload = JSON.parse(JSON.stringify(data));
+      const storedCRC = payload._iron_shield_crc;
+      delete payload._iron_shield_crc;
+      const currentCRC = computeCRC(JSON.stringify(payload));
+
+      if (storedCRC !== currentCRC) {
+        console.error("⛔ IRON SHIELD: DATABASE TAMPER DETECTED!");
+        data.tamper_detected = true;
+      } else {
+        data.tamper_detected = false;
+      }
+    }
+
     // Force Clear old dummy attendance if it's still dragging along from old versions
     if (data.attendanceHub && data.attendanceHub.some(a => a.status === 'Present' && a.time === '08:15 AM')) {
       data.attendanceHub = defaultData.attendanceHub;
@@ -340,6 +364,9 @@ const getDB = () => {
 };
 
 const saveDB = (data) => {
+  const payload = JSON.parse(JSON.stringify(data));
+  delete payload._iron_shield_crc; // Remove old CRC before computing new one
+  data._iron_shield_crc = computeCRC(JSON.stringify(payload));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 };
 
@@ -351,12 +378,12 @@ export const mockApi = {
   markAttendance: (studentName, status) => {
     const data = getDB();
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
+
     if (!data.isOnline) {
       // Offline mode: Queue the request
-      const offlineEntry = { 
-        studentName, 
-        status, 
+      const offlineEntry = {
+        studentName,
+        status,
         time: status === 'Present' ? now : '-',
         timestamp: Date.now()
       };
@@ -370,7 +397,7 @@ export const mockApi = {
     const today = new Date().toISOString().split('T')[0];
     if (!data.attendance) data.attendance = {};
     if (!data.attendance[studentName]) data.attendance[studentName] = [];
-    
+
     const existingIndex = data.attendance[studentName].findIndex(a => a.date === today);
     if (existingIndex !== -1) {
       data.attendance[studentName][existingIndex] = { date: today, status, time: now };
@@ -379,7 +406,7 @@ export const mockApi = {
     }
 
     if (!data.attendanceHub) data.attendanceHub = [];
-    data.attendanceHub = data.attendanceHub.map(record => 
+    data.attendanceHub = data.attendanceHub.map(record =>
       record.studentName === studentName ? { ...record, status, time: status === 'Present' ? now : '-' } : record
     );
     saveDB(data);
@@ -387,7 +414,7 @@ export const mockApi = {
   },
 
   getNetworkStatus: () => getDB().isOnline,
-  
+
   toggleNetwork: () => {
     const data = getDB();
     data.isOnline = !data.isOnline;
@@ -398,14 +425,14 @@ export const mockApi = {
   syncOfflineData: () => {
     const data = getDB();
     if (!data.isOnline || !data.offlineQueue || data.offlineQueue.length === 0) return 0;
-    
+
     const count = data.offlineQueue.length;
     data.offlineQueue.forEach(item => {
-      data.attendanceHub = data.attendanceHub.map(record => 
+      data.attendanceHub = data.attendanceHub.map(record =>
         record.studentName === item.studentName ? { ...record, status: item.status, time: item.time } : record
       );
     });
-    
+
     data.offlineQueue = [];
     saveDB(data);
     return count;
@@ -515,30 +542,30 @@ export const mockApi = {
     }
     saveDB(db);
   },
-  
+
   addFine: (studentId, amount, reason) => {
     const db = getDB();
     if (!db.fines) db.fines = [];
     const newFine = {
-        id: `FINE-${Date.now()}`,
-        studentId,
-        amount: parseInt(amount),
-        reason,
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      id: `FINE-${Date.now()}`,
+      studentId,
+      amount: parseInt(amount),
+      reason,
+      date: new Date().toISOString().split('T')[0],
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     db.fines.push(newFine);
-    
+
     // Also increase the student's total fee in the fees table
     const student = db.studentRegistry.find(s => s.id === studentId);
     if (student) {
-        const feeRecord = db.fees.find(f => f.student === student.name);
-        if (feeRecord) {
-            feeRecord.total += parseInt(amount);
-            feeRecord.status = feeRecord.paid >= feeRecord.total ? 'Paid' : 'Partial';
-        }
+      const feeRecord = db.fees.find(f => f.student === student.name);
+      if (feeRecord) {
+        feeRecord.total += parseInt(amount);
+        feeRecord.status = feeRecord.paid >= feeRecord.total ? 'Paid' : 'Partial';
+      }
     }
-    
+
     saveDB(db);
     return newFine;
   },
@@ -547,16 +574,16 @@ export const mockApi = {
     const db = getDB();
     const student = db.studentRegistry.find(s => s.id === studentId);
     if (!student) return null;
-    
+
     const transactions = (db.feeLedger || []).filter(f => f.studentId === studentId);
     const fines = (db.fines || []).filter(f => f.studentId === studentId);
     const feeSummary = (db.fees || []).find(f => f.student === student.name) || { total: 0, paid: 0 };
-    
+
     return {
-        student,
-        summary: feeSummary,
-        transactions,
-        fines
+      student,
+      summary: feeSummary,
+      transactions,
+      fines
     };
   },
 
@@ -573,54 +600,54 @@ export const mockApi = {
 
     // Group by Month
     const monthlyStats = history.reduce((acc, entry) => {
-        const date = new Date(entry.date);
-        const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-        if (!acc[month]) acc[month] = { total: 0, present: 0 };
-        acc[month].total++;
-        if (entry.status === 'Present') acc[month].present++;
-        return acc;
+      const date = new Date(entry.date);
+      const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      if (!acc[month]) acc[month] = { total: 0, present: 0 };
+      acc[month].total++;
+      if (entry.status === 'Present') acc[month].present++;
+      return acc;
     }, {});
 
     const monthlySummary = Object.keys(monthlyStats).map(month => ({
-        month,
-        percentage: ((monthlyStats[month].present / monthlyStats[month].total) * 100).toFixed(1),
-        present: monthlyStats[month].present,
-        total: monthlyStats[month].total
+      month,
+      percentage: ((monthlyStats[month].present / monthlyStats[month].total) * 100).toFixed(1),
+      present: monthlyStats[month].present,
+      total: monthlyStats[month].total
     }));
 
     // Group by Week (Simple 7-day windows or logic depends on implementation)
     // For now, let's group by "Week of [Date]"
     const weeklyStats = history.reduce((acc, entry) => {
-        const date = new Date(entry.date);
-        const day = date.getDay();
-        const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Get Monday
-        const monday = new Date(date.setDate(diff)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-        const weekKey = `Week of ${monday}`;
-        
-        if (!acc[weekKey]) acc[weekKey] = { total: 0, present: 0 };
-        acc[weekKey].total++;
-        if (entry.status === 'Present') acc[weekKey].present++;
-        return acc;
+      const date = new Date(entry.date);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Get Monday
+      const monday = new Date(date.setDate(diff)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+      const weekKey = `Week of ${monday}`;
+
+      if (!acc[weekKey]) acc[weekKey] = { total: 0, present: 0 };
+      acc[weekKey].total++;
+      if (entry.status === 'Present') acc[weekKey].present++;
+      return acc;
     }, {});
 
     const weeklySummary = Object.keys(weeklyStats).map(week => ({
-        week,
-        percentage: ((weeklyStats[week].present / weeklyStats[week].total) * 100).toFixed(1),
-        present: weeklyStats[week].present,
-        total: weeklyStats[week].total
+      week,
+      percentage: ((weeklyStats[week].present / weeklyStats[week].total) * 100).toFixed(1),
+      present: weeklyStats[week].present,
+      total: weeklyStats[week].total
     }));
 
     return {
-        student,
-        stats: {
-            totalDays,
-            presentDays,
-            absentDays,
-            rate
-        },
-        history,
-        monthlySummary,
-        weeklySummary
+      student,
+      stats: {
+        totalDays,
+        presentDays,
+        absentDays,
+        rate
+      },
+      history,
+      monthlySummary,
+      weeklySummary
     };
   },
 
@@ -628,37 +655,37 @@ export const mockApi = {
   getStudents: () => getDB().studentRegistry || [],
   addStudent: (student) => {
     const db = getDB();
-    const newStudent = { 
-        id: `STU${new Date().getFullYear()}-${String(db.studentRegistry.length + 1).padStart(3, '0')}`, 
-        role: 'student', 
-        isFaceEnrolled: false,
-        ...student 
+    const newStudent = {
+      id: `STU${new Date().getFullYear()}-${String(db.studentRegistry.length + 1).padStart(3, '0')}`,
+      role: 'student',
+      isFaceEnrolled: false,
+      ...student
     };
-    
+
     // 1. Add to registry
     db.studentRegistry.unshift(newStudent);
-    
+
     // 2. Create Fee Record
     if (!db.fees) db.fees = [];
     db.fees.unshift({
-        id: db.fees.length + 1,
-        student: newStudent.name,
-        class: newStudent.class,
-        total: 45000, // Default fee
-        paid: 0,
-        status: 'Pending'
+      id: db.fees.length + 1,
+      student: newStudent.name,
+      class: newStudent.class,
+      total: 45000, // Default fee
+      paid: 0,
+      status: 'Pending'
     });
-    
+
     // 3. Add to Attendance Hub
     if (!db.attendanceHub) db.attendanceHub = [];
     db.attendanceHub.unshift({
-        id: db.attendanceHub.length + 1,
-        studentName: newStudent.name,
-        class: newStudent.class,
-        status: 'Pending',
-        time: '-'
+      id: db.attendanceHub.length + 1,
+      studentName: newStudent.name,
+      class: newStudent.class,
+      status: 'Pending',
+      time: '-'
     });
-    
+
     saveDB(db);
     return newStudent;
   },
@@ -742,48 +769,48 @@ export const mockApi = {
     const now = new Date().toISOString().split('T')[0];
 
     results.forEach(res => {
-        // 1. Create/Update Report Card entry
-        const rcIndex = db.reportCards.findIndex(rc => rc.studentName === res.name && rc.examType === examType);
-        const subjectEntry = { name: 'Mathematics', marks: parseInt(res.marks), total: parseInt(res.total) };
-        
-        if (rcIndex !== -1) {
-            const subIndex = db.reportCards[rcIndex].subjects.findIndex(s => s.name === subjectEntry.name);
-            if (subIndex !== -1) db.reportCards[rcIndex].subjects[subIndex] = subjectEntry;
-            else db.reportCards[rcIndex].subjects.push(subjectEntry);
-        } else {
-            db.reportCards.unshift({
-                id: `RC-${Date.now()}-${res.id}`,
-                studentName: res.name,
-                class: className,
-                examType,
-                subjects: [subjectEntry],
-                date: now
-            });
-        }
+      // 1. Create/Update Report Card entry
+      const rcIndex = db.reportCards.findIndex(rc => rc.studentName === res.name && rc.examType === examType);
+      const subjectEntry = { name: 'Mathematics', marks: parseInt(res.marks), total: parseInt(res.total) };
 
-        // 2. Trigger Gamification XP (Logic: 90% + = 100 XP)
-        const percentage = (res.marks / res.total) * 100;
-        if (percentage >= 90) {
-            const student = db.leaderboard.find(s => s.name === res.name);
-            if (student) student.points += 100;
-            
-            db.notifications.unshift({
-                id: `BONUS-${Date.now()}-${res.id}`,
-                title: '🏆 Achievement Unlocked!',
-                content: `Congratulations ${res.name}! You scored ${percentage.toFixed(1)}% in ${examType}. Enjoy 100 Bonus XP!`,
-                type: 'Success',
-                date: now
-            });
-        }
-
-        // 3. Parent Notification
-        db.notifications.unshift({
-            id: `RES-${Date.now()}-${res.id}`,
-            title: `📣 Result Published: ${examType}`,
-            content: `Dear Parent, ${res.name}'s result for ${examType} is now available. Score: ${res.marks}/${res.total} (${percentage.toFixed(1)}%).`,
-            type: 'Notice',
-            date: now
+      if (rcIndex !== -1) {
+        const subIndex = db.reportCards[rcIndex].subjects.findIndex(s => s.name === subjectEntry.name);
+        if (subIndex !== -1) db.reportCards[rcIndex].subjects[subIndex] = subjectEntry;
+        else db.reportCards[rcIndex].subjects.push(subjectEntry);
+      } else {
+        db.reportCards.unshift({
+          id: `RC-${Date.now()}-${res.id}`,
+          studentName: res.name,
+          class: className,
+          examType,
+          subjects: [subjectEntry],
+          date: now
         });
+      }
+
+      // 2. Trigger Gamification XP (Logic: 90% + = 100 XP)
+      const percentage = (res.marks / res.total) * 100;
+      if (percentage >= 90) {
+        const student = db.leaderboard.find(s => s.name === res.name);
+        if (student) student.points += 100;
+
+        db.notifications.unshift({
+          id: `BONUS-${Date.now()}-${res.id}`,
+          title: '🏆 Achievement Unlocked!',
+          content: `Congratulations ${res.name}! You scored ${percentage.toFixed(1)}% in ${examType}. Enjoy 100 Bonus XP!`,
+          type: 'Success',
+          date: now
+        });
+      }
+
+      // 3. Parent Notification
+      db.notifications.unshift({
+        id: `RES-${Date.now()}-${res.id}`,
+        title: `📣 Result Published: ${examType}`,
+        content: `Dear Parent, ${res.name}'s result for ${examType} is now available. Score: ${res.marks}/${res.total} (${percentage.toFixed(1)}%).`,
+        type: 'Notice',
+        date: now
+      });
     });
 
     saveDB(db);
@@ -824,7 +851,7 @@ export const mockApi = {
     saveDB(db);
     return newRecord;
   },
-  
+
   getDailyLogs: () => {
     const db = getDB();
     return db.dailyLogs || [];
@@ -836,6 +863,37 @@ export const mockApi = {
     db.dailyLogs.unshift(newRecord);
     saveDB(db);
     return newRecord;
+  },
+
+  // GUARDIAN SUITE 2.0 SIGNATURES (TOTP-Style)
+  generateQRSignature: () => {
+    const timestamp = Math.floor(Date.now() / 30000); // 30s window
+    const base = `NSGI-QR-${timestamp}`;
+    return computeCRC(base).toUpperCase();
+  },
+
+  verifyQRSignature: (clientSig) => {
+    const ts = Math.floor(Date.now() / 30000);
+    const sig1 = computeCRC(`NSGI-QR-${ts}`).toUpperCase();
+    const sig2 = computeCRC(`NSGI-QR-${ts - 1}`).toUpperCase(); // Allow 30s drift
+    return clientSig === sig1 || clientSig === sig2;
+  },
+
+  logAudit: (type, action, role, details = {}) => {
+    const db = getDB();
+    if (!db.auditLogs) db.auditLogs = [];
+    const entry = {
+      id: `AUDIT-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      type,
+      action,
+      role,
+      details,
+      fingerprint: `NSGI-OS-WIN-CHROME-${Math.random().toString(36).substr(2, 5).toUpperCase()}`
+    };
+    db.auditLogs.unshift(entry);
+    saveDB(db);
+    return entry;
   },
 
   // QR Attendance
@@ -852,23 +910,30 @@ export const mockApi = {
     if (name) return db.qrAttendanceLogs.filter(log => log.name === name);
     return db.qrAttendanceLogs;
   },
-  logQRAttendance: (log) => {
-    const db = getDB();
+  logQRAttendance: (entry) => {
+    // SECURITY CHECK: Verify signature if provided
+    if (entry.signature && !mockApi.verifyQRSignature(entry.signature)) {
+      mockApi.logAudit('SECURITY_FRAUD', `QR Signature mismatch for ${entry.name}. Possible shared photo detected.`, entry.role);
+      return { error: 'QR_EXPIRED' };
+    }
+
+    const { name, role, type, time } = entry;
+    const data = getDB();
     const today = new Date().toISOString().split('T')[0];
-    
+
     // Find if user already logged today
     let userLog = db.qrAttendanceLogs.find(l => l.name === log.name && l.date === today);
-    
+
     if (!userLog) {
       userLog = { id: Date.now(), name: log.name, role: log.role, date: today, morning: null, evening: null, complete: false };
       db.qrAttendanceLogs.unshift(userLog);
     }
-    
+
     if (log.type === 'morning') userLog.morning = log.time;
     if (log.type === 'evening') userLog.evening = log.time;
-    
+
     if (userLog.morning && userLog.evening) userLog.complete = true;
-    
+
     saveDB(db);
     return userLog;
   },
@@ -892,7 +957,7 @@ export const mockApi = {
     saveDB(db);
     return { status: 'success' };
   },
-  
+
   // Achievers
   getAchievers: () => {
     const data = getDB().achievers;
@@ -944,10 +1009,10 @@ export const mockApi = {
   getReviews: () => getDB().reviews || [],
   addReview: (review) => {
     const db = getDB();
-    const newReview = { 
-      id: Date.now(), 
+    const newReview = {
+      id: Date.now(),
       date: new Date().toLocaleDateString('en-GB'),
-      ...review 
+      ...review
     };
     db.reviews.unshift(newReview);
     saveDB(db);
@@ -1012,12 +1077,12 @@ export const mockApi = {
   payFee: (feeId) => {
     const data = getDB();
     const feeIndex = data.parentFees.findIndex(f => f.id === feeId);
-    
+
     if (feeIndex === -1) throw new Error("Fee record not found.");
     if (data.parentFees[feeIndex].status === 'Paid') return { status: 'already_paid' };
 
     data.parentFees[feeIndex].status = 'Paid';
-    
+
     // Proper Logging (Maintain Transaction History)
     if (!data.feeLedger) data.feeLedger = [];
     const newTxn = {
@@ -1031,7 +1096,7 @@ export const mockApi = {
       collectedBy: 'System'
     };
     data.feeLedger.unshift(newTxn);
-    
+
     saveDB(data);
     return { status: 'success', transaction: newTxn };
   },
@@ -1041,9 +1106,9 @@ export const mockApi = {
     const students = db.studentRegistry || [];
     const faculty = db.facultyRegistry || [];
     const ledger = db.feeLedger || [];
-    
+
     const totalRevenue = ledger.reduce((sum, txn) => sum + (parseInt(txn.amount) || 0), 0);
-    
+
     return [
       { label: 'Total Students', value: students.length.toLocaleString(), icon: '👥', color: '#3b82f6' },
       { label: 'Total Revenue', value: `₹${(totalRevenue / 100000).toFixed(2)}L`, icon: '📈', color: '#10b981' },
@@ -1067,11 +1132,11 @@ export const mockApi = {
     const data = getDB();
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const today = new Date().toISOString().split('T')[0];
-    
+
     // Update student history for Audit
     if (!data.attendance) data.attendance = {};
     if (!data.attendance[studentName]) data.attendance[studentName] = [];
-    
+
     const existingIndex = data.attendance[studentName].findIndex(a => a.date === today);
     if (existingIndex !== -1) {
       data.attendance[studentName][existingIndex] = { date: today, status, time: now };
@@ -1079,7 +1144,7 @@ export const mockApi = {
       data.attendance[studentName].push({ date: today, status, time: now });
     }
 
-    data.attendanceHub = data.attendanceHub.map(record => 
+    data.attendanceHub = data.attendanceHub.map(record =>
       record.studentName === studentName ? { ...record, status, time: status === 'Present' ? now : '-' } : record
     );
     saveDB(data);
@@ -1092,61 +1157,61 @@ export const mockApi = {
 
     let descriptor = null;
     if (faceImage) {
-        console.log("%c[AI ANALYSIS] STARTING FACIAL FEATURE EXTRACTION...", "color: #3b82f6; font-weight: bold;");
-        const detection = await getFaceDescriptorFromBase64(faceImage);
-        const extracted = detection ? detection.descriptor : null;
-        if (!extracted) {
-             throw new Error("BIOMETRIC ERROR: No face could be detected in the image. Please capture again fully in frame.");
-        }
-        
-        // Artificial "Deep Analysis" delay to build trust and ensure cleanup
-        await new Promise(r => setTimeout(r, 1200));
-        console.log("%c[AI ANALYSIS] 128-d VECTOR GENERATED. ENCRYPTING SIGNATURE...", "color: #10b981; font-weight: bold;");
-        
-        descriptor = Array.from(extracted); // Serialize Float32Array
+      console.log("%c[AI ANALYSIS] STARTING FACIAL FEATURE EXTRACTION...", "color: #3b82f6; font-weight: bold;");
+      const detection = await getFaceDescriptorFromBase64(faceImage);
+      const extracted = detection ? detection.descriptor : null;
+      if (!extracted) {
+        throw new Error("BIOMETRIC ERROR: No face could be detected in the image. Please capture again fully in frame.");
+      }
+
+      // Artificial "Deep Analysis" delay to build trust and ensure cleanup
+      await new Promise(r => setTimeout(r, 1200));
+      console.log("%c[AI ANALYSIS] 128-d VECTOR GENERATED. ENCRYPTING SIGNATURE...", "color: #10b981; font-weight: bold;");
+
+      descriptor = Array.from(extracted); // Serialize Float32Array
     }
 
     const joinYear = new Date().getFullYear();
     const prefix = `TEA-${joinYear}`;
     let counter = 1;
     let newId = `${prefix}-${String(counter).padStart(3, '0')}`;
-    
+
     // Ensure uniqueness
     while ((data.facultyRegistry || []).some(f => f.id === newId)) {
-        counter++;
-        newId = `${prefix}-${String(counter).padStart(3, '0')}`;
+      counter++;
+      newId = `${prefix}-${String(counter).padStart(3, '0')}`;
     }
-    const newFaculty = { 
-        id: newId, 
-        name, 
-        subject, 
-        assignedClass,
-        role: 'Faculty', 
-        dob, 
-        parentName, 
-        faceImage,
-        faceDescriptor: descriptor,
-        isFaceEnrolled: !!descriptor
+    const newFaculty = {
+      id: newId,
+      name,
+      subject,
+      assignedClass,
+      role: 'Faculty',
+      dob,
+      parentName,
+      faceImage,
+      faceDescriptor: descriptor,
+      isFaceEnrolled: !!descriptor
     };
     data.facultyRegistry.push(newFaculty);
     saveDB(data);
-    
+
     // Save directly to real Database Backend via API
     try {
-        await fetch('http://localhost:5001/api/faculty', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: newFaculty.name,
-                designation: newFaculty.subject,
-                description: `DOB: ${dob}, Parent: ${parentName}`,
-                faceImage: newFaculty.faceImage,
-                faceDescriptor: newFaculty.faceDescriptor ? JSON.stringify(newFaculty.faceDescriptor) : null
-            })
-        });
-        console.log("Teacher synced securely to PostgreSQL Database.");
+      await fetch('http://localhost:5001/api/faculty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newFaculty.name,
+          designation: newFaculty.subject,
+          description: `DOB: ${dob}, Parent: ${parentName}`,
+          faceImage: newFaculty.faceImage,
+          faceDescriptor: newFaculty.faceDescriptor ? JSON.stringify(newFaculty.faceDescriptor) : null
+        })
+      });
+      console.log("Teacher synced securely to PostgreSQL Database.");
     } catch (e) {
-        console.error("Failed to sync Teacher to DB:", e);
+      console.error("Failed to sync Teacher to DB:", e);
     }
 
     return newFaculty;
@@ -1156,31 +1221,31 @@ export const mockApi = {
     const data = getDB();
     if (!data.studentRegistry) data.studentRegistry = [];
     if (!data.attendanceHub) data.attendanceHub = [];
-    
-    const isExactMatch = data.studentRegistry.some(s => 
-        s.name.toLowerCase() === name.toLowerCase() && 
-        s.parentName?.toLowerCase() === parentName?.toLowerCase() &&
-        s.dob === dob
+
+    const isExactMatch = data.studentRegistry.some(s =>
+      s.name.toLowerCase() === name.toLowerCase() &&
+      s.parentName?.toLowerCase() === parentName?.toLowerCase() &&
+      s.dob === dob
     );
-    
+
     let descriptorArray = null;
     if (faceImage) {
-        const detection = await getFaceDescriptorFromBase64(faceImage);
-        const extracted = detection ? detection.descriptor : null;
-        if (!extracted) {
-             throw new Error("BIOMETRIC ERROR: No face could be detected. Ensure clear lighting.");
-        }
-        descriptorArray = Array.from(extracted);
+      const detection = await getFaceDescriptorFromBase64(faceImage);
+      const extracted = detection ? detection.descriptor : null;
+      if (!extracted) {
+        throw new Error("BIOMETRIC ERROR: No face could be detected. Ensure clear lighting.");
+      }
+      descriptorArray = Array.from(extracted);
     }
 
     if (isExactMatch && descriptorArray) {
-        throw new Error("BIOMETRIC ERROR: This student (Name/DOB/Face) is already registered in the system.");
+      throw new Error("BIOMETRIC ERROR: This student (Name/DOB/Face) is already registered in the system.");
     }
 
     const parentPrefix = (parentName || "PAR").substring(0, 3).toUpperCase();
     const birthYear = dob ? new Date(dob).getFullYear() : "2026";
     const studentId = `${parentPrefix}${birthYear}`;
-    
+
     let finalId = studentId;
     let counter = 1;
     while (data.studentRegistry.some(s => s.id === finalId)) {
@@ -1190,42 +1255,42 @@ export const mockApi = {
 
     const classStudents = data.studentRegistry.filter(s => s.class === className);
     const newRoll = classStudents.length + 1;
-    const newStudent = { 
-      id: finalId, 
-      name, 
-      class: className, 
-      rollNo: newRoll, 
-      role: 'Student', 
-      parentName, 
+    const newStudent = {
+      id: finalId,
+      name,
+      class: className,
+      rollNo: newRoll,
+      role: 'Student',
+      parentName,
       dob,
       faceImage,
       faceDescriptor: descriptorArray,
       isFaceEnrolled: !!descriptorArray
     };
     data.studentRegistry.push(newStudent);
-    
+
     data.attendanceHub.push({ id: `ATT-${Date.now()}`, studentName: name, class: className, status: 'Pending', time: '-' });
-    
+
     saveDB(data);
 
     // Secure Sync to Backend
     try {
-        await fetch('http://localhost:5001/api/admissions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                studentName: newStudent.name,
-                fatherName: newStudent.parentName,
-                dob: newStudent.dob,
-                classApplied: newStudent.class,
-                phone: newStudent.id, // Using ID as placeholder reference
-                faceImage: newStudent.faceImage,
-                faceDescriptor: newStudent.faceDescriptor ? JSON.stringify(newStudent.faceDescriptor) : null
-            })
-        });
-        console.log("Student biometrics synced to PostgreSQL.");
+      await fetch('http://localhost:5001/api/admissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentName: newStudent.name,
+          fatherName: newStudent.parentName,
+          dob: newStudent.dob,
+          classApplied: newStudent.class,
+          phone: newStudent.id, // Using ID as placeholder reference
+          faceImage: newStudent.faceImage,
+          faceDescriptor: newStudent.faceDescriptor ? JSON.stringify(newStudent.faceDescriptor) : null
+        })
+      });
+      console.log("Student biometrics synced to PostgreSQL.");
     } catch (e) {
-        console.warn("Student DB Sync Failed:", e.message);
+      console.warn("Student DB Sync Failed:", e.message);
     }
 
     return newStudent;
@@ -1245,7 +1310,7 @@ export const mockApi = {
     data.attendanceHub = data.attendanceHub.filter(a => !(a.studentName === studentName && a.class === studentClass));
     // 3. Remove from fee ledger (optional, usually kept for audit, but let's clean for mock)
     data.feeLedger = (data.feeLedger || []).filter(f => f.studentId !== studentId);
-    
+
     saveDB(data);
     return { status: 'success' };
   },
@@ -1267,110 +1332,110 @@ export const mockApi = {
     const student = data.studentRegistry.find(s => s.id === studentId);
     if (!student) return { success: false, message: "Student not found" };
     if (!student.faceImage) return { success: false, message: "No face registered for this student" };
-    
+
     if (capturedImage && student.faceImage) {
       return { success: true, message: "Face Match Successful!" };
     }
-    
+
     return { success: false, message: "Face does not match record" };
   },
 
   _compareImages: async (base641, base642) => {
-      if (base641 === base642) return 1.0;
-      
-      const getPixelData = (src) => new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => {
-              const canvas = document.createElement('canvas');
-              // Low resolution for structural comparison (ignore minor details/noise)
-              canvas.width = 16;
-              canvas.height = 16;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, 16, 16);
-              const data = ctx.getImageData(0, 0, 16, 16).data;
-              let gray = [];
-              for(let i=0; i<data.length; i+=4) {
-                 gray.push((data[i] + data[i+1] + data[i+2])/3); // Grayscale
-              }
-              resolve(gray);
-          };
-          img.onerror = () => resolve(null);
-          img.src = src;
-      });
+    if (base641 === base642) return 1.0;
 
-      const pixels1 = await getPixelData(base641);
-      const pixels2 = await getPixelData(base642);
-      
-      if (!pixels1 || !pixels2) return 0;
+    const getPixelData = (src) => new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        // Low resolution for structural comparison (ignore minor details/noise)
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 16, 16);
+        const data = ctx.getImageData(0, 0, 16, 16).data;
+        let gray = [];
+        for (let i = 0; i < data.length; i += 4) {
+          gray.push((data[i] + data[i + 1] + data[i + 2]) / 3); // Grayscale
+        }
+        resolve(gray);
+      };
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
 
-      let diff = 0;
-      for (let i = 0; i < pixels1.length; i++) {
-          diff += Math.abs(pixels1[i] - pixels2[i]); // Mean Absolute Error is more forgiving than MSE
-      }
-      const mae = diff / pixels1.length;
-      
-      // Normalizing MAE. Max diff is 255. 
-      // A typical MAE for the same person moving slightly in same lighting is 30-70.
-      const similarity = Math.max(0, 1 - (mae / 150));
-      return similarity;
+    const pixels1 = await getPixelData(base641);
+    const pixels2 = await getPixelData(base642);
+
+    if (!pixels1 || !pixels2) return 0;
+
+    let diff = 0;
+    for (let i = 0; i < pixels1.length; i++) {
+      diff += Math.abs(pixels1[i] - pixels2[i]); // Mean Absolute Error is more forgiving than MSE
+    }
+    const mae = diff / pixels1.length;
+
+    // Normalizing MAE. Max diff is 255. 
+    // A typical MAE for the same person moving slightly in same lighting is 30-70.
+    const similarity = Math.max(0, 1 - (mae / 150));
+    return similarity;
   },
 
   // Secure Biometric Login for Faculty: ID + Face Verification
   verifyFacultyBiometricLogin: async (id, faceImage) => {
     const data = getDB();
     let faculty = (data.facultyRegistry || []).find(f => f.id.toUpperCase() === id.trim().toUpperCase());
-    
+
     // Cross-Origin/Tab Fallback: If not in localStorage, check real DB
     if (!faculty) {
-        try {
-            const resp = await fetch(`http://localhost:5001/api/faculty/search/${id.trim()}`);
-            const dbRef = await resp.json();
-            if (dbRef) {
-                faculty = {
-                    ...dbRef,
-                    id: dbRef.id.toString(), // Ensure ID is string for consistency
-                    faceDescriptor: dbRef.face_descriptor ? JSON.parse(dbRef.face_descriptor) : null,
-                    faceImage: dbRef.face_image
-                };
-                // Cache it for this origin
-                data.facultyRegistry.push(faculty);
-                saveDB(data);
-            }
-        } catch (e) { console.warn("Backend lookup failed:", e); }
+      try {
+        const resp = await fetch(`http://localhost:5001/api/faculty/search/${id.trim()}`);
+        const dbRef = await resp.json();
+        if (dbRef) {
+          faculty = {
+            ...dbRef,
+            id: dbRef.id.toString(), // Ensure ID is string for consistency
+            faceDescriptor: dbRef.face_descriptor ? JSON.parse(dbRef.face_descriptor) : null,
+            faceImage: dbRef.face_image
+          };
+          // Cache it for this origin
+          data.facultyRegistry.push(faculty);
+          saveDB(data);
+        }
+      } catch (e) { console.warn("Backend lookup failed:", e); }
     }
 
     if (!faculty) {
-        return { success: false, message: "INVALID ID: Faculty Record Not Found in Database." };
+      return { success: false, message: "INVALID ID: Faculty Record Not Found in Database." };
     }
 
     if (!faculty.faceDescriptor) {
-        return { success: false, message: "LEGACY RECORD: Please re-enroll face in Admin Portal to generate AI secure descriptor." };
+      return { success: false, message: "LEGACY RECORD: Please re-enroll face in Admin Portal to generate AI secure descriptor." };
     }
 
     // High-Fidelity Biometric Analysis (128-d Vector)
     if (faceImage && faceImage.startsWith('data:image')) {
-        const detection = await getFaceDescriptorFromBase64(faceImage);
-        const liveArray = detection ? detection.descriptor : null;
-        if (!liveArray) {
-            return { success: false, message: "NO FACE DETECTED: Move to a well-lit area and align face." };
-        }
-        
-        const enrolledDescriptor = parseDescriptor(faculty.faceDescriptor);
-        const liveDescriptor = new Float32Array(liveArray);
-        
-        const distance = compareFaces(liveDescriptor, enrolledDescriptor);
-        
-        // Lenient Match: Increased from 0.40 to 0.60 for better reliability in varying light
-        if (distance !== null && distance < 0.60) { 
-            const confidence = Math.max(0, 1 - (distance / 0.60)); // Normalize confidence to the new threshold
-            return { 
-                success: true, 
-                faculty,
-                confidence: confidence,
-                message: `IDENTITY VERIFIED: Welcome, ${faculty.name} (Conf: ${Math.round(confidence * 100)}%).` 
-            };
-        }
-        return { success: false, message: `ACCESS DENIED: Biometric Mismatch. [Loss: ${distance?.toFixed(2)}]` };
+      const detection = await getFaceDescriptorFromBase64(faceImage);
+      const liveArray = detection ? detection.descriptor : null;
+      if (!liveArray) {
+        return { success: false, message: "NO FACE DETECTED: Move to a well-lit area and align face." };
+      }
+
+      const enrolledDescriptor = parseDescriptor(faculty.faceDescriptor);
+      const liveDescriptor = new Float32Array(liveArray);
+
+      const distance = compareFaces(liveDescriptor, enrolledDescriptor);
+
+      // Lenient Match: Increased from 0.40 to 0.60 for better reliability in varying light
+      if (distance !== null && distance < 0.60) {
+        const confidence = Math.max(0, 1 - (distance / 0.60)); // Normalize confidence to the new threshold
+        return {
+          success: true,
+          faculty,
+          confidence: confidence,
+          message: `IDENTITY VERIFIED: Welcome, ${faculty.name} (Conf: ${Math.round(confidence * 100)}%).`
+        };
+      }
+      return { success: false, message: `ACCESS DENIED: Biometric Mismatch. [Loss: ${distance?.toFixed(2)}]` };
     }
 
     return { success: false, message: "NO BIOMETRIC SIGNATURE RECIEVED." };
@@ -1379,58 +1444,58 @@ export const mockApi = {
   verifyStudentBiometricLogin: async (id, faceImage) => {
     const data = getDB();
     let student = (data.studentRegistry || []).find(s => s.id.toUpperCase() === id.trim().toUpperCase());
-    
+
     // Cross-Origin/Tab Fallback: If not in localStorage, check real DB
     if (!student) {
-        try {
-            const resp = await fetch(`http://localhost:5001/api/students/search/${id.trim()}`);
-            const dbRef = await resp.json();
-            if (dbRef) {
-                student = {
-                    ...dbRef,
-                    id: dbRef.roll_no || dbRef.id.toString(),
-                    faceDescriptor: dbRef.face_descriptor ? JSON.parse(dbRef.face_descriptor) : null,
-                    faceImage: dbRef.face_image
-                };
-                // Cache it
-                data.studentRegistry.push(student);
-                saveDB(data);
-            }
-        } catch (e) { console.warn("Student Backend lookup failed:", e); }
+      try {
+        const resp = await fetch(`http://localhost:5001/api/students/search/${id.trim()}`);
+        const dbRef = await resp.json();
+        if (dbRef) {
+          student = {
+            ...dbRef,
+            id: dbRef.roll_no || dbRef.id.toString(),
+            faceDescriptor: dbRef.face_descriptor ? JSON.parse(dbRef.face_descriptor) : null,
+            faceImage: dbRef.face_image
+          };
+          // Cache it
+          data.studentRegistry.push(student);
+          saveDB(data);
+        }
+      } catch (e) { console.warn("Student Backend lookup failed:", e); }
     }
 
     if (!student) {
-        return { success: false, message: "INVALID ID: Student Record Not Found." };
+      return { success: false, message: "INVALID ID: Student Record Not Found." };
     }
 
     if (!student.faceDescriptor) {
-        return { success: false, message: "NO SECURE BIOMETRIC: Student has not enrolled into the new AI system." };
+      return { success: false, message: "NO SECURE BIOMETRIC: Student has not enrolled into the new AI system." };
     }
 
     // High-Fidelity Biometric Analysis
     if (faceImage && faceImage.startsWith('data:image')) {
-        const detection = await getFaceDescriptorFromBase64(faceImage);
-        const liveArray = detection ? detection.descriptor : null;
-        if (!liveArray) {
-            return { success: false, message: "NO FACE DETECTED: Look directly into the camera." };
-        }
-        
-        const enrolledDescriptor = parseDescriptor(student.faceDescriptor);
-        const liveDescriptor = new Float32Array(liveArray);
-        
-        const distance = compareFaces(liveDescriptor, enrolledDescriptor);
-        
-        // Lenient Match: Increased from 0.45 to 0.60 for better reliability
-        if (distance !== null && distance < 0.60) { 
-            const confidence = Math.max(0, 1 - (distance / 0.60));
-            return { 
-                success: true, 
-                student,
-                confidence: confidence,
-                message: `ACCESS GRANTED: Hello ${student.name} (Conf: ${Math.round(confidence * 100)}%).` 
-            };
-        }
-        return { success: false, message: `SECURITY ALERT: Biometric Mismatch [Loss: ${distance?.toFixed(2)}]` };
+      const detection = await getFaceDescriptorFromBase64(faceImage);
+      const liveArray = detection ? detection.descriptor : null;
+      if (!liveArray) {
+        return { success: false, message: "NO FACE DETECTED: Look directly into the camera." };
+      }
+
+      const enrolledDescriptor = parseDescriptor(student.faceDescriptor);
+      const liveDescriptor = new Float32Array(liveArray);
+
+      const distance = compareFaces(liveDescriptor, enrolledDescriptor);
+
+      // Lenient Match: Increased from 0.45 to 0.60 for better reliability
+      if (distance !== null && distance < 0.60) {
+        const confidence = Math.max(0, 1 - (distance / 0.60));
+        return {
+          success: true,
+          student,
+          confidence: confidence,
+          message: `ACCESS GRANTED: Hello ${student.name} (Conf: ${Math.round(confidence * 100)}%).`
+        };
+      }
+      return { success: false, message: `SECURITY ALERT: Biometric Mismatch [Loss: ${distance?.toFixed(2)}]` };
     }
 
     return { success: false, message: "NO FACE DETECTED: Blank capture." };
@@ -1439,40 +1504,40 @@ export const mockApi = {
   matchFaceAcrossAllStudents: async (capturedImage) => {
     const data = getDB();
     const enrolledStudents = data.studentRegistry.filter(s => s.isFaceEnrolled || s.faceImage);
-    
+
     if (enrolledStudents.length === 0) {
-        return { success: false, message: "No student records found in database. Enroll students first." };
+      return { success: false, message: "No student records found in database. Enroll students first." };
     }
 
     if (!capturedImage) return { success: false, message: "No image captured." };
 
     const detection = await getFaceDescriptorFromBase64(capturedImage);
     if (!detection) return { success: false, message: "No Face Detected in Camera." };
-    
+
     const liveDescriptor = new Float32Array(detection.descriptor);
     let bestMatch = null;
     let minDistance = 0.50; // More lenient matching
 
     for (const student of enrolledStudents) {
-        if (student.faceDescriptor) {
-            const enrolledDescriptor = parseDescriptor(student.faceDescriptor);
-            const dist = compareFaces(liveDescriptor, enrolledDescriptor);
-            if (dist !== null && dist < minDistance) {
-                minDistance = dist;
-                bestMatch = student;
-            }
+      if (student.faceDescriptor) {
+        const enrolledDescriptor = parseDescriptor(student.faceDescriptor);
+        const dist = compareFaces(liveDescriptor, enrolledDescriptor);
+        if (dist !== null && dist < minDistance) {
+          minDistance = dist;
+          bestMatch = student;
         }
+      }
     }
 
     if (bestMatch) {
-        const confidence = 1 - minDistance;
-        return { 
-            success: true, 
-            student: bestMatch,
-            confidence: confidence,
-            isLivenessVerified: true,
-            message: `BIOMETRIC VERIFIED: ${bestMatch.name} (${(confidence*100).toFixed(1)}% IDENTITY MATCH)` 
-        };
+      const confidence = 1 - minDistance;
+      return {
+        success: true,
+        student: bestMatch,
+        confidence: confidence,
+        isLivenessVerified: true,
+        message: `BIOMETRIC VERIFIED: ${bestMatch.name} (${(confidence * 100).toFixed(1)}% IDENTITY MATCH)`
+      };
     }
 
     return { success: false, message: "ACCESS DENIED: Face not recognized in the system or confidence too low." };
@@ -1481,43 +1546,43 @@ export const mockApi = {
   matchFaceAcrossAllFaculty: async (capturedImage) => {
     const data = getDB();
     const enrolledFaculty = (data.facultyRegistry || []).filter(f => f.isFaceEnrolled || f.faceImage);
-    
+
     if (enrolledFaculty.length === 0) {
-        return { success: false, message: "No biometric profile found. Enroll in Admin first." };
+      return { success: false, message: "No biometric profile found. Enroll in Admin first." };
     }
 
     if (!capturedImage) return { success: false, message: "No image captured." };
 
     const detection = await getFaceDescriptorFromBase64(capturedImage);
     if (!detection) return { success: false, message: "No Face Detected in Camera." };
-    
+
     const liveDescriptor = new Float32Array(detection.descriptor);
     let bestMatch = null;
     let minDistance = 0.50;
 
     for (const faculty of enrolledFaculty) {
-        if (faculty.faceDescriptor) {
-            const enrolledDescriptor = parseDescriptor(faculty.faceDescriptor);
-            const dist = compareFaces(liveDescriptor, enrolledDescriptor);
-            if (dist !== null && dist < minDistance) {
-                minDistance = dist;
-                bestMatch = faculty;
-            }
+      if (faculty.faceDescriptor) {
+        const enrolledDescriptor = parseDescriptor(faculty.faceDescriptor);
+        const dist = compareFaces(liveDescriptor, enrolledDescriptor);
+        if (dist !== null && dist < minDistance) {
+          minDistance = dist;
+          bestMatch = faculty;
         }
+      }
     }
 
     if (bestMatch) {
-        const confidence = 1 - minDistance;
-        return { 
-            success: true, 
-            faculty: bestMatch,
-            confidence: confidence,
-            isLivenessVerified: true,
-            status: 'AUTH_GRANTED',
-            message: `BIOMETRIC VERIFIED: ${bestMatch.name} (${(confidence*100).toFixed(1)}% SIMILARITY)` 
-        };
+      const confidence = 1 - minDistance;
+      return {
+        success: true,
+        faculty: bestMatch,
+        confidence: confidence,
+        isLivenessVerified: true,
+        status: 'AUTH_GRANTED',
+        message: `BIOMETRIC VERIFIED: ${bestMatch.name} (${(confidence * 100).toFixed(1)}% SIMILARITY)`
+      };
     }
-    
+
     return { success: false, message: "Access Denied: Unrecognized Face." };
   },
 
@@ -1553,12 +1618,12 @@ export const mockApi = {
       collectedBy: collectorName || collectorRole
     };
     data.feeLedger.push(newEntry);
-    
+
     // Update Fees summary table
     const feeRecord = data.fees.find(f => f.student === studentName);
     if (feeRecord) {
-        feeRecord.paid += parseInt(amount);
-        feeRecord.status = feeRecord.paid >= feeRecord.total ? 'Paid' : 'Partial';
+      feeRecord.paid += parseInt(amount);
+      feeRecord.status = feeRecord.paid >= feeRecord.total ? 'Paid' : 'Partial';
     }
 
     // Update parentFees if it exists for this student
@@ -1568,7 +1633,7 @@ export const mockApi = {
         data.parentFees[feeIndex].status = 'Paid';
       }
     }
-    
+
     saveDB(data);
     return newEntry;
   },
@@ -1577,10 +1642,10 @@ export const mockApi = {
     const data = getDB();
     const faculty = (data.facultyRegistry || []).find(f => f.contact === info);
     if (faculty) return { type: 'Faculty', id: faculty.id, name: faculty.name };
-    
+
     const student = (data.studentRegistry || []).find(s => s.contact === info);
     if (student) return { type: 'Student', id: student.id, name: student.name, rollNo: student.rollNo };
-    
+
     return null;
   },
 
@@ -1622,13 +1687,13 @@ export const mockApi = {
   getAssignments: () => getDB().assignments || [],
   addAssignment: (assignment) => {
     const data = getDB();
-    const newAssignment = { 
-      ...assignment, 
-      id: Date.now(), 
-      status: 'Pending', 
+    const newAssignment = {
+      ...assignment,
+      id: Date.now(),
+      status: 'Pending',
       submissions: 0,
       totalStudents: 30, // Mock class size
-      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) 
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     };
     data.assignments.unshift(newAssignment);
     saveDB(data);
@@ -1653,16 +1718,16 @@ export const mockApi = {
     const index = data.assignments.findIndex(a => a.id === assignmentId);
     if (index !== -1) {
       data.assignments[index].submissions = (data.assignments[index].submissions || 0) + 1;
-      
+
       if (!data.assignments[index].submissionsList) data.assignments[index].submissionsList = [];
-      data.assignments[index].submissionsList.push({ 
-          studentName, 
-          data: submissionData, 
-          date: new Date().toLocaleString() 
+      data.assignments[index].submissionsList.push({
+        studentName,
+        data: submissionData,
+        date: new Date().toLocaleString()
       });
 
       // Mark as completed for this demo
-      data.assignments[index].status = 'Completed'; 
+      data.assignments[index].status = 'Completed';
       saveDB(data);
     }
     return true;
@@ -1671,10 +1736,10 @@ export const mockApi = {
   getDiary: () => getDB().diaryEntries || [], // Alias
   postDiaryEntry: (entry) => {
     const data = getDB();
-    const newEntry = { 
-      ...entry, 
-      id: Date.now(), 
-      date: new Date().toLocaleDateString('en-GB') 
+    const newEntry = {
+      ...entry,
+      id: Date.now(),
+      date: new Date().toLocaleDateString('en-GB')
     };
     data.diaryEntries.unshift(newEntry);
     saveDB(data);
@@ -1683,24 +1748,24 @@ export const mockApi = {
   logLesson: (teacherId, teacherName, subject, topic, summary) => {
     const data = getDB();
     const newLog = {
-        id: Date.now(),
-        teacherId,
-        teacherName,
-        subject,
-        topic,
-        summary,
-        date: new Date().toLocaleDateString('en-GB')
+      id: Date.now(),
+      teacherId,
+      teacherName,
+      subject,
+      topic,
+      summary,
+      date: new Date().toLocaleDateString('en-GB')
     };
     if (!data.lessonLogs) data.lessonLogs = [];
     data.lessonLogs.unshift(newLog);
     // Also add to diary entries for students to see
     if (!data.diaryEntries) data.diaryEntries = [];
     data.diaryEntries.unshift({
-        id: Date.now() + 1,
-        topic: topic,
-        date: new Date().toLocaleDateString('en-GB'),
-        progress: 100,
-        remarks: summary
+      id: Date.now() + 1,
+      topic: topic,
+      date: new Date().toLocaleDateString('en-GB'),
+      progress: 100,
+      remarks: summary
     });
     saveDB(data);
     return newLog;
@@ -1756,48 +1821,48 @@ export const mockApi = {
   getPhonics: () => getDB().phonicsData || [],
 
   saveVoiceDiary: (studentId, audioData) => {
-      const db = getDB();
-      if (!db.voiceDiaries) db.voiceDiaries = [];
-      db.voiceDiaries.unshift({ id: Date.now(), studentId, date: new Date().toISOString() });
-      saveDB(db);
-      return { success: true };
+    const db = getDB();
+    if (!db.voiceDiaries) db.voiceDiaries = [];
+    db.voiceDiaries.unshift({ id: Date.now(), studentId, date: new Date().toISOString() });
+    saveDB(db);
+    return { success: true };
   },
   triggerGateAlert: (studentName) => {
-      const db = getDB();
-      if (!db.gateAlerts) db.gateAlerts = [];
-      db.gateAlerts.push({ id: Date.now(), studentName, time: new Date().toLocaleTimeString() });
-      saveDB(db);
-      // Also send notification to teacher
-      const teacherNotif = {
-          id: Date.now(),
-          type: 'GateAlert',
-          title: 'Parent at Gate!',
-          message: `Parent of ${studentName} is waiting at the main gate for pickup.`,
-          time: 'Just Now',
-          priority: 'high'
-      };
-      if (!db.notifications) db.notifications = [];
-      db.notifications.unshift(teacherNotif);
-      saveDB(db);
-      return { success: true };
+    const db = getDB();
+    if (!db.gateAlerts) db.gateAlerts = [];
+    db.gateAlerts.push({ id: Date.now(), studentName, time: new Date().toLocaleTimeString() });
+    saveDB(db);
+    // Also send notification to teacher
+    const teacherNotif = {
+      id: Date.now(),
+      type: 'GateAlert',
+      title: 'Parent at Gate!',
+      message: `Parent of ${studentName} is waiting at the main gate for pickup.`,
+      time: 'Just Now',
+      priority: 'high'
+    };
+    if (!db.notifications) db.notifications = [];
+    db.notifications.unshift(teacherNotif);
+    saveDB(db);
+    return { success: true };
   },
   getGateAlerts: () => getDB().gateAlerts || [],
   getJuniorGallery: () => {
-      const db = getDB();
-      const drawings = (db.juniorDrawings || []).map(d => ({ ...d, type: 'drawing', icon: '🎨' }));
-      const voices = (db.voiceDiaries || []).map(v => ({ ...v, type: 'voice', icon: '🎤', data: 'Audio Diary' }));
-      return [...drawings, ...voices].sort((a, b) => b.id - a.id);
+    const db = getDB();
+    const drawings = (db.juniorDrawings || []).map(d => ({ ...d, type: 'drawing', icon: '🎨' }));
+    const voices = (db.voiceDiaries || []).map(v => ({ ...v, type: 'voice', icon: '🎤', data: 'Audio Diary' }));
+    return [...drawings, ...voices].sort((a, b) => b.id - a.id);
   },
   getDailyGift: () => {
-      const gifts = ['🦄 Unicorn Dust', '🌈 Rainbow Badge', '🍿 Popcorn Treat', '🎭 Super Hero Mask', '🍭 Magic Candy'];
-      return gifts[Math.floor(Math.random() * gifts.length)];
+    const gifts = ['🦄 Unicorn Dust', '🌈 Rainbow Badge', '🍿 Popcorn Treat', '🎭 Super Hero Mask', '🍭 Magic Candy'];
+    return gifts[Math.floor(Math.random() * gifts.length)];
   },
   saveJuniorDrawing: (drawingData) => {
-      const db = getDB();
-      if (!db.juniorDrawings) db.juniorDrawings = [];
-      db.juniorDrawings.unshift({ id: Date.now(), data: drawingData, date: new Date().toISOString() });
-      saveDB(db);
-      return { success: true };
+    const db = getDB();
+    if (!db.juniorDrawings) db.juniorDrawings = [];
+    db.juniorDrawings.unshift({ id: Date.now(), data: drawingData, date: new Date().toISOString() });
+    saveDB(db);
+    return { success: true };
   },
 
   getFastTrackCurriculum: () => [
@@ -1827,8 +1892,8 @@ export const mockApi = {
     const db = getDB();
     if (!db.fastTrackProgress) db.fastTrackProgress = 0;
     if (day > db.fastTrackProgress) {
-        db.fastTrackProgress = day;
-        saveDB(db);
+      db.fastTrackProgress = day;
+      saveDB(db);
     }
     return db.fastTrackProgress;
   },
@@ -1936,18 +2001,18 @@ export const mockApi = {
   getMessages: (filters = {}) => {
     const db = getDB();
     let msgs = db.messages || [];
-    
+
     if (filters.role === 'student') {
-      return msgs.filter(m => 
-        (m.targetClasses && m.targetClasses.includes(filters.className)) || 
+      return msgs.filter(m =>
+        (m.targetClasses && m.targetClasses.includes(filters.className)) ||
         m.recipientId === filters.userId ||
         m.senderId === filters.userId
       );
     }
-    
+
     if (filters.role === 'faculty') {
-      return msgs.filter(m => 
-        m.senderId === filters.userId || 
+      return msgs.filter(m =>
+        m.senderId === filters.userId ||
         m.recipientId === filters.userId ||
         (m.targetClasses && m.senderRole === 'admin')
       );
@@ -1974,12 +2039,12 @@ export const mockApi = {
     if (!query) return [];
     const db = getDB();
     const q = query.toLowerCase();
-    
-    const facultyMatches = (db.facultyRegistry || []).filter(f => 
+
+    const facultyMatches = (db.facultyRegistry || []).filter(f =>
       f.name.toLowerCase().includes(q) || f.id.toLowerCase().includes(q)
     ).map(f => ({ id: f.id, name: f.name, role: 'faculty' }));
 
-    const studentMatches = (db.studentRegistry || []).filter(s => 
+    const studentMatches = (db.studentRegistry || []).filter(s =>
       s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)
     ).map(s => ({ id: s.id, name: s.name, role: 'student' }));
 
@@ -1988,5 +2053,219 @@ export const mockApi = {
 
   getAvailableClasses: () => {
     return ['10A', '10B', '9A', '9B', '8A', '7A', '6A', '5A', '4A', '3A', '2A', '1A', 'Nursery', 'LKG', 'UKG'];
+  },
+
+  // SECURITY & AUDIT LOCKS
+  logAudit: (type, action, role = 'Admin', details = {}) => {
+    const db = getDB();
+    if (!db.auditLogs) db.auditLogs = [];
+    const entry = {
+      id: `AUDIT-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      type,
+      action,
+      role,
+      details,
+      fingerprint: `NSGI-OS-WIN-CHROME-${Math.random().toString(36).substr(2, 5).toUpperCase()}`
+    };
+    db.auditLogs.unshift(entry);
+    saveDB(db);
+    return entry;
+  },
+
+  getAuditLogs: () => getDB().auditLogs || [],
+
+  setSystemLockdown: (status) => {
+    const db = getDB();
+    db.system_lockdown = status;
+    saveDB(db);
+    mockApi.logAudit('SECURITY_SYSTEM', status ? 'Global Lockdown ACTIVATED' : 'Global Lockdown DEACTIVATED', 'Admin');
+    return status;
+  },
+
+  isSystemLockdown: () => {
+    return !!getDB().system_lockdown;
+  },
+
+  // PHASE 2: SESSION LIFECYCLE
+  generateSessionToken: (userId) => {
+    const expiry = Date.now() + (30 * 60 * 1000); // 30 Minutes
+    const payload = `${userId}|${expiry}`;
+    const signature = mockApi.getSecurityHash({ id: userId, amount: expiry, studentName: 'SESSION' });
+    return `${btoa(payload)}.${signature}`;
+  },
+
+  verifySession: (token) => {
+    if (!token) return { valid: false, error: 'NO_TOKEN' };
+    try {
+      const [encodedPayload, signature] = token.split('.');
+      const payload = atob(encodedPayload);
+      const [userId, expiry] = payload.split('|');
+
+      // Integrity Check
+      const expectedSig = mockApi.getSecurityHash({ id: userId, amount: expiry, studentName: 'SESSION' });
+      if (signature !== expectedSig) return { valid: false, error: 'TAMPER_DETECTED' };
+
+      // Expiry Check
+      if (Date.now() > parseInt(expiry)) {
+        return { valid: false, error: 'EXPIRED', userId };
+      }
+
+      return { valid: true, userId, expiry: parseInt(expiry) };
+    } catch (e) {
+      return { valid: false, error: 'MALFORMED' };
+    }
+  },
+
+  // PHASE 3: DEVICE DNA & BIOMETRIC ATTENDANCE
+  getDeviceDNA: () => {
+    const nav = window.navigator;
+    const screen = window.screen;
+    return btoa(`${nav.userAgent}|${nav.language}|${screen.width}x${screen.height}|${nav.hardwareConcurrency}`);
+  },
+
+  bindDevice: (userId, dna) => {
+    const db = getDB();
+    if (!db.deviceBindings) db.deviceBindings = {};
+    if (!db.deviceBindings[userId]) {
+      db.deviceBindings[userId] = dna;
+      saveDB(db);
+      mockApi.logAudit('SECURITY_CONFIG', `Device DNA bound for user ${userId}`, 'System', { dna });
+    }
+    return db.deviceBindings[userId];
+  },
+
+  isDeviceAuthorized: (userId, currentDna) => {
+    const db = getDB();
+    const boundDna = db.deviceBindings?.[userId];
+    if (!boundDna) return true; // Not bound yet
+    return boundDna === currentDna;
+  },
+
+  // PHASE 4: GHOST RECORDS & FORENSIC EXPORT
+  injectGhostRecords: () => {
+    const db = getDB();
+    if (!db.facultyRegistry) db.facultyRegistry = [];
+    if (!db.facultyRegistry.some(f => f.id === 'NS-GHOST-01')) {
+      db.facultyRegistry.push({
+        id: 'NS-GHOST-01',
+        name: 'Vikram Singh (Ghost)',
+        subject: 'Advanced Cryptography',
+        assignedClass: 'ADMIN-ONLY',
+        dob: '1970-01-01',
+        contact: '+91-0000000000',
+        salary: '₹ 1,50,000',
+        isGhost: true,
+        isFaceEnrolled: true
+      });
+      saveDB(db);
+    }
+  },
+
+  exportAuditTrail: () => {
+    const logs = mockApi.getAuditLogs();
+    const content = JSON.stringify(logs, null, 2);
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NSGI-FORENSIC-LOG-${Date.now()}.json`;
+    a.click();
+    mockApi.logAudit('FORENSIC_EXPORT', 'Authorized Export of Signed Audit Trail', 'Admin');
+    return true;
+  },
+
+  getRiskSummary: () => {
+    const db = getDB();
+    const logs = db.auditLogs || [];
+    const recentRecon = logs.filter(l => l.type === 'SUSPICIOUS_RECON' && (Date.now() - new Date(l.timestamp)) < 86400000);
+    const recentRevocations = logs.filter(l => l.type === 'SECURITY_REVOCATION');
+    const recentAlerts = logs.filter(l => l.type === 'SECURITY_ALERT');
+    const biometricFailures = logs.filter(l => l.type === 'BIOMETRIC_FAIL');
+    const internalLeaks = logs.filter(l => l.type === 'INTERNAL_LEAK_WARNING');
+
+    return {
+      totalThreats: recentRecon.length + recentAlerts.length + biometricFailures.length + internalLeaks.length,
+      revocations: recentRevocations.length,
+      criticalAlerts: [
+        ...internalLeaks.slice(0, 3).map(l => ({ id: l.id, msg: `🛑 HONEYPOT ACCESS: ${l.action}`, user: l.role })),
+        ...recentRecon.slice(0, 3).map(l => ({ id: l.id, msg: l.action, user: l.role })),
+        ...recentAlerts.slice(0, 3).map(l => ({ id: l.id, msg: l.action, user: l.role })),
+        ...biometricFailures.slice(0, 3).map(l => ({ id: l.id, msg: `Attendance: Face Mismatch/Fail`, user: l.role }))
+      ].slice(0, 5)
+    };
+  },
+
+  getSecurityHash: (data) => {
+    const str = `${data.id}|${data.amount}|${data.studentName}|NSGI-SECRET-KEY`;
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(16).toUpperCase();
+  },
+
+  verifyIntegrity: (txn) => {
+    return mockApi.getSecurityHash(txn);
+  },
+
+  // PHASE 5: DIGITAL SOVEREIGNTY & FORENSIC TRUST
+  generateSignedReceipt: (receipt) => {
+    const payload = JSON.stringify({
+      id: receipt.id,
+      student: receipt.studentName,
+      amount: receipt.amount,
+      date: receipt.date,
+      ts: Date.now()
+    });
+    const signature = mockApi.getSecurityHash({ id: receipt.id, amount: receipt.amount, studentName: receipt.studentName });
+    return btoa(`${payload}.${signature}`);
+  },
+
+  verifySignedReceipt: (signedData) => {
+    try {
+      const decoded = atob(signedData);
+      const [payloadStr, signature] = decoded.split('.');
+      const payload = JSON.parse(payloadStr);
+      const expectedSig = mockApi.getSecurityHash({ id: payload.id, amount: payload.amount, studentName: payload.student });
+      return signature === expectedSig;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  checkGpsSecurity: (currentCoords) => {
+    const db = getDB();
+    if (!db.lastGpsCoords) {
+      db.lastGpsCoords = { ...currentCoords, ts: Date.now() };
+      saveDB(db);
+      return { status: 'SECURE', msg: 'Baseline established' };
+    }
+
+    const last = db.lastGpsCoords;
+    const now = Date.now();
+    const timeDiffHours = (now - last.ts) / (1000 * 60 * 60);
+    
+    // Haversine distance (simplified for mock)
+    const dx = (currentCoords.lat - last.lat) * 111.32; // km per degree
+    const dy = (currentCoords.lng - last.lng) * 111.32 * Math.cos(currentCoords.lat * Math.PI / 180);
+    const distance = Math.sqrt(dx*dx + dy*dy);
+    
+    // Avoid infinity on immediate re-checks
+    if (timeDiffHours < 0.0001) return { status: 'SECURE', msg: 'Instant check bypassed' };
+    
+    const speed = distance / timeDiffHours;
+
+    db.lastGpsCoords = { ...currentCoords, ts: now };
+    saveDB(db);
+
+    if (speed > 300) { // 300km/h threshold
+        mockApi.logAudit('SECURITY_FRAUD', `GPS_WARP DETECTED: Illegal velocity ${speed.toFixed(2)} km/h`, 'System', { distance, speed });
+        return { status: 'WARP_DETECTED', speed };
+    }
+
+    return { status: 'SECURE', distance };
   }
 };

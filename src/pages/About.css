@@ -362,3 +362,123 @@
         padding: 28px 20px 24px;
     }
 }
+
+/* Journey Section Styles */
+.journey-section {
+    padding: 80px 20px;
+}
+
+.section-header.center {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
+
+.journey-timeline {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.journey-timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--accent-blue), transparent);
+    transform: translateX(-50%);
+}
+
+.journey-item {
+    position: relative;
+    width: 100%;
+    margin-bottom: 60px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.journey-item.left {
+    justify-content: flex-start;
+}
+
+.journey-content {
+    width: 45%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.journey-img-container {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.journey-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.journey-content:hover .journey-img {
+    transform: scale(1.05);
+}
+
+.img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+}
+
+.journey-text h3 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.journey-text p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-blue);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 15px var(--accent-blue);
+    z-index: 2;
+}
+
+@media (max-width: 768px) {
+    .journey-timeline::before {
+        left: 20px;
+    }
+    .journey-item {
+        justify-content: flex-start;
+        padding-left: 45px;
+    }
+    .journey-content {
+        width: 100%;
+    }
+    .timeline-dot {
+        left: 20px;
+    }
+}
