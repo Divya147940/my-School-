@@ -30,15 +30,16 @@
 }
 
 .light-mode {
-  --bg-primary: #f1f5f9;
+  --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
-  --text-primary: #0f172a;
+  --text-primary: #020617;
   --text-secondary: #475569;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(15, 23, 42, 0.1);
-  --glass-glow: rgba(59, 130, 246, 0.08);
+  --accent-blue: #2563eb;
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-glow: rgba(37, 99, 235, 0.05);
   --header-bg: #ffffff;
-  --footer-bg: #f8fafc;
+  --footer-bg: #f1f5f9;
   --shadow-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
 }
 

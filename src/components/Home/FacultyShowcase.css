@@ -17,12 +17,24 @@
     transition: 0.4s;
     position: relative;
     overflow: hidden;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+}
+
+.light-mode .faculty-card {
+    background: #ffffff;
+    box-shadow: var(--shadow-premium);
 }
 
 .faculty-card:hover {
     transform: translateY(-10px);
-    border-color: rgba(59, 130, 246, 0.4);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-blue);
+    background: var(--bg-secondary);
+}
+
+.light-mode .faculty-card:hover {
+    background: #ffffff;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
 }
 
 .fac-img-container {
@@ -80,24 +92,25 @@
 
 .fac-edu {
     font-size: 0.85rem;
-    color: #94a3b8;
+    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
 .fac-exp {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     margin-bottom: 25px;
+    opacity: 0.8;
 }
 
 .fac-contact-btn {
     width: 100%;
     padding: 12px;
-    background: rgba(59, 130, 246, 0.05);
-    border: 1px solid rgba(59, 130, 246, 0.2);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 14px;
-    color: #fff;
+    color: var(--text-primary);
     font-weight: 700;
     font-size: 0.9rem;
     cursor: pointer;

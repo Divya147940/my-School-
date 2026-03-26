@@ -52,9 +52,9 @@
     position: absolute;
     top: 20px;
     right: 20px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--glass-glow);
     border: none;
-    color: #94a3b8;
+    color: var(--text-secondary);
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -70,8 +70,8 @@
     text-align: center;
 }
 
-.inquiry-modal-header h2 { font-size: 2rem; margin-bottom: 10px; }
-.inquiry-modal-header p { color: #94a3b8; font-size: 0.95rem; }
+.inquiry-modal-header h2 { font-size: 2rem; margin-bottom: 10px; color: var(--text-primary); }
+.inquiry-modal-header p { color: var(--text-secondary); font-size: 0.95rem; }
 
 .inquiry-form {
     display: flex;
@@ -99,8 +99,8 @@
 
 .form-group input, .form-group textarea {
     padding: 12px 18px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-primary);
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
     color: var(--text-primary);
     font-size: 0.95rem;

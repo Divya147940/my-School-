@@ -1,4 +1,5 @@
-import mysql from 'mysql2/promise';
+import pkg from 'pg';
+const { Pool } = pkg;
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,15 +9,11 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: String(process.env.DB_PASSWORD || ''),
-    database: process.env.DB_DATABASE || 'school_db',
-    port: parseInt(process.env.DB_PORT || '3306'),
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Required for Supabase in many environments
+    }
 });
 
 export default pool;

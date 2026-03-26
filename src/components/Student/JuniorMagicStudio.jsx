@@ -1,27 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
 import JuniorDashboardAnimations from '../Common/JuniorDashboardAnimations';
 import GamificationEngine from '../../utils/GamificationEngine';
-import './JuniorActivityCenter.css'; // Reusing established junior styles
+import './JuniorMagicStudio.css';
 
 const JuniorMagicStudio = () => {
-    const [activeSection, setActiveSection] = useState('poems');
-    const [activePoem, setActivePoem] = useState(null);
+    const [activeSection, setActiveSection] = useState('home');
     const [score, setScore] = useState(0);
     const [showConfetti, setShowConfetti] = useState(false);
     const [floatingXPs, setFloatingXPs] = useState([]);
     
-    // Logic Puzzles State
+    // Module Specific States
+    const [activePoem, setActivePoem] = useState(null);
     const [puzzleTask, setPuzzleTask] = useState(null);
     const [puzzleOptions, setPuzzleOptions] = useState([]);
-
-    // Math Magic State
     const [mathProblem, setMathProblem] = useState(null);
     const [mathGroups, setMathGroups] = useState([]);
-    const [mathTarget, setMathTarget] = useState(0);
-
-    // Word Builder State
     const [currentWord, setCurrentWord] = useState(null);
     const [builtChars, setBuiltChars] = useState([]);
+    const [mixedColor, setMixedColor] = useState(null);
+    const [yogaPose, setYogaPose] = useState(null);
+    const [rocketTarget, setRocketTarget] = useState(null);
+    const [bholuOutfit, setBholuOutfit] = useState([]);
+    const [weather, setWeather] = useState('sunny');
+    const [foodFeedback, setFoodFeedback] = useState(null);
 
     // Glow Art State
     const canvasRef = useRef(null);
@@ -29,24 +30,16 @@ const JuniorMagicStudio = () => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [brushColor, setBrushColor] = useState('#8b5cf6');
 
-    useEffect(() => {
-        if (activeSection === 'poems') playMagicSound('chime');
-        if (activeSection === 'puzzles') generatePuzzle();
-        if (activeSection === 'logic') generateLogic();
-        if (activeSection === 'math') generateMath();
-        if (activeSection === 'words') generateWord();
-    }, [activeSection]);
-
-    // Speech Utility
-    const speak = (text) => {
+    // Cartoon Voice Utility
+    const speak = (text, isCartoon = true) => {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         const voices = window.speechSynthesis.getVoices();
-        const indianVoice = voices.find(v => v.lang.includes('hi-IN')) || voices.find(v => v.lang.includes('en-IN'));
-        if (indianVoice) utterance.voice = indianVoice;
-        utterance.pitch = 1.3;
-        utterance.rate = 0.9;
+        const v = voices.find(v => v.lang.includes('hi-IN')) || voices.find(v => v.lang.includes('en-IN'));
+        if (v) utterance.voice = v;
+        utterance.pitch = isCartoon ? 1.9 : 1.3;
+        utterance.rate = 1.0;
         window.speechSynthesis.speak(utterance);
     };
 
@@ -54,122 +47,59 @@ const JuniorMagicStudio = () => {
         const sounds = {
             chime: 'https://www.soundjay.com/misc/sounds/magic-chime-01.mp3',
             sparkle: 'https://www.soundjay.com/misc/sounds/sparkle-01.mp3',
-            correct: 'https://www.soundjay.com/buttons/sounds/button-10.mp3'
+            correct: 'https://www.soundjay.com/buttons/sounds/button-10.mp3',
+            pop: 'https://www.soundjay.com/transparent-2.mp3'
         };
         const audio = new Audio(sounds[type] || sounds.chime);
         audio.volume = 0.2;
         audio.play().catch(() => {});
     };
 
-    const spawnXp = (amount) => {
-        const id = Date.now();
-        setFloatingXPs(prev => [...prev, { id, amount, x: 40 + Math.random() * 20, y: 40 + Math.random() * 20 }]);
-        setTimeout(() => setFloatingXPs(prev => prev.filter(f => f.id !== id)), 1500);
-    };
-
-    const triggerConfetti = (xpAmount = 150) => {
+    const triggerWin = (xp = 100) => {
         setScore(s => s + 10);
         setShowConfetti(true);
-        GamificationEngine.addXP(xpAmount, `Magic Studio: ${activeSection}`);
-        spawnXp(xpAmount);
         playMagicSound('correct');
+        GamificationEngine.addXP(xp, `Magic Studio: ${activeSection}`);
         setTimeout(() => setShowConfetti(false), 3000);
     };
 
-    // --- Sections Data ---
-    const poemsList = [
-        { id: 1, title: 'Twinkle Twinkle', icon: '⭐', text: 'Twinkle, twinkle, little star, How I wonder what you are!', audio: 'Twinkle twinkle little star. You are a shining star!' },
-        { id: 2, title: 'Johny Johny', icon: '👦', text: 'Johny Johny, Yes Papa? Eating Sugar? No Papa!', audio: 'Johny Johny Yes Papa. Eating sugar? No Papa. Telling lies? No Papa. Open your mouth? Ha ha ha!' },
-        { id: 3, title: 'Hathi Raja', icon: '🐘', text: 'Hathi raja kahan chale? Soond hilakar kahan chale?', audio: 'Hathi raja kahan chale? Soond hilakar kahan chale? Mere ghar bhi aao na, Halwa poori khao na!' },
-        { id: 4, title: 'Rain Rain Go Away', icon: '🌧️', text: 'Rain, rain, go away, Come again another day!', audio: 'Rain rain go away. Little Johny wants to play!' }
+    // --- Module Data & Generators ---
+    const MODULES = [
+        { id: 'poems', icon: '📜', label: 'Poem Kingdom', color: '#8b5cf6' },
+        { id: 'puzzles', icon: '🧩', label: 'Puzzle Palace', color: '#ec4899' },
+        { id: 'art', icon: '✨', label: 'Glow Art', color: '#3b82f6' },
+        { id: 'logic', icon: '🔍', label: 'Logic Land', color: '#10b981' },
+        { id: 'math', icon: '➗', label: 'Math Magic', color: '#f59e0b' },
+        { id: 'words', icon: '✍️', label: 'Word Builder', color: '#d946ef' },
+        { id: 'colormix', icon: '🌈', label: 'Color Mix', color: '#f43f5e' },
+        { id: 'yoga', icon: '🐘', label: 'Animal Yoga', color: '#22c55e' },
+        { id: 'rocket', icon: '🚀', label: 'Rocket Phonics', color: '#6366f1' },
+        { id: 'dressup', icon: '👗', label: 'Dress Bholu', color: '#f97316' },
+        { id: 'garden', icon: '🎹', label: 'Sound Garden', color: '#4ade80' },
+        { id: 'body', icon: '🕵️', label: 'Body Parts', color: '#06b6d4' },
+        { id: 'weather', icon: '🌦️', label: 'Weather Wiz', color: '#3b82f6' },
+        { id: 'food', icon: '🥗', label: 'Healthy Plate', color: '#fbbf24' },
+        { id: 'clock', icon: '🕰️', label: 'Magic Clock', color: '#8b5cf6' }
     ];
 
     const generatePuzzle = () => {
-        const items = [
-            { id: 1, name: 'Apple', icon: '🍎', shadow: '⬛' },
-            { id: 2, name: 'Butterfly', icon: '🦋', shadow: '⬛' },
-            { id: 3, name: 'Sun', icon: '☀️', shadow: '⬛' },
-            { id: 4, name: 'Car', icon: '🚗', shadow: '⬛' }
-        ];
+        const items = [{ id: 1, n: 'Apple', i: '🍎' }, { id: 2, n: 'Bird', i: '🐦' }, { id: 3, n: 'Car', i: '🚗' }];
         const target = items[Math.floor(Math.random() * items.length)];
         setPuzzleTask(target);
         setPuzzleOptions([...items].sort(() => Math.random() - 0.5));
     };
 
-    const generateLogic = () => {
-        const patterns = [
-            { seq: ['🔴', '🔵', '🔴'], ans: '🔵' },
-            { seq: ['⭐', '🌙', '⭐'], ans: '🌙' },
-            { seq: ['🍎', '🍌', '🍎'], ans: '🍌' },
-            { seq: ['🚗', '🚲', '🚗'], ans: '🚲' }
-        ];
-        const p = patterns[Math.floor(Math.random() * patterns.length)];
-        setPuzzleTask(p);
-        const opts = ['🔵', '🌙', '🍌', '🚲', '🚗', '⭐'].filter(o => o !== p.ans).slice(0, 3);
-        setPuzzleOptions([p.ans, ...opts].sort(() => Math.random() - 0.5));
-    };
-
     const generateMath = () => {
-        const problems = [
-            { total: 4, div: 2, ans: 2, item: '🍪' },
-            { total: 6, div: 2, ans: 3, item: '🍎' },
-            { total: 9, div: 3, ans: 3, item: '🍭' },
-            { total: 8, div: 2, ans: 4, item: '🍓' }
-        ];
-        const p = problems[Math.floor(Math.random() * problems.length)];
+        const p = { total: 4, item: '🍪', div: 2, ans: 2 };
         setMathProblem(p);
         setMathGroups(new Array(p.div).fill(0));
-        setMathTarget(p.ans);
-    };
-
-    const handleMathClick = (groupIndex) => {
-        if (mathGroups.reduce((a,b) => a+b, 0) < mathProblem.total) {
-            const newGroups = [...mathGroups];
-            newGroups[groupIndex] += 1;
-            setMathGroups(newGroups);
-            playMagicSound('sparkle');
-            
-            if (newGroups.reduce((a,b) => a+b, 0) === mathProblem.total) {
-                const isCorrect = newGroups.every(g => g === mathProblem.ans);
-                if (isCorrect) triggerConfetti();
-                else {
-                    speak("Oh! The sharing is not equal. Let us try again!");
-                    setTimeout(generateMath, 2000);
-                }
-            }
-        }
     };
 
     const generateWord = () => {
-        const words = [
-            { w: 'CAT', l: ['C', 'A', 'T'], e: '🐱', lang: 'en' },
-            { w: 'DOG', l: ['D', 'O', 'G'], e: '🐶', lang: 'en' },
-            { w: 'SUN', l: ['S', 'U', 'N'], e: '☀️', lang: 'en' },
-            { w: 'KAMAL', l: ['क', 'म', 'ल'], e: '🪷', lang: 'hi' },
-            { w: 'AMAR', l: ['अ', 'म', 'र'], e: '👦', lang: 'hi' },
-            { w: 'GHAR', l: ['घ', 'र'], e: '🏠', lang: 'hi' }
-        ];
+        const words = [{ w: 'CAT', l: ['C', 'A', 'T'], e: '🐱' }, { w: 'DOG', l: ['D', 'O', 'G'], e: '🐶' }];
         const w = words[Math.floor(Math.random() * words.length)];
         setCurrentWord(w);
         setBuiltChars([]);
-        speak(w.lang === 'hi' ? "Chalo shabd banate hain!" : "Let us build a word!");
-    };
-
-    const addChar = (char) => {
-        if (currentWord && builtChars.length < currentWord.l.length) {
-            if (currentWord.l[builtChars.length] === char) {
-                const newBuilt = [...builtChars, char];
-                setBuiltChars(newBuilt);
-                speak(char);
-                playMagicSound('sparkle');
-                if (newBuilt.length === currentWord.l.length) {
-                    speak(`${currentWord.w}! Very good!`);
-                    triggerWin();
-                }
-            } else {
-                speak("Try another letter!");
-            }
-        }
     };
 
     // --- Glow Art Logic ---
@@ -188,197 +118,215 @@ const JuniorMagicStudio = () => {
 
     const startDraw = ({ nativeEvent }) => {
         const { offsetX, offsetY } = nativeEvent;
+        if (!ctxRef.current) return;
         ctxRef.current.strokeStyle = brushColor;
         ctxRef.current.shadowColor = brushColor;
-        ctxRef.current.beginPath();
-        ctxRef.current.moveTo(offsetX, offsetY);
+        ctxRef.current.beginPath(); ctxRef.current.moveTo(offsetX, offsetY);
         setIsDrawing(true);
     };
 
     const draw = ({ nativeEvent }) => {
-        if (!isDrawing) return;
+        if (!isDrawing || !ctxRef.current) return;
         const { offsetX, offsetY } = nativeEvent;
-        ctxRef.current.lineTo(offsetX, offsetY);
-        ctxRef.current.stroke();
+        ctxRef.current.lineTo(offsetX, offsetY); ctxRef.current.stroke();
     };
 
-    const stopDraw = () => {
-        ctxRef.current.closePath();
-        setIsDrawing(false);
-    };
+    const stopDraw = () => { if(ctxRef.current) ctxRef.current.closePath(); setIsDrawing(false); };
+
+    // --- Render Helpers ---
+    const renderHome = () => (
+        <div className="module-grid">
+            {MODULES.map(m => (
+                <div key={m.id} className="module-card anim-bounce" onClick={() => { 
+                    setActiveSection(m.id); 
+                    speak(`Welcome to ${m.label}!`); 
+                    if(m.id === 'puzzles') generatePuzzle();
+                    if(m.id === 'math') generateMath();
+                    if(m.id === 'words') generateWord();
+                }}>
+                    <span className="icon">{m.icon}</span>
+                    <h3 style={{ color: m.color }}>{m.label}</h3>
+                </div>
+            ))}
+        </div>
+    );
 
     return (
-        <div className="junior-activity-center" style={{ minHeight: '90vh', background: '#020617', padding: '20px' }}>
+        <div className="studio-root">
             <JuniorDashboardAnimations />
             
-            <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '3.5rem', marginBottom: '10px', color: '#fff', textShadow: '0 0 20px #8b5cf6' }}>Magic Studio ✨</h1>
-                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem' }}>Dosto, chalo jaadu seekhein!</p>
-                <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '30px', flexWrap: 'wrap' }}>
-                    <button onClick={() => setActiveSection('poems')} style={{ padding: '15px 30px', borderRadius: '20px', background: activeSection === 'poems' ? '#8b5cf6' : 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>📜 Poem Kingdom</button>
-                    <button onClick={() => setActiveSection('puzzles')} style={{ padding: '15px 30px', borderRadius: '20px', background: activeSection === 'puzzles' ? '#8b5cf6' : 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>🧩 Puzzle Palace</button>
-                    <button onClick={() => setActiveSection('art')} style={{ padding: '15px 30px', borderRadius: '20px', background: activeSection === 'art' ? '#8b5cf6' : 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>✨ Glow Art</button>
-                    <button onClick={() => setActiveSection('logic')} style={{ padding: '15px 30px', borderRadius: '20px', background: activeSection === 'logic' ? '#8b5cf6' : 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>🔍 Logic Land</button>
-                    <button onClick={() => setActiveSection('math')} style={{ padding: '15px 30px', borderRadius: '20px', background: activeSection === 'math' ? '#8b5cf6' : 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>➗ Math Magic</button>
-                    <button onClick={() => setActiveSection('words')} style={{ padding: '15px 30px', borderRadius: '20px', background: activeSection === 'words' ? '#8b5cf6' : 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>✍️ Word Builder</button>
-                </div>
+            <header className="studio-header">
+                <h1 className="studio-title">Magic Studio ✨</h1>
+                <div className="score-badge">⭐ {score} Stars</div>
             </header>
 
+            {activeSection !== 'home' && (
+                <button className="back-btn" onClick={() => setActiveSection('home')}>← Wapas Ghar Jao</button>
+            )}
+
             <main className="glass-panel" style={{ padding: '40px', borderRadius: '40px' }}>
+                {activeSection === 'home' && renderHome()}
+                
                 {activeSection === 'poems' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
-                        {poemsList.map(p => (
-                            <div key={p.id} onClick={() => { setActivePoem(p); speak(p.audio); }} className="card-vibe" style={{ padding: '30px', borderRadius: '30px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', textAlign: 'center' }}>
-                                <div style={{ fontSize: '5rem', marginBottom: '15px' }}>{p.icon}</div>
-                                <h3 style={{ color: '#fff', marginBottom: '10px' }}>{p.title}</h3>
-                                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>{p.text}</p>
+                    <div className="module-grid">
+                        {[{t: 'Twinkle', i: '⭐', s: 'Twinkle twinkle little star!'}, {t: 'Baba Pink', i: '🐑', s: 'Baba baba pink sheep!'}].map(p => (
+                            <div key={p.t} onClick={() => speak(p.s)} className="module-card">
+                                <span className="icon">{p.i}</span>
+                                <h3>{p.t}</h3>
                             </div>
                         ))}
                     </div>
                 )}
 
-                {activeSection === 'puzzles' && puzzleTask && (
+                {activeSection === 'colormix' && (
                     <div style={{ textAlign: 'center' }}>
-                        <h2 style={{ color: '#fff', marginBottom: '30px' }}>Shadow Match! 🕵️‍♂️</h2>
-                        <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '30px' }}>Can you find the icon that matches this shadow?</p>
-                        <div style={{ fontSize: '10rem', background: 'rgba(255,255,255,0.03)', display: 'inline-flex', padding: '40px', borderRadius: '50px', marginBottom: '50px', border: '2px dashed rgba(139,92,246,0.5)' }}>
-                            <span style={{ filter: 'brightness(0) blur(2px)' }}>{puzzleTask.icon}</span>
+                        <h2>Primary Colors Mix Karo! 🌈</h2>
+                        <div className="color-mix-area">
+                            <div className="color-drop" style={{ background: 'red' }} onClick={() => speak('Ye hai Laal rang!')}>🔴</div>
+                            <div style={{ fontSize: '3rem' }}>+</div>
+                            <div className="color-drop" style={{ background: 'blue' }} onClick={() => { setMixedColor('purple'); speak('Magic! Laal aur Neela ban gaya Baingani!'); triggerWin(); }}>🔵</div>
                         </div>
-                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            {puzzleOptions.map(opt => (
-                                <button 
-                                    key={opt.id} 
-                                    onClick={() => opt.id === puzzleTask.id ? (triggerConfetti(), generatePuzzle()) : speak('Opps! Try again!')} 
-                                    className="card-vibe"
-                                    style={{ fontSize: '4rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '30px', padding: '20px', cursor: 'pointer' }}
-                                >
-                                    {opt.icon}
-                                </button>
+                        {mixedColor && <div className="mix-result anim-glow" style={{ background: mixedColor }}></div>}
+                    </div>
+                )}
+
+                {activeSection === 'yoga' && (
+                    <div style={{ textAlign: 'center' }}>
+                        <h2>Animal Yoga Time! 🐘</h2>
+                        <div className="yoga-mascot anim-bounce">{yogaPose || '🐘'}</div>
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                            <button className="magic-btn" onClick={() => { setYogaPose('🦒'); speak('Giraffe ki tarah lambe ho jao!'); }}>🦒 Giraffe Pose</button>
+                            <button className="magic-btn" onClick={() => { setYogaPose('🦁'); speak('Lion ki tarah dahaado! Roarrr!'); }}>🦁 Lion Pose</button>
+                        </div>
+                    </div>
+                )}
+
+                {activeSection === 'rocket' && (
+                    <div style={{ textAlign: 'center' }}>
+                        <h2>Rocket Phonics! 🚀</h2>
+                        <div style={{ fontSize: '8rem', marginBottom: '30px' }} className="anim-bounce">🚀</div>
+                        <p style={{ fontSize: '1.5rem' }}>Letter 'A' wale rocket ko pakdo!</p>
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                            {['A', 'B', 'C'].map(l => (
+                                <button key={l} className="magic-btn" onClick={() => { 
+                                    if(l === 'A') { speak('Sahi pakde! Blast off!'); triggerWin(); }
+                                    else speak('Try again, Hero!');
+                                }}>{l}</button>
                             ))}
                         </div>
                     </div>
                 )}
 
-                {activeSection === 'art' && (
+                {activeSection === 'weather' && (
                     <div style={{ textAlign: 'center' }}>
-                        <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                            {['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#fbbf24', '#fff'].map(c => (
-                                <div key={c} onClick={() => setBrushColor(c)} style={{ width: '40px', height: '40px', background: c, borderRadius: '50%', cursor: 'pointer', border: brushColor === c ? '4px solid #fff' : 'none' }}></div>
-                            ))}
-                            <button onClick={() => ctxRef.current.clearRect(0,0,800,400)} style={{ marginLeft: '20px', padding: '0 20px', borderRadius: '15px' }}>Clear</button>
+                        <h2>Weather Wizard 🌦️</h2>
+                        <div style={{ fontSize: '10rem', margin: '30px 0' }}>
+                           {weather === 'sunny' ? '☀️' : weather === 'rainy' ? '🌧️' : '❄️'}
                         </div>
-                        <canvas 
-                            ref={canvasRef}
-                            onMouseDown={startDraw}
-                            onMouseMove={draw}
-                            onMouseUp={stopDraw}
-                            onMouseLeave={stopDraw}
-                            style={{ background: '#000', borderRadius: '30px', width: '100%', height: '400px', cursor: 'crosshair', border: '5px solid rgba(255,255,255,0.1)' }}
-                        />
-                    </div>
-                )}
-
-                {activeSection === 'logic' && puzzleTask && !puzzleTask.id && (
-                    <div style={{ textAlign: 'center' }}>
-                        <h2 style={{ color: '#fff', marginBottom: '40px' }}>Logic Land! Complete the pattern:</h2>
-                        <div style={{ fontSize: '6rem', marginBottom: '50px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                            {puzzleTask.seq.map((s, i) => <span key={i}>{s}</span>)}
-                            <span style={{ borderBottom: '5px dashed #8b5cf6', width: '80px' }}>?</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '30px', justifyContent: 'center' }}>
-                            {puzzleOptions.map((opt, i) => (
-                                <button key={i} onClick={() => opt === puzzleTask.ans ? triggerConfetti() : speak('Think again, friend!')} style={{ fontSize: '5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '30px', padding: '20px', cursor: 'pointer' }}>
-                                    {opt}
-                                </button>
-                            ))}
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                            <button className="magic-btn" onClick={() => { setWeather('sunny'); speak('Ah! It is so sunny and warm!'); }}>☀️ Sunny</button>
+                            <button className="magic-btn" onClick={() => { setWeather('rainy'); speak('Watch out! It is raining!'); }}>🌧️ Rainy</button>
+                            <button className="magic-btn" onClick={() => { setWeather('snow'); speak('Brrr! It is cold!'); }}>❄️ Snow</button>
                         </div>
                     </div>
                 )}
 
-                {activeSection === 'math' && mathProblem && (
+                {activeSection === 'food' && (
                     <div style={{ textAlign: 'center' }}>
-                        <h2 style={{ color: '#fff', marginBottom: '20px' }}>Sharing is Caring! ➗</h2>
-                        <p style={{ color: '#fbbf24', fontSize: '1.5rem', marginBottom: '40px' }}>
-                            Share {mathProblem.total} {mathProblem.item} equally among {mathProblem.div} monsters!
-                        </p>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', marginBottom: '50px' }}>
-                            {mathGroups.map((count, idx) => (
-                                <div key={idx} onClick={() => handleMathClick(idx)} className="card-vibe" style={{ width: '250px', minHeight: '300px', background: 'rgba(255,255,255,0.05)', borderRadius: '30px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', border: '2px solid #8b5cf6' }}>
-                                    <div style={{ fontSize: '5rem', marginBottom: '20px' }}>👾</div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', justifyContent: 'center' }}>
-                                        {Array.from({ length: count }).map((_, i) => (
-                                            <span key={i} style={{ fontSize: '2.5rem' }}>{mathProblem.item}</span>
-                                        ))}
-                                    </div>
-                                    <div style={{ marginTop: 'auto', color: '#fff', fontSize: '1.2rem' }}>Got: {count}</div>
-                                </div>
-                            ))}
+                        <h2>Healthy vs Junk Food 🥗</h2>
+                        <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', margin: '40px 0' }}>
+                            <div onClick={() => { speak('Yum yum! Seb sehat ke liye achha hai!'); triggerWin(); }} style={{ fontSize: '6rem', cursor: 'pointer' }}>🍎</div>
+                            <div onClick={() => { speak('Oh no! Zyada candy nahi khani chahiye!'); }} style={{ fontSize: '6rem', cursor: 'pointer' }}>🍭</div>
                         </div>
-                        
-                        <div style={{ color: 'rgba(255,255,255,0.6)' }}>
-                            Remaining: {mathProblem.total - mathGroups.reduce((a,b) => a+b, 0)} {mathProblem.item}
-                        </div>
-                        <button onClick={generateMath} style={{ marginTop: '30px', padding: '10px 20px', borderRadius: '15px' }}>Restart Level</button>
+                        <p>Healthy food par tap karo! ⭐</p>
                     </div>
                 )}
 
-                {activeSection === 'words' && currentWord && (
+                {activeSection === 'logic' && (
                     <div style={{ textAlign: 'center' }}>
-                        <h2 style={{ color: '#fff', marginBottom: '30px' }}>Shabd Banaiye! (Word Builder) ✍️</h2>
-                        {builtChars.length === currentWord.l.length && (
-                            <div style={{ animation: 'bounce 1s infinite', fontSize: '8rem', marginBottom: '20px' }}>{currentWord.e}</div>
-                        )}
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '50px' }}>
-                            {currentWord.l.map((char, i) => (
-                                <div key={i} style={{ width: '80px', height: '100px', background: builtChars[i] ? '#8b5cf6' : 'rgba(255,255,255,0.05)', borderRadius: '15px', border: '2px dashed #8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', color: '#fff' }}>
-                                    {builtChars[i] || ''}
-                                </div>
+                        <h2>Logic Land! 🔍</h2>
+                        <div style={{ fontSize: '6rem', margin: '40px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                            <span>🔴</span> <span>🔵</span> <span>🔴</span> <span style={{ borderBottom: '5px dashed #8b5cf6', width: '80px' }}>?</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                            {['🔵', '⭐', '🌙'].map(l => (
+                                <button key={l} className="magic-btn" style={{ fontSize: '3rem' }} onClick={() => {
+                                    if(l === '🔵') { speak('Magic logic! You are right!'); triggerWin(); }
+                                    else speak('Think again!');
+                                }}>{l}</button>
                             ))}
                         </div>
-                        
-                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '30px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '20px' }}>Pick the correct letter to build the word:</p>
-                            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                {['क', 'म', 'ल', 'अ', 'र', 'घ', 'C', 'A', 'T', 'D', 'O', 'G', 'S', 'U', 'N'].sort(() => Math.random() - 0.5).map(char => (
-                                    <button 
-                                        key={char} 
-                                        onClick={() => addChar(char)}
-                                        style={{ width: '60px', height: '60px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}
-                                    >
-                                        {char}
-                                    </button>
-                                ))}
+                    </div>
+                )}
+
+                {activeSection === 'dressup' && (
+                    <div style={{ textAlign: 'center' }}>
+                        <h2>Dress Up Bholu! 👗</h2>
+                        <div style={{ fontSize: '12rem', position: 'relative' }} className="anim-bounce">
+                            🐻
+                            <div style={{ position: 'absolute', top: '50px', left: '50%', transform: 'translateX(-50%)', fontSize: '5rem' }}>
+                                {bholuOutfit.join('')}
                             </div>
                         </div>
-                        <button onClick={generateWord} style={{ marginTop: '30px', padding: '10px 20px', borderRadius: '15px' }}>Next Word ➡️</button>
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '40px' }}>
+                            {['🎩', '👓', '🧣', '👑'].map(i => (
+                                <button key={i} className="magic-btn" style={{ fontSize: '3rem' }} onClick={() => {
+                                    setBholuOutfit([...bholuOutfit, i]);
+                                    speak('Bholu looks so cool!');
+                                    playMagicSound('pop');
+                                }}>{i}</button>
+                            ))}
+                            <button className="magic-btn" onClick={() => setBholuOutfit([])}>Reset</button>
+                        </div>
                     </div>
                 )}
 
-                {showConfetti && (
-                    <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '10rem', pointerEvents: 'none', animation: 'bounce 1s infinite' }}>
-                        🎊✨🏆
+                {activeSection === 'garden' && (
+                    <div style={{ textAlign: 'center' }}>
+                        <h2>Sound Garden! 🎹</h2>
+                        <div className="module-grid">
+                            {['🌸', '🌻', '🌵', '🍄', '🌳'].map((p, i) => (
+                                <div key={i} className="module-card anim-wiggle" onClick={() => {
+                                    const notes = ['C4', 'E4', 'G4', 'C5', 'A4'];
+                                    speak('Ting!');
+                                    playMagicSound('sparkle');
+                                }}>
+                                    <span className="icon">{p}</span>
+                                    <p>Giggle!</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
-                {floatingXPs.map(f => (
-                    <div 
-                        key={f.id} 
-                        className="floating-xp-pop"
-                        style={{ left: `${f.x}%`, top: `${f.y}%` }}
-                    >
-                        +{f.amount} XP
+                {activeSection === 'body' && (
+                    <div style={{ textAlign: 'center' }}>
+                        <h2>Body Parts Explorer! 🕵️</h2>
+                        <div className="body-parts-map">
+                            <div className="part-hotspot" style={{ top: '20px', left: '100px' }} onClick={() => speak('Ye hai Sir! Head!')}>Sir (Head)</div>
+                            <div className="part-hotspot" style={{ top: '80px', left: '110px' }} onClick={() => speak('Ye hai Aankh! Eyes!')}>Aankh (Eyes)</div>
+                            <div className="part-hotspot" style={{ top: '150px', left: '100px' }} onClick={() => speak('Ye hai Haath! Hands!')}>Haath (Hands)</div>
+                            <div className="part-hotspot" style={{ top: '350px', left: '110px' }} onClick={() => speak('Ye hain Pair! Legs!')}>Pair (Legs)</div>
+                        </div>
                     </div>
-                ))}
+                )}
+
+                {activeSection === 'clock' && (
+                    <div style={{ textAlign: 'center' }}>
+                        <h2>Magic Clock! 🕰️</h2>
+                        <div style={{ fontSize: '10rem' }} className="anim-wiggle">🕰️</div>
+                        <div style={{ fontSize: '3rem', margin: '20px' }}>9:00 AM</div>
+                        <p>School ka time ho gaya! Chalo school chalein!</p>
+                        <button className="magic-btn" onClick={() => speak('Ab baje hain nau! Nine o clock!')}>Time Suno!</button>
+                    </div>
+                )}
             </main>
 
-            <footer style={{ marginTop: '50px', textAlign: 'center' }}>
-                <div style={{ background: 'rgba(139,92,246,0.2)', padding: '20px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '15px' }}>
-                    <span style={{ fontSize: '2rem' }}>⭐ Grade A+</span>
-                    <span style={{ height: '30px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></span>
-                    <span style={{ fontSize: '2rem' }}>XP: {score}</span>
+            {showConfetti && (
+                <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '10rem', pointerEvents: 'none', zIndex: 1000 }}>
+                    🎊✨🏆
                 </div>
-            </footer>
+            )}
         </div>
     );
 };

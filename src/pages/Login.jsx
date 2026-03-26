@@ -260,11 +260,28 @@ const Login = () => {
                             : await mockApi.matchFaceAcrossAllStudents(detection.descriptor);
 
                         if (matchResult && matchResult.confidence > 0.65) {
-                            setTimeout(() => {
+                            setTimeout(async () => {
                                 // ELITE DEFENSE: Trigger 2FA instead of direct login
                                 setIsScanning(false);
-                                setTempUser({ user: matchResult.user, token: "MOCK_JWT_TOKEN", path: activePortal.path });
-                                setShowOTP(true);
+                                
+                                try {
+                                    const reqResp = await fetch('http://localhost:5001/api/auth/request-otp', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ userId: matchResult.user.id, role: activePortal.type })
+                                    });
+                                    const reqData = await reqResp.json();
+                                    
+                                    if (reqData.status === 'success') {
+                                        setTempUser({ user: matchResult.user, role: activePortal.type, id: matchResult.user.id, path: activePortal.path });
+                                        setShowOTP(true);
+                                        addToast(reqData.message, "success");
+                                    } else {
+                                        addToast(reqData.message || "2FA Request Failed", "error");
+                                    }
+                                } catch (e) {
+                                    addToast("Server Connection Error", "error");
+                                }
                             }, 500);
                         } else {
                             // If no match yet, keep scanning
@@ -289,34 +306,45 @@ const Login = () => {
   const [tempUser, setTempUser] = useState(null);
   const [otpValue, setOtpValue] = useState('');
 
-  const handleOTPVerify = () => {
+  const handleOTPVerify = async () => {
     const cleanOTP = otpValue.trim().replace(/\s/g, '');
     
-    if (cleanOTP === '123456' || cleanOTP.length === 6) {
+    if (cleanOTP.length === 6) {
         if (!tempUser) {
             addToast("Session Error. Please try again.", "error");
             setShowOTP(false);
             return;
         }
 
-        // Finalize state changes
-        login(tempUser.user, tempUser.token);
-        
-        // Log Forensic Data
-        mockApi.logAudit('LOGIN_SUCCESS', `Login verified with 2FA for ${tempUser.user.name}.`, tempUser.user.role, { device: 'TRUSTED_CHROME_V122' });
-        
-        addToast("Security Verified ✅", "success");
-        
-        // Ensure modal closes and navigation triggers
-        setShowOTP(false);
-        const targetPath = tempUser.path || (tempUser.user.role === 'Admin' ? '/admin-dashboard' : '/student-dashboard');
-        
-        // Short delay to ensure state propagates
-        setTimeout(() => {
-          navigate(targetPath);
-        }, 100);
+        try {
+            const response = await fetch('http://localhost:5001/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-device-dna': getDeviceFingerprint()
+                },
+                body: JSON.stringify({ 
+                    userId: tempUser.id, 
+                    otp: cleanOTP, 
+                    role: tempUser.role 
+                })
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                login(data.user, data.token);
+                mockApi.logAudit('LOGIN_SUCCESS', `Login verified with 2FA for ${data.user.name}.`, data.user.role, { device: 'TRUSTED_CHROME_V122' });
+                addToast("Security Verified ✅", "success");
+                setShowOTP(false);
+                navigate(tempUser.path);
+            } else {
+                addToast(data.message || "Invalid Security Code", "error");
+            }
+        } catch (err) {
+            addToast("Server Connection Error", "error");
+        }
     } else {
-        addToast("Invalid Security Code", "error");
+        addToast("Please enter a 6-digit code", "error");
     }
   };
 
@@ -341,16 +369,32 @@ const Login = () => {
         return;
     }
 
-    try {
-      // ELITE DEFENSE: All manual portal logins now require 2FA
-      setTempUser({ 
-          user: portal.type === 'Admin' ? { id: 'ADM-001', name: 'Principal Admin', role: 'Admin' } : { id: 'PAR-001', name: 'Parent User', role: 'Parent' },
-          token: "MOCK_JWT",
-          path: portal.path 
-      });
-      setShowOTP(true);
+    if (portal.type === 'Admin' || portal.type === 'Parent' || portal.type === 'Emergency') {
+      try {
+        const userId = portal.type === 'Admin' ? 'ADM-001' : portal.type === 'Emergency' ? 'ADM-001' : 'PAR-001';
+        const role = portal.type === 'Emergency' ? 'Admin' : portal.type;
+        
+        const response = await fetch('http://localhost:5001/api/auth/request-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, role })
+        });
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            setTempUser({ id: userId, role: role, path: portal.path });
+            setShowOTP(true);
+            addToast(data.message, "success");
+        } else {
+            addToast(data.message || t('loginFailed'), "error");
+        }
+      } catch (err) {
+          addToast("Server Connection Error", "error");
+      }
       return;
+    }
 
+    try {
       const response = await fetch('http://localhost:5001/api/auth/login', {
         method: 'POST',
         headers: {
@@ -613,7 +657,13 @@ const Login = () => {
               key={portal.type} 
               onClick={() => handlePortalLogin(portal)}
               className="portal-card reveal-on-scroll"
-              style={{ transitionDelay: `${i * 0.1}s`, cursor: 'pointer' }}
+              style={{ 
+                transitionDelay: `${i * 0.1}s`, 
+                cursor: 'pointer',
+                gridColumn: portal.type === 'Emergency' ? '1 / -1' : 'auto',
+                maxWidth: portal.type === 'Emergency' ? '400px' : 'none',
+                margin: portal.type === 'Emergency' ? '0 auto' : '0'
+              }}
             >
               <div className="portal-glow" style={{ backgroundColor: portal.color }}></div>
               <div className="portal-icon">{portal.icon}</div>

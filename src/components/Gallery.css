@@ -59,9 +59,17 @@
     inset: 0;
     background: linear-gradient(to bottom,
             rgba(15, 23, 42, 0.7) 0%,
-            rgba(15, 23, 42, 0.4) 50%,
-            rgba(15, 23, 42, 0.9) 100%);
+            rgba(15, 23, 42, 0.3) 50%,
+            rgba(15, 23, 42, 0.8) 100%);
     z-index: 2;
+    transition: background 0.8s ease;
+}
+
+.light-mode .slider-overlay-gradient {
+    background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(15, 23, 42, 0.2) 50%,
+            rgba(15, 23, 42, 0.6) 100%);
 }
 
 /* Content Layout */
@@ -137,9 +145,9 @@
     font-weight: 800;
     line-height: 1.05;
     margin: 0 0 24px 0;
-    color: var(--text-primary);
+    color: #fff;
     letter-spacing: -2px;
-    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .accent-text {
@@ -154,10 +162,10 @@
     font-size: clamp(18px, 2.5vw, 24px);
     line-height: 1.5;
     margin: 0 0 45px 0;
-    color: #e2e8f0;
+    color: #f8fafc;
     max-width: 650px;
     font-weight: 500;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
 /* CTA Buttons */
@@ -182,8 +190,8 @@
 
 .slider-cta.primary {
     background: linear-gradient(135deg, var(--accent-blue), #2563eb);
-    color: var(--text-primary);
-    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
 }
 
 .slider-cta.primary:hover {
@@ -192,14 +200,14 @@
 }
 
 .slider-cta.secondary {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(12px);
-    color: var(--text-primary);
-    border: 1px solid var(--glass-border);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .slider-cta.secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.25);
     transform: translateY(-5px);
 }
 

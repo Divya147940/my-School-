@@ -113,3 +113,32 @@
     0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
     50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
 }
+
+/* Discovery Hub Specifics */
+.card-vibe {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-vibe:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.card-vibe.active {
+    animation: magicGlow 2s infinite;
+}
+
+.pulse {
+    animation: pulseMini 1.5s infinite;
+}
+
+@keyframes pulseMini {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.weather-bg-sunny { background: linear-gradient(to bottom, #f59e0b22, transparent); }
+.weather-bg-rainy { background: linear-gradient(to bottom, #3b82f622, transparent); }
+.weather-bg-winter { background: linear-gradient(to bottom, #8b5cf622, transparent); }
+

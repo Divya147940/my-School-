@@ -3,7 +3,28 @@ import { mockApi } from '../../utils/mockApi';
 import { useAuth } from '../../context/AuthContext';
 import JuniorDashboardAnimations from '../Common/JuniorDashboardAnimations';
 import { useTheme } from '../../context/ThemeContext';
-import MagicKidsWorld from './MagicKidsWorld';
+import JuniorMagicStudio from './JuniorMagicStudio';
+import MagicWritingTracer from './MagicWritingTracer';
+import JuniorDiscoveryHub from './JuniorDiscoveryHub';
+import CartoonFlashcards from './CartoonFlashcards';
+import JuniorCartoonWorld from './JuniorCartoonWorld';
+import AIStoryland from './AIStoryland';
+import PetBuddy from './PetBuddy';
+import AlphabetTrain from './AlphabetTrain';
+import SpaceExplorer from './SpaceExplorer';
+import MagicColorBook from './MagicColorBook';
+import BusJourney from './BusJourney';
+import HabitHero from './HabitHero';
+import BalYoga from './BalYoga';
+import StarAwards from './StarAwards';
+import MoodMeter from './MoodMeter';
+import MagicNote from './MagicNote';
+import MagicCalendar from './MagicCalendar';
+import EmojiMessenger from './EmojiMessenger';
+import JuniorFunPark from './JuniorFunPark';
+import AnimalSoundSafari from './AnimalSoundSafari';
+import ShapeMatcher from './ShapeMatcher';
+import BubblePopAlphabet from './BubblePopAlphabet';
 import './JuniorActivityCenter.css';
 
 const JuniorActivityCenter = () => {
@@ -387,6 +408,27 @@ const JuniorActivityCenter = () => {
             <JuniorDashboardAnimations />
             <div className="section-tabs stagger-1" style={{ display: 'flex', gap: '15px', marginBottom: '25px', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button 
+                    onClick={() => { setActiveSection('fun-park'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'fun-park' ? 'linear-gradient(135deg, #f97316, #fbbf24, #f59e0b)' : 'var(--glass-bg)',
+                        color: activeSection === 'fun-park' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'fun-park' ? '0 0 25px rgba(249,115,22,0.6)' : 'none',
+                        animation: activeSection === 'fun-park' ? 'none' : 'mkwTabPulse 2s ease-in-out infinite',
+                        order: -2
+                    }}
+                >
+                    🎡 Bal Mela
+                </button>
+                <button 
                     onClick={() => { setActiveSection('magic-kids'); playMagicSound('chime'); }}
                     style={{ 
                         padding: '15px 30px', 
@@ -650,22 +692,81 @@ const JuniorActivityCenter = () => {
                     🅰️ Phonics Board
                 </button>
                 <button 
-                    onClick={() => { setActiveSection('tracing'); playMagicSound('chime'); }}
+                    onClick={() => { setActiveSection('discovery'); playMagicSound('chime'); }}
                     style={{ 
                         padding: '15px 30px', 
                         borderRadius: '20px', 
                         border: 'none', 
-                        background: activeSection === 'tracing' ? 'linear-gradient(135deg, #7c3aed, #8b5cf6)' : 'var(--glass-bg)',
-                        color: activeSection === 'tracing' ? '#fff' : 'var(--text-secondary)',
+                        background: activeSection === 'discovery' ? 'linear-gradient(135deg, #06b6d4, #0891b2)' : 'var(--glass-bg)',
+                        color: activeSection === 'discovery' ? '#fff' : 'var(--text-secondary)',
                         fontWeight: 'bold',
                         cursor: 'pointer',
                         fontSize: '1rem',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: '10px',
+                        boxShadow: activeSection === 'discovery' ? '0 0 20px rgba(6,182,212,0.4)' : 'none'
                     }}
                 >
-                    ✍️ Trace Letters
+                    🚀 Discovery Hub
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('cartoon-world'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'cartoon-world' ? 'linear-gradient(135deg, #7c3aed, #8b5cf6)' : 'var(--glass-bg)',
+                        color: activeSection === 'cartoon-world' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'cartoon-world' ? '0 0 20px rgba(124,58,237,0.4)' : 'none'
+                    }}
+                >
+                    🏰 Cartoon World
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('cartoon-movie'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'cartoon-movie' ? 'linear-gradient(135deg, #f43f5e, #fbbf24)' : 'var(--glass-bg)',
+                        color: activeSection === 'cartoon-movie' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'cartoon-movie' ? '0 0 20px rgba(244,63,94,0.4)' : 'none'
+                    }}
+                >
+                    🎬 ABC Movie
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('likhna'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'likhna' ? 'linear-gradient(135deg, #7c3aed, #f97316)' : 'var(--glass-bg)',
+                        color: activeSection === 'likhna' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'likhna' ? '0 0 25px rgba(249,115,22,0.5)' : 'none',
+                        animation: activeSection === 'likhna' ? 'none' : 'mkwTabPulse 2.5s ease-in-out infinite'
+                    }}
+                >
+                    ✍️ Jadui Likhna
                 </button>
                 <button 
                     onClick={() => { setActiveSection('music'); playMagicSound('chime'); }}
@@ -704,6 +805,63 @@ const JuniorActivityCenter = () => {
                     🎤 Mera Din
                 </button>
                 <button 
+                    onClick={() => { setActiveSection('animal-safari'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'animal-safari' ? 'linear-gradient(135deg, #10b981, #059669)' : 'var(--glass-bg)',
+                        color: activeSection === 'animal-safari' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'animal-safari' ? '0 0 20px rgba(16,185,129,0.4)' : 'none'
+                    }}
+                >
+                    🦁 Animal Safari
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('shape-matcher'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'shape-matcher' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'var(--glass-bg)',
+                        color: activeSection === 'shape-matcher' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'shape-matcher' ? '0 0 20px rgba(245,158,11,0.4)' : 'none'
+                    }}
+                >
+                    🟦 Shape Matcher
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('bubble-alphabet'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'bubble-alphabet' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'var(--glass-bg)',
+                        color: activeSection === 'bubble-alphabet' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'bubble-alphabet' ? '0 0 20px rgba(59,130,246,0.4)' : 'none'
+                    }}
+                >
+                    🫧 Bubble Pop
+                </button>
+                <button 
                     onClick={() => { setActiveSection('gallery'); playMagicSound('chime'); }}
                     style={{ 
                         padding: '15px 30px', 
@@ -738,7 +896,254 @@ const JuniorActivityCenter = () => {
                         boxShadow: activeSection === 'superhero' ? '0 0 20px rgba(234,179,8,0.4)' : 'none'
                     }}
                 >
-                    🦸‍♂️ Super Hero 20
+                    <span style={{ fontSize: '1.2rem' }}>🦸‍♂️</span> Super Hero 20
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('ai-storyland'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'ai-storyland' ? 'linear-gradient(135deg, #8b5cf6, #ec4899)' : 'var(--glass-bg)',
+                        color: activeSection === 'ai-storyland' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'ai-storyland' ? '0 0 20px rgba(139,92,246,0.4)' : 'none'
+                    }}
+                >
+                    📖 AI Storyland
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('pet-buddy'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'pet-buddy' ? 'linear-gradient(135deg, #ec4899, #fbbf24)' : 'var(--glass-bg)',
+                        color: activeSection === 'pet-buddy' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'pet-buddy' ? '0 0 20px rgba(236,72,153,0.4)' : 'none'
+                    }}
+                >
+                    🐶 Pet Buddy
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('alphabet-train'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'alphabet-train' ? 'linear-gradient(135deg, #06b6d4, #4ade80)' : 'var(--glass-bg)',
+                        color: activeSection === 'alphabet-train' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'alphabet-train' ? '0 0 20px rgba(6,182,212,0.4)' : 'none'
+                    }}
+                >
+                    🚂 Alphabet Train
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('space-explorer'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'space-explorer' ? 'linear-gradient(135deg, #1e293b, #6366f1)' : 'var(--glass-bg)',
+                        color: activeSection === 'space-explorer' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'space-explorer' ? '0 0 20px rgba(99,102,241,0.4)' : 'none'
+                    }}
+                >
+                    🚀 Space Explorer
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('magic-color-book'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'magic-color-book' ? 'linear-gradient(135deg, #ec4899, #f43f5e)' : 'var(--glass-bg)',
+                        color: activeSection === 'magic-color-book' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'magic-color-book' ? '0 0 20px rgba(236,72,153,0.4)' : 'none'
+                    }}
+                >
+                    🖌️ Magic Color Book
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('bus-journey'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'bus-journey' ? 'linear-gradient(135deg, #3b82f6, #22c55e)' : 'var(--glass-bg)',
+                        color: activeSection === 'bus-journey' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'bus-journey' ? '0 0 20px rgba(59,130,246,0.4)' : 'none'
+                    }}
+                >
+                    🚌 Bus Journey
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('habit-hero'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'habit-hero' ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' : 'var(--glass-bg)',
+                        color: activeSection === 'habit-hero' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'habit-hero' ? '0 0 20px rgba(251,191,36,0.4)' : 'none'
+                    }}
+                >
+                    🦸‍♂️ Habit Hero
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('bal-yoga'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'bal-yoga' ? 'linear-gradient(135deg, #8b5cf6, #3b82f6)' : 'var(--glass-bg)',
+                        color: activeSection === 'bal-yoga' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'bal-yoga' ? '0 0 20px rgba(139,92,246,0.4)' : 'none'
+                    }}
+                >
+                    🧘 Bal Yoga
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('star-awards'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'star-awards' ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' : 'var(--glass-bg)',
+                        color: activeSection === 'star-awards' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'star-awards' ? '0 0 20px rgba(251,191,36,0.4)' : 'none'
+                    }}
+                >
+                    🏆 Star Awards
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('mood-meter'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'mood-meter' ? 'linear-gradient(135deg, #ec4899, #8b5cf6)' : 'var(--glass-bg)',
+                        color: activeSection === 'mood-meter' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'mood-meter' ? '0 0 20px rgba(236,72,153,0.4)' : 'none'
+                    }}
+                >
+                    🌈 Mood Meter
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('magic-note'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'magic-note' ? 'linear-gradient(135deg, #8b5cf6, #f43f5e)' : 'var(--glass-bg)',
+                        color: activeSection === 'magic-note' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'magic-note' ? '0 0 20px rgba(139,92,246,0.4)' : 'none'
+                    }}
+                >
+                    📢 Magic Note
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('magic-calendar'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'magic-calendar' ? 'linear-gradient(135deg, #06b6d4, #3b82f6)' : 'var(--glass-bg)',
+                        color: activeSection === 'magic-calendar' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'magic-calendar' ? '0 0 20px rgba(6,182,212,0.4)' : 'none'
+                    }}
+                >
+                    📅 Magic Calendar
+                </button>
+                <button 
+                    onClick={() => { setActiveSection('emoji-messenger'); playMagicSound('chime'); }}
+                    style={{ 
+                        padding: '15px 30px', 
+                        borderRadius: '20px', 
+                        border: 'none', 
+                        background: activeSection === 'emoji-messenger' ? 'linear-gradient(135deg, #ec4899, #f43f5e)' : 'var(--glass-bg)',
+                        color: activeSection === 'emoji-messenger' ? '#fff' : 'var(--text-secondary)',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        boxShadow: activeSection === 'emoji-messenger' ? '0 0 20px rgba(236,72,153,0.4)' : 'none'
+                    }}
+                >
+                    🤝 Junior Messenger
                 </button>
             </div>
 
@@ -750,7 +1155,23 @@ const JuniorActivityCenter = () => {
 
             <div className="center-content glass-panel magic-reveal stagger-3" style={{ padding: '40px', borderRadius: '40px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(20px)', minHeight: '60vh', color: 'var(--text-primary)' }}>
                 {activeSection === 'magic-kids' && (
-                    <MagicKidsWorld />
+                    <JuniorMagicStudio />
+                )}
+
+                {activeSection === 'fun-park' && (
+                    <JuniorFunPark />
+                )}
+
+                {activeSection === 'animal-safari' && (
+                    <AnimalSoundSafari />
+                )}
+
+                {activeSection === 'shape-matcher' && (
+                    <ShapeMatcher />
+                )}
+
+                {activeSection === 'bubble-alphabet' && (
+                    <BubblePopAlphabet />
                 )}
 
                 {activeSection === 'drawing' && (
@@ -772,11 +1193,14 @@ const JuniorActivityCenter = () => {
                     </div>
                 )}
 
+                {activeSection === 'discovery' && <JuniorDiscoveryHub />}
+                {activeSection === 'cartoon-movie' && <CartoonFlashcards />}
+
                 {activeSection === 'story' && story && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) 1fr', gap: '40px', alignItems: 'center' }}>
-                        <img 
-                            src={story.image} 
-                            alt={story.title} 
+                        <img
+                            src={story.image}
+                            alt={story.title}
                             style={{ width: '100%', borderRadius: '25px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}
                         />
                         <div>
@@ -784,11 +1208,11 @@ const JuniorActivityCenter = () => {
                             <p style={{ fontSize: '1.2rem', lineHeight: '1.8', color: 'var(--text-primary)', background: 'var(--glass-bg)', padding: '25px', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
                                 {storyResult || story.content}
                             </p>
-                            
+
                             {!storyResult ? (
                                 <div style={{ marginTop: '25px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                     {story.choices.map(c => (
-                                        <button 
+                                        <button
                                             key={c.id}
                                             onClick={() => setStoryResult(c.result)}
                                             style={{ padding: '20px', borderRadius: '15px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontWeight: 'bold', cursor: 'pointer' }}
@@ -801,12 +1225,12 @@ const JuniorActivityCenter = () => {
                                 <button onClick={() => setStoryResult(null)} style={{ marginTop: '20px', background: 'transparent', border: 'none', color: '#60a5fa', textDecoration: 'underline', cursor: 'pointer' }}>Read again?</button>
                             )}
 
-                            <button 
+                            <button
                                 onClick={() => setIsReading(!isReading)}
-                                style={{ 
-                                    marginTop: '25px', 
-                                    padding: '15px 40px', 
-                                    borderRadius: '20px', 
+                                style={{
+                                    marginTop: '25px',
+                                    padding: '15px 40px',
+                                    borderRadius: '20px',
                                     background: isReading ? '#f43f5e' : '#10b981',
                                     color: '#fff',
                                     border: 'none',
@@ -861,15 +1285,15 @@ const JuniorActivityCenter = () => {
                          </div>
                          <div style={{ display: 'flex', gap: '30px', justifyContent: 'center' }}>
                             {currentProblem.options.map((opt, i) => (
-                                <button 
+                                <button
                                     key={i}
                                     onClick={() => handleGameChoice(opt)}
                                     className="game-balloon"
-                                    style={{ 
-                                        width: '120px', 
-                                        height: '120px', 
-                                        borderRadius: '50%', 
-                                        border: 'none', 
+                                    style={{
+                                        width: '120px',
+                                        height: '120px',
+                                        borderRadius: '50%',
+                                        border: 'none',
                                         background: ['#f43f5e', '#3b82f6', '#fbbf24'][i % 3],
                                         color: '#fff',
                                         fontSize: '2rem',
@@ -897,13 +1321,13 @@ const JuniorActivityCenter = () => {
                          <h2 style={{ marginBottom: '30px', color: '#8b5cf6' }}>Magical Phonics Board 🅰️</h2>
                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '15px', marginBottom: '40px' }}>
                             {phonics.map((p, i) => (
-                                <button 
+                                <button
                                     key={i}
                                     onClick={() => { setSelectedPhonic(p); speak(p.letter); }}
-                                    style={{ 
-                                        padding: '25px', 
-                                        borderRadius: '20px', 
-                                        border: '1px solid rgba(255,255,255,0.1)', 
+                                    style={{
+                                        padding: '25px',
+                                        borderRadius: '20px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
                                         background: selectedPhonic?.letter === p.letter ? p.color : 'rgba(255,255,255,0.05)',
                                         color: '#fff',
                                         fontSize: '2.5rem',
@@ -916,14 +1340,14 @@ const JuniorActivityCenter = () => {
                                 </button>
                             ))}
                          </div>
-                         
+
                          {selectedPhonic && (
                              <div className="card-vibe" style={{ display: 'inline-flex', alignItems: 'center', gap: '30px', padding: '40px', background: `${selectedPhonic.color}20`, borderRadius: '30px', border: `2px solid ${selectedPhonic.color}` }}>
                                 <div style={{ fontSize: '8rem', animation: 'bounce 2s infinite' }}>{selectedPhonic.emoji}</div>
                                 <div style={{ textAlign: 'left' }}>
                                     <div style={{ fontSize: '1.2rem', opacity: 0.7 }}>{selectedPhonic.letter} is for...</div>
                                     <div style={{ fontSize: '4rem', fontWeight: '900', color: selectedPhonic.color }}>{selectedPhonic.word}!</div>
-                                    <button 
+                                    <button
                                         style={{ marginTop: '15px', padding: '10px 25px', borderRadius: '15px', background: selectedPhonic.color, border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
                                         onClick={() => speak(selectedPhonic.word)}
                                     >
@@ -974,20 +1398,20 @@ const JuniorActivityCenter = () => {
                                 { color: '#8b5cf6', ani: '🐵', note: 'So' },
                                 { color: '#ec4899', ani: '🐸', note: 'La' }
                             ].map((k, i) => (
-                                <button 
+                                <button
                                     key={i}
                                     onClick={() => alert(`🎶 Playing ${k.note}! ${k.ani} says hello!`)}
                                     className="piano-key"
-                                    style={{ 
-                                        width: '80px', 
-                                        height: '100%', 
-                                        background: k.color, 
-                                        borderRadius: '0 0 20px 20px', 
-                                        border: 'none', 
-                                        display: 'flex', 
-                                        flexDirection: 'column', 
-                                        justifyContent: 'flex-end', 
-                                        paddingBottom: '30px', 
+                                    style={{
+                                        width: '80px',
+                                        height: '100%',
+                                        background: k.color,
+                                        borderRadius: '0 0 20px 20px',
+                                        border: 'none',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'flex-end',
+                                        paddingBottom: '30px',
                                         alignItems: 'center',
                                         cursor: 'pointer',
                                         transition: 'all 0.1s'
@@ -1005,7 +1429,7 @@ const JuniorActivityCenter = () => {
                     <div style={{ textAlign: 'center' }}>
                         <h2 style={{ marginBottom: '40px', color: '#f87171' }}>Recording My Day! 🎤📔</h2>
                         <div style={{ width: '200px', height: '200px', borderRadius: '50%', background: recState === 'recording' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px', border: `4px solid ${recState === 'recording' ? '#ef4444' : 'rgba(255,255,255,0.1)'}`, transition: 'all 0.3s' }}>
-                            <button 
+                            <button
                                 onClick={() => {
                                     if (recState === 'idle') setRecState('recording');
                                     else {
@@ -1015,13 +1439,13 @@ const JuniorActivityCenter = () => {
                                         setTimeout(() => setRecState('idle'), 2000);
                                     }
                                 }}
-                                style={{ 
-                                    width: '120px', 
-                                    height: '120px', 
-                                    borderRadius: '50%', 
-                                    background: recState === 'recording' ? '#ef4444' : '#fff', 
-                                    border: 'none', 
-                                    fontSize: '3rem', 
+                                style={{
+                                    width: '120px',
+                                    height: '120px',
+                                    borderRadius: '50%',
+                                    background: recState === 'recording' ? '#ef4444' : '#fff',
+                                    border: 'none',
+                                    fontSize: '3rem',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -2761,6 +3185,36 @@ const JuniorActivityCenter = () => {
                         <p style={{ marginTop: '40px', color: '#94a3b8' }}>Complete your home tasks to earn more magic stickers!</p>
                     </div>
                 )}
+
+                {activeSection === 'discovery' && (
+                    <JuniorDiscoveryHub />
+                )}
+
+                {activeSection === 'cartoon-world' && (
+                    <JuniorCartoonWorld />
+                )}
+
+                {activeSection === 'cartoon-movie' && (
+                    <CartoonFlashcards />
+                )}
+
+                {activeSection === 'likhna' && (
+                    <MagicWritingTracer onWatchMovie={() => setActiveSection('cartoon-movie')} />
+                )}
+
+                {activeSection === 'ai-storyland' && <AIStoryland />}
+                {activeSection === 'pet-buddy' && <PetBuddy />}
+                {activeSection === 'alphabet-train' && <AlphabetTrain />}
+                {activeSection === 'space-explorer' && <SpaceExplorer />}
+                {activeSection === 'magic-color-book' && <MagicColorBook />}
+                {activeSection === 'bus-journey' && <BusJourney />}
+                {activeSection === 'habit-hero' && <HabitHero />}
+                {activeSection === 'bal-yoga' && <BalYoga />}
+                {activeSection === 'star-awards' && <StarAwards />}
+                {activeSection === 'mood-meter' && <MoodMeter />}
+                {activeSection === 'magic-note' && <MagicNote />}
+                {activeSection === 'magic-calendar' && <MagicCalendar />}
+                {activeSection === 'emoji-messenger' && <EmojiMessenger />}
             </div>
             {/* Confetti Celebration Overlay */}
             {showConfetti && (

@@ -37,47 +37,56 @@ export const maskEmail = (email) => {
  * Generates a stable Device DNA fingerprint (Hardware ID)
  */
 export const getDeviceFingerprint = () => {
-    const nav = window.navigator;
-    const screen = window.screen;
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    
-    // Canvas Fingerprinting
-    const ctx = canvas.getContext('2d');
-    ctx.textBaseline = "top";
-    ctx.font = "14px 'Arial'";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = "#f60";
-    ctx.fillRect(125,1,62,20);
-    ctx.fillStyle = "#069";
-    ctx.fillText("GuardianSuite2.0", 2, 15);
-    ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
-    ctx.fillText("GuardianSuite2.0", 4, 17);
-    const canvasData = canvas.toDataURL();
+    try {
+        const nav = window.navigator;
+        const screen = window.screen;
+        
+        // Canvas Fingerprinting (2D)
+        const canvas2d = document.createElement('canvas');
+        const ctx = canvas2d.getContext('2d');
+        let canvasData = 'unknown';
+        if (ctx) {
+            ctx.textBaseline = "top";
+            ctx.font = "14px 'Arial'";
+            ctx.textBaseline = "alphabetic";
+            ctx.fillStyle = "#f60";
+            ctx.fillRect(125,1,62,20);
+            ctx.fillStyle = "#069";
+            ctx.fillText("GuardianSuite2.0", 2, 15);
+            ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+            ctx.fillText("GuardianSuite2.0", 4, 17);
+            canvasData = canvas2d.toDataURL();
+        }
 
-    // WebGL Vendor Info
-    const debugInfo = gl?.getExtension('WEBGL_debug_renderer_info');
-    const renderer = gl?.getParameter(debugInfo?.UNMASKED_RENDERER_WEBGL) || 'unknown';
-    const vendor = gl?.getParameter(debugInfo?.UNMASKED_VENDOR_WEBGL) || 'unknown';
+        // WebGL Fingerprinting (Separate Canvas)
+        const canvasGL = document.createElement('canvas');
+        const gl = canvasGL.getContext('webgl') || canvasGL.getContext('experimental-webgl');
+        const debugInfo = gl?.getExtension('WEBGL_debug_renderer_info');
+        const renderer = gl?.getParameter(debugInfo?.UNMASKED_RENDERER_WEBGL) || 'unknown';
+        const vendor = gl?.getParameter(debugInfo?.UNMASKED_VENDOR_WEBGL) || 'unknown';
 
-    const raw = [
-        nav.userAgent,
-        nav.language,
-        nav.platform,
-        screen.colorDepth,
-        screen.width,
-        screen.height,
-        nav.hardwareConcurrency,
-        renderer,
-        vendor,
-        canvasData.length
-    ].join('|');
-    
-    // Simple hash function
-    let hash = 0;
-    for (let i = 0; i < raw.length; i++) {
-        hash = ((hash << 5) - hash) + raw.charCodeAt(i);
-        hash |= 0;
+        const raw = [
+            nav.userAgent,
+            nav.language,
+            nav.platform,
+            screen.colorDepth,
+            screen.width,
+            screen.height,
+            nav.hardwareConcurrency,
+            renderer,
+            vendor,
+            canvasData.length
+        ].join('|');
+        
+        // Simple hash function
+        let hash = 0;
+        for (let i = 0; i < raw.length; i++) {
+            hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+            hash |= 0;
+        }
+        return `DNA-${Math.abs(hash).toString(36).toUpperCase()}`;
+    } catch (e) {
+        console.warn("Fingerprinting failed, using fallback.", e);
+        return `DNA-FALLBACK-${Date.now().toString(36).toUpperCase()}`;
     }
-    return `DNA-${Math.abs(hash).toString(36).toUpperCase()}`;
 };

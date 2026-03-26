@@ -1,9 +1,9 @@
 .alumni-section {
     padding: 100px 20px;
-    background: #020617; /* Darker background for better orb visibility */
+    background: var(--bg-primary);
     text-align: center;
     position: relative;
-    overflow: hidden; /* Contain the orbs */
+    overflow: hidden;
 }
 
 /* Floating Background Orbs */
@@ -105,12 +105,12 @@
 
 .alumni-card {
     width: 100%;
-    max-width: 500px; /* Bigger card for carousel focus */
+    max-width: 500px;
     padding: 40px;
     border-radius: 25px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--glass-bg);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
     position: relative;
     transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.6s ease;
     transform-style: preserve-3d;
@@ -139,7 +139,7 @@
 .alumni-avatar {
     width: 150px;
     height: 150px;
-    background: #0f172a;
+    background: var(--bg-secondary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -201,10 +201,7 @@
 .alumni-name {
     font-size: 1.5rem;
     font-weight: 800;
-    background: linear-gradient(to right, #fff, #94a3b8);
-    -webkit-background-clip: text;
-    background-clip: text; /* Added standard property */
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
     margin-bottom: 5px;
 }
 
@@ -225,7 +222,7 @@
 
 .alumni-quote {
     font-style: italic;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-secondary);
     line-height: 1.6;
     font-size: 0.9rem;
     position: relative;

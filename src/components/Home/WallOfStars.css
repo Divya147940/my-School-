@@ -12,7 +12,8 @@
     transform: translate(-50%, -50%);
     font-size: 15rem;
     font-weight: 900;
-    color: rgba(255, 255, 255, 0.02);
+    color: var(--glass-glow);
+    opacity: 0.1;
     letter-spacing: 20px;
     z-index: 0;
     pointer-events: none;
@@ -54,15 +55,15 @@
     text-align: center;
     position: relative;
     transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
 }
 
 .star-card:hover {
     transform: translateY(-20px) scale(1.02);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--accent);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.3), 0 0 20px rgba(var(--accent), 0.2);
+    background: var(--bg-secondary);
+    border-color: #fbbf24;
+    box-shadow: var(--shadow-premium);
 }
 
 .star-rank-badge {
@@ -82,7 +83,7 @@
     width: 100px;
     height: 100px;
     margin: 0 auto 25px auto;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--glass-glow);
     border-radius: 50%;
     display: flex;
     align-items: center;

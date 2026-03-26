@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1774473590619,
+    "timestamp": "2026-03-25T21:19:50.619Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "::1",
+    "details": "Invalid or expired OTP: 123456"
+  },
+  {
+    "id": 1774473579916,
+    "timestamp": "2026-03-25T21:19:39.916Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "::1",
+    "details": "Invalid or expired OTP: 123456"
+  },
+  {
+    "id": 1774473572691,
+    "timestamp": "2026-03-25T21:19:32.692Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "::1",
+    "details": "Invalid or expired OTP: 123456"
+  },
+  {
+    "id": 1774473549542,
+    "timestamp": "2026-03-25T21:19:09.542Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "::1",
+    "details": "Invalid or expired OTP: 123456"
+  },
+  {
+    "id": 1774473414500,
+    "timestamp": "2026-03-25T21:16:54.500Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "::1",
+    "details": "Invalid or expired OTP: 123456"
+  },
+  {
+    "id": 1774473381413,
+    "timestamp": "2026-03-25T21:16:21.414Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "::1",
+    "details": "Invalid or expired OTP: 123456"
+  }
+]
