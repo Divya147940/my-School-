@@ -141,11 +141,12 @@ const Gallery = () => {
                         className={`slider-slide ${index === current ? 'active' : ''}`}
                     >
                         <div className="slider-image-container">
-                            <img
-                                src={slide.src}
-                                alt={slide.title.join(' ')}
-                                className="slider-image"
-                            />
+                                <img
+                                    src={slide.src}
+                                    alt={slide.title.join(' ')}
+                                    className="slider-image"
+                                    style={{ objectPosition: slide.position || 'center' }}
+                                />
                             <div className="slider-overlay-gradient"></div>
                         </div>
 

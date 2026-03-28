@@ -269,25 +269,26 @@
 @media (max-width: 1024px) {
     .upper-bar { display: block; padding: 10px 0; }
     .upper-container { 
-        flex-direction: column; 
-        gap: 15px; 
-        padding: 0 15px; 
+        flex-direction: row; 
+        justify-content: space-between;
+        gap: 10px; 
+        padding: 0 10px; 
         align-items: center; 
     }
     .news-ticker { 
-        width: 100%; 
-        justify-content: center; 
+        width: auto; 
+        justify-content: flex-start; 
         font-size: 10px; 
-        border-bottom: 1px solid var(--glass-border);
-        padding-bottom: 10px;
+        border-bottom: none;
+        padding-bottom: 0;
     }
     .upper-links { 
         display: flex; 
-        flex-direction: column !important;
+        flex-direction: row !important;
         align-items: center;
-        gap: 15px; 
-        width: 100%;
-        padding: 10px 0;
+        gap: 10px; 
+        width: auto;
+        padding: 0;
     }
     .top-utils { 
         border-right: none; 
@@ -296,14 +297,8 @@
         justify-content: center; 
         gap: 15px;
     }
-    .social-mini { 
-        display: flex; 
-        flex-wrap: wrap;
-        justify-content: center;
-        border-left: none; 
-        padding-left: 0; 
-        margin-left: 0; 
-        gap: 20px;
+    .social-mini, .upper-link { 
+        display: none !important; /* Hide non-essential links on small mobile to keep ticker and utils in one row */
     }
 }
 
@@ -320,26 +315,38 @@
     .brand-elite {
         width: 100%;
         justify-content: center;
-        text-align: center;
+        text-align: left;
         flex-direction: row;
-        gap: 15px;
+        gap: 12px;
+        align-items: center;
     }
 
-    .brand-title { font-size: 22px; }
-    .brand-subtitle { font-size: 16px; }
+    .brand-title { font-size: 16px; width: fit-content; white-space: nowrap; }
+    .brand-subtitle { font-size: 12px; white-space: nowrap; }
+    .brand-motto { display: none; } /* Hide motto on small screens to save space */
 
     .contact-nodes {
-        display: grid;
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: row;
         width: 100%;
-        gap: 15px;
+        gap: 8px;
+        justify-content: space-between;
+        padding-top: 10px;
+        border-top: 1px solid var(--glass-border);
     }
 
     .contact-node {
-        width: 100%;
-        justify-content: center;
+        flex: 1;
+        width: auto;
+        justify-content: flex-start;
         padding-right: 0;
+        gap: 8px;
+        border-right: none;
     }
+
+    .node-icon { width: 14px; height: 14px; }
+    .detail-label { font-size: 8px; }
+    .detail-value { font-size: 9px; word-break: break-all; }
 }
 
 @media (max-width: 600px) {
@@ -351,11 +358,14 @@
     
     .upper-link { font-size: 10px; }
     
-    .brand-title { font-size: 18px; }
-    .brand-subtitle { font-size: 14px; }
-    .logo-main { width: 50px; height: 50px; }
+    .brand-title { font-size: 14px; }
+    .brand-subtitle { font-size: 11px; }
+    .logo-main { width: 40px; height: 40px; }
+    .logo-box { padding: 4px; }
 }
 
 @media (max-width: 400px) {
-    .brand-elite { flex-direction: column; text-align: center; }
+    .brand-elite { flex-direction: row; gap: 8px; }
+    .brand-title { font-size: 12px; }
+    .brand-subtitle { font-size: 10px; }
 }

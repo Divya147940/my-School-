@@ -19,7 +19,7 @@ const TopBar = () => {
                     <div className="news-ticker">
                         <span className="news-label">{language === 'hi' ? 'ताज़ा' : 'LATEST'}</span>
                         <p className="news-text full-ticker">{language === 'hi' ? 'सत्र 2024-25 के लिए प्रवेश खुले हैं • 1998 से शिक्षा में उत्कृष्टता' : 'Admissions Open for Session 2024-25 • Excellence in Education Since 1998'}</p>
-                        <p className="news-text mobile-ticker" style={{ display: 'none' }}>{language === 'hi' ? 'प्रवेश 2024-25 खुले हैं' : 'Admissions 24-25 Open'}</p>
+                        <p className="news-text mobile-ticker">{language === 'hi' ? 'प्रवेश 2024-25 खुले हैं' : 'Admissions 24-25 Open'}</p>
                     </div>
                     <div className="upper-links">
                         <div className="top-utils">

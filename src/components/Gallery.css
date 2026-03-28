@@ -301,7 +301,8 @@
 
 @media (max-width: 768px) {
     .hero-slider {
-        height: 700px;
+        height: 65vh; /* Normal visible height for mobile */
+        min-height: 450px;
     }
 
     .slider-content-wrapper {
@@ -352,22 +353,35 @@
 
 @media (max-width: 480px) {
     .hero-slider {
-        height: 80vh; /* Better for mobile devices */
+        height: 65vh;
+        min-height: 420px;
     }
 
     .slider-title {
-        font-size: 28px;
-        margin-bottom: 12px;
+        font-size: 26px;
+        margin-bottom: 10px;
+        letter-spacing: -0.5px;
     }
 
     .slider-badge {
-        font-size: 11px;
-        padding: 5px 12px;
-        margin-bottom: 15px;
+        padding: 4px 12px;
+        font-size: 9px;
+        margin-bottom: 12px;
     }
 
     .slider-subtitle {
-        font-size: 15px;
-        margin-bottom: 25px;
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.4;
     }
+
+    .slider-cta.primary {
+        animation: pulse-button 2s infinite;
+    }
+}
+
+@keyframes pulse-button {
+    0% { transform: scale(1); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4); }
+    50% { transform: scale(1.02); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.6); }
+    100% { transform: scale(1); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4); }
 }
