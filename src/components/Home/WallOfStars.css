@@ -23,7 +23,7 @@
 .section-title-gold {
     text-align: center;
     font-size: 2.5rem;
-    font-weight: 800;
+    font-weight: 700;
     margin-bottom: 60px;
     background: linear-gradient(to right, #fbbf24, #f59e0b);
     -webkit-background-clip: text;
@@ -44,8 +44,8 @@
 
 .stars-track {
     display: flex;
-    gap: 40px;
-    padding: 0 5vw;
+    gap: 30px;
+    padding: 0 10px; /* Tighter for mobile feel */
 }
 
 .star-card {
@@ -111,7 +111,7 @@
 
 .star-name {
     font-size: 1.5rem;
-    font-weight: 800;
+    font-weight: 700;
     margin: 0 0 5px 0;
     color: var(--text-primary);
 }

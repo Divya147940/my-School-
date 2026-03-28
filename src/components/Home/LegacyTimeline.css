@@ -83,8 +83,8 @@
 }
 
 .timeline-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
 }
 
 .timeline-img-wrapper {
@@ -169,9 +169,38 @@
     box-shadow: 0 0 0 4px var(--glass-border);
 }
 
-@media (max-width: 900px) {
-    .timeline-item, .timeline-item.right { flex-direction: column; text-align: center; }
-    .timeline-marker { position: relative; left: 0; transform: none; margin-bottom: 30px; }
-    .timeline-line { left: 20px; transform: none; }
-    .timeline-card-side, .timeline-text-side { padding: 20px; width: 100%; }
+@media (max-width: 1024px) {
+    .timeline-item, .timeline-item.right { 
+        flex-direction: column !important; 
+        text-align: center !important; 
+        margin-bottom: 60px;
+    }
+    .timeline-marker { 
+        position: relative; 
+        left: auto; 
+        transform: none; 
+        margin: 20px 0; 
+        z-index: 10;
+    }
+    .timeline-line { 
+        display: none; /* Hide line when stacked to avoid clutter */
+    }
+    .timeline-card-side, .timeline-text-side { 
+        padding: 0; 
+        width: 100% !important;
+        flex: none;
+    }
+    .hindi-content {
+        margin-top: 15px;
+        padding: 20px;
+    }
+    .v3-card-side {
+        order: 1;
+    }
+    .v3-marker {
+        order: 2;
+    }
+    .v3-text-side {
+        order: 3;
+    }
 }

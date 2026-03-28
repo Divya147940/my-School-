@@ -1,4 +1,5 @@
 import { getFaceDescriptorFromBase64, parseDescriptor, compareFaces } from './faceApiUtils';
+import { API_URL } from '../config';
 
 const STORAGE_KEY = 'NSGI_MOCK_DATA';
 
@@ -1198,7 +1199,7 @@ export const mockApi = {
 
     // Save directly to real Database Backend via API
     try {
-      await fetch('http://localhost:5001/api/faculty', {
+      await fetch(`${API_URL}/api/faculty`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1275,7 +1276,7 @@ export const mockApi = {
 
     // Secure Sync to Backend
     try {
-      await fetch('http://localhost:5001/api/admissions', {
+      await fetch(`${API_URL}/api/admissions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1388,7 +1389,7 @@ export const mockApi = {
     // Cross-Origin/Tab Fallback: If not in localStorage, check real DB
     if (!faculty) {
       try {
-        const resp = await fetch(`http://localhost:5001/api/faculty/search/${id.trim()}`);
+        const resp = await fetch(`${API_URL}/api/faculty/search/${id.trim()}`);
         const dbRef = await resp.json();
         if (dbRef) {
           faculty = {
@@ -1448,7 +1449,7 @@ export const mockApi = {
     // Cross-Origin/Tab Fallback: If not in localStorage, check real DB
     if (!student) {
       try {
-        const resp = await fetch(`http://localhost:5001/api/students/search/${id.trim()}`);
+        const resp = await fetch(`${API_URL}/api/students/search/${id.trim()}`);
         const dbRef = await resp.json();
         if (dbRef) {
           student = {

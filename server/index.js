@@ -118,7 +118,7 @@ const checkIPJail = (req, res, next) => {
 
 app.use(checkIPJail); // Apply jail check early
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5177'],
+    origin: true, // Auto-reflect origin (Required for credentials + multi-device)
     credentials: true
 }));
 
@@ -818,6 +818,6 @@ app.post('/api/admin/run-backup', verifyToken, checkRole(['Admin']), async (req,
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on all interfaces at port ${PORT}`);
 });

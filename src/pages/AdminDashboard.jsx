@@ -30,6 +30,7 @@ import NotificationCenter from '../components/Common/NotificationCenter';
 import CommunicationPortal from '../components/Communication/CommunicationPortal';
 import SecurityDashboard from '../components/Admin/SecurityDashboard';
 import SecurityPinModal from '../components/Common/SecurityPinModal';
+import { API_URL } from '../config';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -56,7 +57,7 @@ const AdminDashboard = () => {
 
   const fetchBackupHistory = async () => {
     try {
-      const res = await secureApi('http://localhost:5001/api/admin/backup-history');
+      const res = await secureApi(`${API_URL}/api/admin/backup-history`);
       if (res.ok) {
         const data = await res.json();
         setBackupHistory(data);
@@ -66,7 +67,7 @@ const AdminDashboard = () => {
 
   const fetchSecurityLogs = async () => {
     try {
-      const res = await secureApi('http://localhost:5001/api/admin/security-logs');
+      const res = await secureApi(`${API_URL}/api/admin/security-logs`);
       if (res.ok) {
         const data = await res.json();
         setSecurityLogs(data);
@@ -279,7 +280,7 @@ const AdminDashboard = () => {
                         setIsBackingUp(true);
                         addToast("Triggering server-side backup...", "info");
                         try {
-                          const res = await secureApi('http://localhost:5001/api/admin/run-backup', { method: 'POST' });
+                          const res = await secureApi(`${API_URL}/api/admin/run-backup`, { method: 'POST' });
                           const result = await res.json();
                           if (result.status === 'success') {
                             addToast("Cloud Backup Success!", "success");

@@ -16,7 +16,7 @@
     color: white;
     padding: 8px 20px;
     border-radius: 30px;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -235,15 +235,17 @@
 }
 @media (max-width: 480px) {
     .student-image-container {
-        width: 220px;
-        height: 220px;
+        width: 280px; /* Larger for mobile */
+        height: 280px;
     }
     .student-name {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
     .student-spotlight-wrapper {
-        padding: 25px 15px;
-        margin: 20px 10px;
-        border-radius: 24px;
+        padding: 40px 15px;
+        margin: 20px 0; /* Full width edge to edge */
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
     }
 }

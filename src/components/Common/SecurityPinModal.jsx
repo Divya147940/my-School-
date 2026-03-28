@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../../config';
 import './SecurityPinModal.css';
 
 /**
@@ -43,7 +44,7 @@ const SecurityPinModal = ({ isOpen, onClose, onVerified, actionName = "this acti
 
         try {
             // SYNC WITH BACKEND: Verify PIN
-            const response = await fetch('http://localhost:5001/api/security/verify-pin', {
+            const response = await fetch(`${API_URL}/api/security/verify-pin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ pin: fullPin })

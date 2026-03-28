@@ -55,7 +55,7 @@ const IdentityLock = () => {
                 setRiskScore(prev => prev + 1);
                 
                 // --- SYNC STRIKE TO BACKEND ---
-                fetch('http://localhost:5001/api/security/report-strike', {
+                fetch(`${API_URL}/api/security/report-strike`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -80,7 +80,7 @@ const IdentityLock = () => {
                 mockApi.logAudit('DEBUGGER_DETECTION', `Debugger trap triggered. Execution delayed by ${Math.round(endTime - startTime)}ms`, user?.role);
                 setRiskScore(prev => prev + 1);
                 
-                fetch('http://localhost:5001/api/security/report-strike', {
+                fetch(`${API_URL}/api/security/report-strike`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

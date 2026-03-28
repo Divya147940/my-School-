@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
 import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config';
 import './SecurityDashboard.css';
 
 const SecurityDashboard = () => {
@@ -12,7 +13,7 @@ const SecurityDashboard = () => {
     const refreshData = async () => {
         try {
             // Fetch from Backend
-            const res = await secureApi('http://localhost:5001/api/admin/security-logs');
+            const res = await secureApi(`${API_URL}/api/admin/security-logs`);
             if (res.ok) {
                 const logs = await res.json();
                 setAuditLogs(logs.slice(0, 50));
@@ -62,8 +63,6 @@ const SecurityDashboard = () => {
             default: return '#10b981';
         }
     };
-
-    const forensicLogs = auditLogs.filter(l => ['SECURITY_FRAUD', 'GPS_WARP', 'SECURITY_REVOCATION'].includes(l.type));
 
     return (
         <div className="security-dashboard-container">

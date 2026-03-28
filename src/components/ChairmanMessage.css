@@ -61,7 +61,7 @@
 
 .chairman-card-title {
     font-size: 32px;
-    font-weight: 800;
+    font-weight: 700;
     color: #b33921; /* Reddish color for heading */
     margin: 0 0 20px 0;
     font-family: 'Outfit', sans-serif;
@@ -94,7 +94,7 @@
     color: #ffffff;
     border-radius: 50px;
     font-size: 14px;
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
     text-decoration: none;
     transition: all 0.3s ease;
@@ -134,5 +134,24 @@
     .chairman-card-btn {
         width: 100%;
         text-align: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .chairman-section {
+        padding: 40px 0; /* Remove side padding for full width feel */
+    }
+
+    .chairman-card {
+        padding: 40px 15px;
+        margin: 0;
+        border-left: none;
+        border-top: 4px solid #b33921;
+        border-radius: 0; /* Edge to edge */
+    }
+
+    .chairman-image-circle {
+        width: 220px;
+        height: 220px;
     }
 }

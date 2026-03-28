@@ -7,6 +7,7 @@ import { useToast } from '../components/Common/Toaster';
 import { useNavigate } from 'react-router-dom';
 import useScrollReveal from '../hooks/useScrollReveal';
 import { getDeviceFingerprint } from '../utils/securityUtils';
+import { API_URL } from '../config';
 import './Login.css';
 
 const portals = [
@@ -265,7 +266,7 @@ const Login = () => {
                                 setIsScanning(false);
                                 
                                 try {
-                                    const reqResp = await fetch('http://localhost:5001/api/auth/request-otp', {
+                                    const reqResp = await fetch(`${API_URL}/api/auth/request-otp`, {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ userId: matchResult.user.id, role: activePortal.type })
@@ -317,7 +318,7 @@ const Login = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5001/api/auth/verify-otp', {
+            const response = await fetch(`${API_URL}/api/auth/verify-otp`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -374,7 +375,7 @@ const Login = () => {
         const userId = portal.type === 'Admin' ? 'ADM-001' : portal.type === 'Emergency' ? 'ADM-001' : 'PAR-001';
         const role = portal.type === 'Emergency' ? 'Admin' : portal.type;
         
-        const response = await fetch('http://localhost:5001/api/auth/request-otp', {
+        const response = await fetch(`${API_URL}/api/auth/request-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, role })
@@ -395,7 +396,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/auth/login', {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

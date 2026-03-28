@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config';
 import './Admissions.css';
 import useScrollReveal from '../hooks/useScrollReveal';
 import useSEO from '../hooks/useSEO';
@@ -72,7 +73,7 @@ function Admissions() {
             console.warn("🚨 BOT DETECTED: Honeypot field filled.");
             addToast("Your submission has been flagged. Please try again or contact support.", "error");
             // Sync bot strike to backend
-            fetch('http://localhost:5001/api/security/report-strike', {
+            await fetch(`${API_URL}/api/security/report-strike`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
