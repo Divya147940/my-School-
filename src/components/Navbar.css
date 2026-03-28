@@ -195,9 +195,12 @@
         top: 100%;
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        padding: 10px 0;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        padding: 20px 0;
+        border-bottom: 1px solid var(--glass-border);
     }
 
     .navbar-links.active {

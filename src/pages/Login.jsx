@@ -309,7 +309,7 @@ const Login = () => {
   const handleOTPVerify = async () => {
     const cleanOTP = otpValue.trim().replace(/\s/g, '');
     
-    if (cleanOTP.length === 6) {
+    if (cleanOTP.length >= 12) {
         if (!tempUser) {
             addToast("Session Error. Please try again.", "error");
             setShowOTP(false);
@@ -344,7 +344,7 @@ const Login = () => {
             addToast("Server Connection Error", "error");
         }
     } else {
-        addToast("Please enter a 6-digit code", "error");
+        addToast("Please enter a 12-35 character code", "error");
     }
   };
 
@@ -428,19 +428,19 @@ const Login = () => {
       
       {/* 2FA OTP MODAL */}
       {showOTP && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(30px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="glass-panel" style={{ background: '#020617', padding: '40px', borderRadius: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '1px solid #3b82f640', boxShadow: '0 0 80px rgba(59, 130, 246, 0.3)' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '20px' }}>🔐</div>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>SECURE LOGIN</h2>
-            <p style={{ color: '#94a3b8', marginBottom: '30px', fontSize: '0.9rem' }}>A security code has been sent to your registered device. Enter it to confirm your identity.</p>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(30px)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+          <div className="glass-panel" style={{ background: '#020617', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '40px', maxWidth: '450px', width: '95%', textAlign: 'center', border: '1px solid #3b82f640', boxShadow: '0 0 80px rgba(59, 130, 246, 0.3)' }}>
+            <div style={{ fontSize: 'clamp(2rem, 7vw, 3.5rem)', marginBottom: '15px' }}>🔐</div>
+            <h2 style={{ fontSize: 'clamp(1.4rem, 4.5vw, 1.8rem)', fontWeight: '950', color: '#fff', marginBottom: '8px' }}>SECURE LOGIN</h2>
+            <p style={{ color: '#94a3b8', marginBottom: '25px', fontSize: 'clamp(0.75rem, 2.2vw, 0.9rem)', lineHeight: '1.4' }}>A security code has been sent to your registered device. Enter it to confirm your identity.</p>
             
             <input 
               type="text" 
-              maxLength="6"
-              placeholder="0 0 0 0 0 0"
+              maxLength="35"
+              placeholder="ENTER 12-35 CHAR CODE"
               value={otpValue}
               onChange={(e) => setOtpValue(e.target.value)}
-              style={{ width: '100%', padding: '20px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid #3b82f660', color: '#fff', fontSize: '2rem', textAlign: 'center', letterSpacing: '10px', marginBottom: '30px', fontWeight: 'bold' }}
+              style={{ width: '100%', padding: 'clamp(10px, 3vw, 20px)', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid #3b82f660', color: '#fff', fontSize: 'clamp(1rem, 4vw, 1.2rem)', textAlign: 'center', letterSpacing: '2px', marginBottom: '30px', fontWeight: 'bold' }}
             />
 
             <button 
@@ -461,9 +461,9 @@ const Login = () => {
       )}
       {/* Recovery Modal */}
       {showRecover && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="glass-panel" style={{ background: 'var(--bg-secondary)', padding: '40px', borderRadius: '32px', maxWidth: '450px', width: '100%', textAlign: 'center', border: '1px solid var(--glass-border)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '15px' }}>{t('recoverTitle')}</h2>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+          <div className="glass-panel" style={{ background: 'var(--bg-secondary)', padding: 'clamp(15px, 4vw, 40px)', borderRadius: '32px', maxWidth: '450px', width: '95%', textAlign: 'center', border: '1px solid var(--glass-border)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <h2 style={{ fontSize: 'clamp(1.4rem, 4.5vw, 1.8rem)', fontWeight: '850', marginBottom: '12px' }}>{t('recoverTitle')}</h2>
             
             {!recoveredUser ? (
               <>
@@ -502,9 +502,9 @@ const Login = () => {
 
       {/* Biometric Login Modal */}
       {isBiometric && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="glass-panel" style={{ background: '#0f172a', padding: '40px', borderRadius: '40px', maxWidth: '500px', width: '100%', textAlign: 'center', border: '1px solid rgba(59, 130, 246, 0.3)', boxShadow: '0 0 50px rgba(59, 130, 246, 0.2)' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+          <div className="glass-panel" style={{ background: '#0f172a', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '40px', maxWidth: '500px', width: '95%', textAlign: 'center', border: '1px solid rgba(59, 130, 246, 0.3)', boxShadow: '0 0 50px rgba(59, 130, 246, 0.2)' }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>
                 {isScanning ? `🔍 ${scanProgress}% SCANNED` : `🔐 ${activePortal?.type} IDENTITY LATCH`}
             </h2>
             <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Enter your Unique ID and look into the camera.</p>
@@ -561,8 +561,8 @@ const Login = () => {
             )}
             
             <div className="scanner-viewport" style={{ 
-                width: '320px', 
-                height: '320px', 
+                width: 'clamp(200px, 70vw, 320px)', 
+                height: 'clamp(200px, 70vw, 320px)', 
                 margin: '0 auto 40px', 
                 borderRadius: '50%', 
                 border: '2px dashed rgba(255,255,255,0.15)',

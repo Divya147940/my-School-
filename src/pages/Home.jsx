@@ -15,6 +15,7 @@ import QuickInquiry from '../components/Home/QuickInquiry';
 import HomeInquirySection from '../components/Home/HomeInquirySection';
 import LegacyTimeline from '../components/Home/LegacyTimelineV3';
 import FacultyShowcase from '../components/Home/FacultyShowcase';
+import './Home.css';
 
 function Home() {
     const { t } = useLanguage();
@@ -27,7 +28,7 @@ function Home() {
 
     return (
         <div ref={sectionRef} className="home-page-wrapper">
-            <div className="reveal-on-scroll glass-panel" style={{ margin: '20px', overflow: 'hidden' }}>
+            <div className="reveal-on-scroll hero-container">
                 <Gallery />
             </div>
 
@@ -35,7 +36,7 @@ function Home() {
                 <StudentSpotlight />
             </div>
             
-            <div className="reveal-on-scroll delay-1 glass-panel" style={{ margin: '20px', padding: '20px' }}>
+            <div className="reveal-on-scroll delay-1 glass-panel home-section-container" style={{ padding: '20px' }}>
                 <ChairmanMessage />
             </div>
 

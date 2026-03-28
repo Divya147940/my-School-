@@ -26,8 +26,8 @@
 }
 
 .sidebar-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: clamp(1.05rem, 1.8vw, 1.5rem);
+  font-weight: 900;
   background: linear-gradient(to right, #f43f5e, #fb923c);
   -webkit-background-clip: text;
   background-clip: text;
@@ -138,7 +138,8 @@
 }
 
 .box-title {
-  font-size: 1.25rem;
+  font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+  font-weight: 850;
   margin-bottom: 25px;
   display: flex;
   align-items: center;
@@ -194,8 +195,25 @@
 
 @media (max-width: 768px) {
   .admin-dashboard { flex-direction: column; }
-  .admin-sidebar { width: 100%; height: auto; position: relative; padding: 15px; }
-  .nav-menu { display: flex; overflow-x: auto; gap: 10px; }
+  .admin-sidebar { width: 100%; height: auto; position: sticky; top: 0; padding: 15px; border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); z-index: 1000; }
+  .sidebar-header { margin-bottom: 15px; }
+  .nav-menu { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
+  .nav-item { margin-bottom: 0; flex-shrink: 0; }
+  .nav-link { padding: 10px 15px; white-space: nowrap; }
+  .nav-icon { margin-right: 8px; display: inline-block; }
+  .nav-text { display: inline-block; font-size: 0.85rem; }
+  
   .main-content { padding: 20px; }
   .content-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-right { width: 100%; justify-content: space-between; }
+  .search-trigger { flex-grow: 1; justify-content: center; }
+  .search-hint { display: none; }
+  
+  /* System Backup Grid Stacking */
+  .overview-content { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 480px) {
+  .admin-stats-grid { grid-template-columns: 1fr; }
+  .card-value { font-size: 1.5rem; }
 }

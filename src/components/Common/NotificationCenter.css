@@ -138,3 +138,10 @@
     font-weight: 700;
     cursor: pointer;
 }
+
+@media (max-width: 480px) {
+    .notification-sidebar { width: 100%; right: -100%; border-left: none; }
+    .notification-sidebar.open { right: 0; }
+    .notification-header { padding: 20px; }
+    .notification-list { padding: 15px; }
+}

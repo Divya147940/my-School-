@@ -42,8 +42,10 @@ import IdentityLock from './components/Common/IdentityLock';
 import './App.css';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import ScreenWatermark from './components/Common/ScreenWatermark';
+import { useScrollReveal } from './hooks/useScrollReveal';
 
 function App() {
+  useScrollReveal();
   return (
     <ErrorBoundary>
       <LanguageProvider>

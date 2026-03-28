@@ -18,7 +18,8 @@ const TopBar = () => {
                 <div className="upper-container">
                     <div className="news-ticker">
                         <span className="news-label">{language === 'hi' ? 'ताज़ा' : 'LATEST'}</span>
-                        <p className="news-text">{language === 'hi' ? 'सत्र 2024-25 के लिए प्रवेश खुले हैं • 1998 से शिक्षा में उत्कृष्टता' : 'Admissions Open for Session 2024-25 • Excellence in Education Since 1998'}</p>
+                        <p className="news-text full-ticker">{language === 'hi' ? 'सत्र 2024-25 के लिए प्रवेश खुले हैं • 1998 से शिक्षा में उत्कृष्टता' : 'Admissions Open for Session 2024-25 • Excellence in Education Since 1998'}</p>
+                        <p className="news-text mobile-ticker" style={{ display: 'none' }}>{language === 'hi' ? 'प्रवेश 2024-25 खुले हैं' : 'Admissions 24-25 Open'}</p>
                     </div>
                     <div className="upper-links">
                         <div className="top-utils">
@@ -43,15 +44,15 @@ const TopBar = () => {
             {/* Main Branding & Contact Bar */}
             <div className="topbar-main">
                 <div className="topbar-container">
-                    <div className="brand-elite">
-                        <div className="logo-box">
+                    <div className="brand-elite reveal-on-scroll">
+                        <div className="logo-box animate-float">
                             <img src={logo} alt="Shri Jageshwar Memorial Logo" className="logo-main" />
                         </div>
                         <div className="brand-info">
                             <h1 className="brand-title">SHRI JAGESHWAR MEMORIAL</h1>
                             <h2 className="brand-subtitle">EDUCATIONAL INSTITUTE</h2>
                             <div className="brand-motto">
-                                <span className="motto-dot"></span>
+                                <span className="motto-dot animate-pulse-soft"></span>
                                 <p className="motto-text">Shaping futures through quality education</p>
                             </div>
                         </div>

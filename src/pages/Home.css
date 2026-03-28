@@ -1,0 +1,36 @@
+.home-page-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.home-section-container {
+    margin: 20px;
+    overflow: hidden;
+}
+
+.home-section-container.hero-container {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .home-section-container {
+        margin: 15px 10px;
+        border-radius: 20px;
+    }
+    
+    .home-section-container.hero-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw !important;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw !important;
+        margin-right: -50vw !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+}

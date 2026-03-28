@@ -182,9 +182,10 @@
 
 .gal-lightbox img, .gal-lightbox video {
     max-width: 100%;
-    max-height: 80vh;
+    max-height: 85vh;
     border-radius: 20px;
     box-shadow: var(--shadow-premium);
+    object-fit: contain; /* Prevent stretch in full screen */
 }
 
 .gal-lightbox-close {

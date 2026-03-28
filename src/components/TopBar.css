@@ -47,6 +47,8 @@
     color: var(--text-primary);
 }
 
+.mobile-ticker { display: none !important; } /* Hidden by default on desktop */
+
 .upper-links {
     display: flex;
     align-items: center;
@@ -159,7 +161,7 @@
 
 .brand-title {
     font-size: 28px;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.5px;
     margin: 0;
@@ -265,23 +267,59 @@
 }
 
 @media (max-width: 1024px) {
-    .upper-bar { display: none; }
+    .upper-bar { display: block; padding: 5px 0; }
+    .upper-container { flex-direction: column; gap: 8px; padding: 0 15px; }
+    .news-ticker { width: 100%; justify-content: center; font-size: 10px; }
+    .upper-links { display: none; } /* Hide extra links on tablet/mobile to save space */
+    .top-utils { border-right: none; padding-right: 0; width: 100%; justify-content: center; }
+    .social-mini { display: none; }
+    
     .topbar-container {
         flex-direction: column;
-        text-align: center;
-        gap: 25px;
+        align-items: center;
+        gap: 30px;
     }
-    .brand-elite { flex-direction: column; gap: 10px; }
-    .brand-motto { justify-content: center; }
+    .brand-elite { 
+        flex-direction: row; /* Keep logo and text horizontal */
+        text-align: left;
+        gap: 15px; 
+    }
+    .brand-motto { justify-content: flex-start; }
     .contact-node { border-right: none; padding-right: 0; }
 }
 
 @media (max-width: 600px) {
+    .full-ticker { display: none !important; }
+    .mobile-ticker { display: block !important; }
+    
+    .topbar-main { padding: 15px 0; }
+    .topbar-container { padding: 0 15px; gap: 20px; }
+    
+    .brand-elite { gap: 12px; }
+    .logo-main { width: 50px; height: 50px; }
+    .brand-title { font-size: clamp(16px, 4vw, 22px); }
+    .brand-subtitle { font-size: clamp(12px, 3vw, 16px); }
+    .motto-text { font-size: 9px; letter-spacing: 1px; }
+
     .contact-nodes {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr;
         width: 100%;
-        gap: 15px;
+        gap: 12px;
     }
-    .contact-node { width: 100%; justify-content: center; }
-    .logo-main { width: 55px; height: 55px; }
+    .contact-node { 
+        width: 100%; 
+        justify-content: flex-start; 
+        background: rgba(255, 255, 255, 0.03);
+        padding: 10px 15px;
+        border-radius: 12px;
+        border: 1px solid var(--glass-border);
+    }
+    .node-icon { width: 18px; height: 18px; }
+    .detail-value { font-size: 12px; }
+}
+
+@media (max-width: 400px) {
+    .brand-elite { flex-direction: column; align-items: center; text-align: center; }
+    .brand-motto { justify-content: center; }
 }

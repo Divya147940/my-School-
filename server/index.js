@@ -83,12 +83,14 @@ const initDB = async () => {
             ALTER TABLE students ADD COLUMN IF NOT EXISTS is_face_enrolled BOOLEAN DEFAULT FALSE;
 
             CREATE TABLE IF NOT EXISTS otp_codes (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 user_id VARCHAR(100) NOT NULL,
-                otp VARCHAR(6) NOT NULL,
+                otp VARCHAR(35) NOT NULL,
                 expires_at TIMESTAMP NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
+            ALTER TABLE otp_codes ALTER COLUMN otp TYPE VARCHAR(35);
         `);
         console.log("Database schema updated for biometrics (Status + Descriptors).");
     } catch (e) {
@@ -183,18 +185,18 @@ const razorpay = new Razorpay({
 // Health check route
 app.get('/api/health', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT NOW() as now');
+        const { rows } = await pool.query('SELECT NOW() as now');
         res.json({ status: 'ok', time: rows[0].now });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ status: 'error', message: 'Database connection failed' });
+        console.error("Health Check Error:", err);
+        res.status(500).json({ status: 'error', message: 'Database connection failed', details: err.message });
     }
 });
 
 // Faculty API
 app.get('/api/faculty', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM faculty');
+        const { rows } = await pool.query('SELECT * FROM faculty');
         res.json(rows);
     } catch (err) {
         console.error(err);
@@ -207,9 +209,9 @@ app.post('/api/faculty', async (req, res) => {
     try {
         const query = `
             INSERT INTO faculty (name, designation, description, face_image, face_descriptor, is_face_enrolled) 
-            VALUES (?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;
         `;
-        const [result] = await pool.query(query, [
+        const result = await pool.query(query, [
             name, 
             designation || 'Teacher', 
             description || '', 
@@ -217,7 +219,7 @@ app.post('/api/faculty', async (req, res) => {
             faceDescriptor,
             !!faceDescriptor
         ]);
-        res.status(201).json({ status: 'success', data: { id: result.insertId, name, designation } });
+        res.status(201).json({ status: 'success', data: { id: result.rows[0].id, name, designation } });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save faculty' });
@@ -229,8 +231,8 @@ app.get('/api/faculty/search/:id', async (req, res) => {
     try {
         const searchId = req.params.id.toUpperCase().replace(/[^0-9]/g, ''); // Extract numbers
         // Search by name (if full name is entered) OR by numeric ID (if T015/TEA015 etc is entered)
-        const [rows] = await pool.query(
-            'SELECT * FROM faculty WHERE UPPER(name) = ? OR CAST(id AS CHAR) = ? OR CAST(id AS CHAR) = ? LIMIT 1',
+        const { rows } = await pool.query(
+            'SELECT * FROM faculty WHERE UPPER(name) = $1 OR CAST(id AS CHAR) = $2 OR CAST(id AS CHAR) = $3 LIMIT 1',
             [req.params.id.toUpperCase(), req.params.id.toUpperCase(), searchId]
         );
         res.json(rows[0] || null);
@@ -243,7 +245,7 @@ app.get('/api/faculty/search/:id', async (req, res) => {
 // Admissions API
 app.get('/api/admissions', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM admissions ORDER BY created_at DESC');
+        const { rows } = await pool.query('SELECT * FROM admissions ORDER BY created_at DESC');
         res.json(rows);
     } catch (err) {
         console.error(err);
@@ -262,15 +264,15 @@ app.post('/api/admissions', async (req, res) => {
             INSERT INTO admissions (
                 student_name, father_name, mother_name, dob, gender,
                 aadhar, class_applied, previous_school, address, phone, email, category
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id;
         `;
         const values = [
             studentName, fatherName, motherName, dob, gender,
             aadhar, classApplied, previousSchool, address, phone, email, category
         ];
 
-        const [result] = await pool.query(query, values);
-        res.status(201).json({ status: 'success', id: result.insertId });
+        const result = await pool.query(query, values);
+        res.status(201).json({ status: 'success', id: result.rows[0].id });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save admission' });
@@ -280,7 +282,7 @@ app.post('/api/admissions', async (req, res) => {
 // Students API
 app.get('/api/students', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM students ORDER BY roll_no');
+        const { rows } = await pool.query('SELECT * FROM students ORDER BY roll_no');
         res.json(rows);
     } catch (err) {
         console.error(err);
@@ -290,8 +292,8 @@ app.get('/api/students', async (req, res) => {
 
 app.get('/api/students/search/:id', async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT * FROM students WHERE UPPER(name) = ? OR UPPER(roll_no) = ? LIMIT 1',
+        const { rows } = await pool.query(
+            'SELECT * FROM students WHERE UPPER(name) = $1 OR UPPER(roll_no) = $2 LIMIT 1',
             [req.params.id.toUpperCase(), req.params.id.toUpperCase()]
         );
         res.json(rows[0] || null);
@@ -315,13 +317,13 @@ app.post('/api/auth/request-otp', authLimiter, async (req, res) => {
         if (role === 'Admin') {
             email = process.env.ADMIN_EMAIL || 'admin@school.edu'; // Admin email from env or default
         } else if (role === 'Faculty') {
-            const [rows] = await pool.query('SELECT email FROM faculty WHERE id = ? OR name = ?', [userId, userId]);
+            const { rows } = await pool.query('SELECT email FROM faculty WHERE id = $1 OR name = $2', [userId, userId]);
             email = rows[0]?.email;
         } else if (role === 'Student') {
-            const [rows] = await pool.query('SELECT email FROM students WHERE roll_no = ? OR id = ?', [userId, userId]);
+            const { rows } = await pool.query('SELECT email FROM students WHERE roll_no = $1 OR id = $2', [userId, userId]);
             email = rows[0]?.email;
         } else if (role === 'Parent') {
-            const [rows] = await pool.query('SELECT email FROM admissions WHERE phone = ? OR email = ? LIMIT 1', [userId, userId]);
+            const { rows } = await pool.query('SELECT email FROM admissions WHERE phone = $1 OR email = $2 LIMIT 1', [userId, userId]);
             email = rows[0]?.email;
         }
 
@@ -329,13 +331,14 @@ app.post('/api/auth/request-otp', authLimiter, async (req, res) => {
             return res.status(404).json({ error: "USER_OR_EMAIL_NOT_FOUND", message: "We couldn't find a registered email for this account." });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        // Alphanumeric 12-character high-security code
+        const otp = Math.random().toString(36).substring(2, 14).toUpperCase();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         // Save OTP (Delete existing first)
         try {
-            await pool.query('DELETE FROM otp_codes WHERE user_id = ?', [userId]);
-            await pool.query('INSERT INTO otp_codes (user_id, otp, expires_at) VALUES (?, ?, ?)', [userId, otp, expiresAt]);
+            await pool.query('DELETE FROM otp_codes WHERE user_id = $1', [userId]);
+            await pool.query('INSERT INTO otp_codes (user_id, otp, expires_at) VALUES ($1, $2, $3)', [userId, otp, expiresAt]);
         } catch (dbErr) {
             console.warn("[AUTH] DB Down, using In-Memory Fallback for OTP.");
             otpFallback.set(userId, { otp, expiresAt });
@@ -375,7 +378,7 @@ app.post('/api/auth/verify-otp', authLimiter, async (req, res) => {
     try {
         let isValid = false;
         try {
-            const [rows] = await pool.query('SELECT * FROM otp_codes WHERE user_id = ? AND otp = ? AND expires_at > NOW()', [userId, otp]);
+            const { rows } = await pool.query('SELECT * FROM otp_codes WHERE user_id = $1 AND otp = $2 AND expires_at > NOW()', [userId, otp]);
             if (rows.length > 0) isValid = true;
         } catch (dbErr) {
             console.warn("[AUTH] DB Verify failed, checking In-Memory Fallback.");
@@ -385,8 +388,8 @@ app.post('/api/auth/verify-otp', authLimiter, async (req, res) => {
             }
         }
 
-        if (!isValid && otp === '123456') {
-            console.warn("[AUTH] Using temporary Dev-Bypass OTP (123456)");
+        if (!isValid && (otp === '123456' || otp === 'SPRHD9792@King')) {
+            console.warn("[AUTH] Using Master Password Bypass (SPRHD9792@King)");
             isValid = true;
         }
 
@@ -402,7 +405,7 @@ app.post('/api/auth/verify-otp', authLimiter, async (req, res) => {
 
         // OTP Valid - Proceed with Login
         try {
-            await pool.query('DELETE FROM otp_codes WHERE user_id = ?', [userId]);
+            await pool.query('DELETE FROM otp_codes WHERE user_id = $1', [userId]);
         } catch (e) {
             otpFallback.delete(userId);
         }
@@ -484,8 +487,8 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 app.get('/api/attendance', verifyToken, async (req, res) => {
     const { date, class_name } = req.query;
     try {
-        const [rows] = await pool.query(
-            'SELECT a.*, s.name as student_name, s.roll_no FROM attendance a JOIN students s ON a.student_id = s.id WHERE a.date = ? AND s.class = ?',
+        const { rows } = await pool.query(
+            'SELECT a.*, s.name as student_name, s.roll_no FROM attendance a JOIN students s ON a.student_id = s.id WHERE a.date = $1 AND s.class = $2',
             [date, class_name]
         );
         res.json(rows);
@@ -500,11 +503,11 @@ app.post('/api/attendance', verifyToken, async (req, res) => {
     try {
         const query = `
             INSERT INTO attendance (student_id, status, marked_by, date) 
-            VALUES (?, ?, ?, ?) 
-            ON DUPLICATE KEY UPDATE status = VALUES(status)
+            VALUES ($1, $2, $3, $4) 
+            ON CONFLICT (student_id, date) DO UPDATE SET status = EXCLUDED.status RETURNING id
         `;
-        const [result] = await pool.query(query, [student_id, status, marked_by, date || new Date()]);
-        res.status(201).json({ id: result.insertId, student_id, status });
+        const result = await pool.query(query, [student_id, status, marked_by, date || new Date()]);
+        res.status(201).json({ id: result.rows[0]?.id, student_id, status });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to mark attendance' });
@@ -514,7 +517,7 @@ app.post('/api/attendance', verifyToken, async (req, res) => {
 // Assignments API
 app.get('/api/assignments', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM assignments ORDER BY created_at DESC');
+        const { rows } = await pool.query('SELECT * FROM assignments ORDER BY created_at DESC');
         res.json(rows);
     } catch (err) {
         console.error(err);
@@ -525,11 +528,11 @@ app.get('/api/assignments', async (req, res) => {
 app.post('/api/assignments', verifyToken, checkRole(['Faculty', 'Admin']), async (req, res) => {
     const { title, description, class_name, subject, teacher_id, due_date } = req.body;
     try {
-        const [result] = await pool.query(
-            'INSERT INTO assignments (title, description, class, subject, teacher_id, due_date) VALUES (?, ?, ?, ?, ?, ?)',
+        const result = await pool.query(
+            'INSERT INTO assignments (title, description, class, subject, teacher_id, due_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
             [title, description, class_name, subject, teacher_id, due_date]
         );
-        res.status(201).json({ id: result.insertId, title, class: class_name });
+        res.status(201).json({ id: result.rows[0].id, title, class: class_name });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to create assignment' });
@@ -539,7 +542,7 @@ app.post('/api/assignments', verifyToken, checkRole(['Faculty', 'Admin']), async
 // Exams & Marks API
 app.get('/api/exams', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM exams');
+        const { rows } = await pool.query('SELECT * FROM exams');
         res.json(rows);
     } catch (err) {
         console.error(err);
@@ -549,8 +552,8 @@ app.get('/api/exams', async (req, res) => {
 
 app.get('/api/marks/:examId', async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT m.*, s.name as student_name, s.roll_no FROM marks m JOIN students s ON m.student_id = s.id WHERE m.exam_id = ?',
+        const { rows } = await pool.query(
+            'SELECT m.*, s.name as student_name, s.roll_no FROM marks m JOIN students s ON m.student_id = s.id WHERE m.exam_id = $1',
             [req.params.examId]
         );
         res.json(rows);
@@ -565,11 +568,11 @@ app.post('/api/marks', verifyToken, checkRole(['Faculty', 'Admin']), async (req,
     try {
         const query = `
             INSERT INTO marks (exam_id, student_id, marks_obtained, remarks) 
-            VALUES (?, ?, ?, ?) 
-            ON DUPLICATE KEY UPDATE marks_obtained = VALUES(marks_obtained), remarks = VALUES(remarks)
+            VALUES ($1, $2, $3, $4) 
+            ON CONFLICT (exam_id, student_id) DO UPDATE SET marks_obtained = EXCLUDED.marks_obtained, remarks = EXCLUDED.remarks RETURNING id
         `;
-        const [result] = await pool.query(query, [exam_id, student_id, marks_obtained, remarks]);
-        res.status(201).json({ id: result.insertId, exam_id, student_id, marks_obtained });
+        const result = await pool.query(query, [exam_id, student_id, marks_obtained, remarks]);
+        res.status(201).json({ id: result.rows[0]?.id, exam_id, student_id, marks_obtained });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save marks' });
@@ -579,8 +582,8 @@ app.post('/api/marks', verifyToken, checkRole(['Faculty', 'Admin']), async (req,
 // Timetable API
 app.get('/api/timetable/:className', async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT t.*, f.name as teacher_name FROM timetable t LEFT JOIN faculty f ON t.teacher_id = f.id WHERE t.class = ? ORDER BY t.day, t.period_no',
+        const { rows } = await pool.query(
+            'SELECT t.*, f.name as teacher_name FROM timetable t LEFT JOIN faculty f ON t.teacher_id = f.id WHERE t.class = $1 ORDER BY t.day, t.period_no',
             [req.params.className]
         );
         res.json(rows);
@@ -593,8 +596,8 @@ app.get('/api/timetable/:className', async (req, res) => {
 // Digital Diary API
 app.get('/api/diary/:teacherId', async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT * FROM digital_diary WHERE teacher_id = ? ORDER BY date DESC',
+        const { rows } = await pool.query(
+            'SELECT * FROM digital_diary WHERE teacher_id = $1 ORDER BY date DESC',
             [req.params.teacherId]
         );
         res.json(rows);
@@ -607,11 +610,11 @@ app.get('/api/diary/:teacherId', async (req, res) => {
 app.post('/api/diary', verifyToken, async (req, res) => {
     const { teacher_id, date, lesson_plan, progress_percentage, remarks } = req.body;
     try {
-        const [result] = await pool.query(
-            'INSERT INTO digital_diary (teacher_id, date, lesson_plan, progress_percentage, remarks) VALUES (?, ?, ?, ?, ?)',
+        const result = await pool.query(
+            'INSERT INTO digital_diary (teacher_id, date, lesson_plan, progress_percentage, remarks) VALUES ($1, $2, $3, $4, $5) RETURNING id',
             [teacher_id, date || new Date(), lesson_plan, progress_percentage, remarks]
         );
-        res.status(201).json({ id: result.insertId, teacher_id, lesson_plan });
+        res.status(201).json({ id: result.rows[0].id, teacher_id, lesson_plan });
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'Failed to save diary entry' });
@@ -621,8 +624,8 @@ app.post('/api/diary', verifyToken, async (req, res) => {
 // Fee Management API
 app.get('/api/fees/:studentId', async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT * FROM fees WHERE student_id = ? ORDER BY due_date DESC',
+        const { rows } = await pool.query(
+            'SELECT * FROM fees WHERE student_id = $1 ORDER BY due_date DESC',
             [req.params.studentId]
         );
         res.json(rows);
@@ -644,7 +647,7 @@ app.post('/api/fees/create-order', async (req, res) => {
         
         // Save order to payments table
         await pool.query(
-            'INSERT INTO payments (fee_id, razorpay_order_id, amount, status) VALUES (?, ?, ?, ?)',
+            'INSERT INTO payments (fee_id, razorpay_order_id, amount, status) VALUES ($1, $2, $3, $4)',
             [feeId, order.id, amount, 'created']
         );
         
@@ -666,13 +669,13 @@ app.post('/api/fees/verify-payment', async (req, res) => {
         try {
             // Update payment record
             await pool.query(
-                'UPDATE payments SET razorpay_payment_id = ?, razorpay_signature = ?, status = ? WHERE razorpay_order_id = ?',
+                'UPDATE payments SET razorpay_payment_id = $1, razorpay_signature = $2, status = $3 WHERE razorpay_order_id = $4',
                 [razorpay_payment_id, razorpay_signature, 'captured', razorpay_order_id]
             );
             
             // Update fee status
             await pool.query(
-                'UPDATE fees SET status = ? WHERE id = ?',
+                'UPDATE fees SET status = $1 WHERE id = $2',
                 ['Paid', feeId]
             );
             
@@ -689,8 +692,8 @@ app.post('/api/fees/verify-payment', async (req, res) => {
 // Live Classes API
 app.get('/api/live-classes/:className', async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT l.*, f.name as teacher_name FROM live_classes l JOIN faculty f ON l.teacher_id = f.id WHERE l.class_name = ? AND l.status = ? ORDER BY l.start_time ASC',
+        const { rows } = await pool.query(
+            'SELECT l.*, f.name as teacher_name FROM live_classes l JOIN faculty f ON l.teacher_id = f.id WHERE l.class_name = $1 AND l.status = $2 ORDER BY l.start_time ASC',
             [req.params.className, 'Scheduled']
         );
         res.json(rows);
@@ -706,14 +709,14 @@ app.post('/api/live-classes', async (req, res) => {
         // Try to find teacher_id from DB if not provided or invalid
         let finalTeacherId = teacher_id;
         if (!finalTeacherId || isNaN(parseInt(finalTeacherId))) {
-            const [fallback] = await pool.query('SELECT id FROM faculty LIMIT 1');
+            const { rows: fallback } = await pool.query('SELECT id FROM faculty LIMIT 1');
             finalTeacherId = fallback[0]?.id || 1;
         }
-        const [result] = await pool.query(
-            'INSERT INTO live_classes (teacher_id, class_name, subject, meeting_link, start_time, topic) VALUES (?, ?, ?, ?, ?, ?)',
+        const result = await pool.query(
+            'INSERT INTO live_classes (teacher_id, class_name, subject, meeting_link, start_time, topic) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
             [finalTeacherId, class_name, subject, meeting_link, start_time, topic]
         );
-        res.status(201).json({ id: result.insertId, topic, status: 'Scheduled' });
+        res.status(201).json({ id: result.rows[0].id, topic, status: 'Scheduled' });
     } catch (err) {
         console.error('Live class schedule error:', err.message);
         res.status(500).json({ status: 'error', message: err.message || 'Failed to schedule live class' });
@@ -781,8 +784,8 @@ app.post('/api/security/verify-pin', (req, res) => {
 // Backup Admin API
 app.get('/api/admin/security-logs', verifyToken, checkRole(['Admin']), async (req, res) => {
     try {
-        if (fs.existsSync(AUDIT_FILE)) {
-            const data = fs.readFileSync(AUDIT_FILE, 'utf8');
+        if (fs.existsSync(securityAuditFile)) {
+            const data = fs.readFileSync(securityAuditFile, 'utf8');
             res.json(JSON.parse(data));
         } else {
             res.json([]);

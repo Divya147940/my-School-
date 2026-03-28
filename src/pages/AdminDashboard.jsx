@@ -172,7 +172,7 @@ const AdminDashboard = () => {
               ))}
             </div>
 
-            <div className="feature-box">
+            <div className="feature-box table-responsive">
               <h3 className="box-title">Recent Fee Collections</h3>
               <table className="admin-table">
                 <thead>
@@ -340,7 +340,7 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div className="feature-box">
+            <div className="feature-box table-responsive">
               <h3 className="box-title">📋 Backup History</h3>
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <table className="admin-table">

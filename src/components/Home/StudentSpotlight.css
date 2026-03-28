@@ -38,28 +38,39 @@
 .student-image-container {
     position: relative;
     flex-shrink: 0;
+    width: 380px;
+    height: 380px;
+    max-width: 85vw;
+    max-height: 85vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 25px; /* Space for the rings */
 }
 
 .glow-ring {
     position: absolute;
-    top: -15px;
-    left: -15px;
-    right: -15px;
-    bottom: -15px;
+    inset: 10px;
     border-radius: 50%;
     opacity: 0.3;
     transition: all 0.5s ease;
 }
 
 .ring-1 {
-    background: conic-gradient(from 0deg, transparent, #3b82f6, #8b5cf6, transparent);
+    background: var(--elite-ring-gradient);
     animation: rotate 6s linear infinite;
+    padding: 6px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
 }
 
 .ring-2 {
-    background: conic-gradient(from 180deg, transparent, #f59e0b, #ef4444, transparent);
+    background: var(--elite-ring-gradient);
     animation: rotate 4s linear reverse infinite;
-    filter: blur(10px);
+    filter: blur(12px);
+    inset: 5px;
 }
 
 .student-image-container:hover .ring-1 {
@@ -80,8 +91,8 @@
 }
 
 .student-photo {
-    width: 380px; /* Increased from 250px */
-    height: 380px;
+    width: 100%; /* Fill the padded container */
+    height: 100%;
     border-radius: 50%;
     object-fit: cover;
     border: 8px solid rgba(255, 255, 255, 0.15);
@@ -94,8 +105,7 @@
 
 .student-image-container:hover .student-photo {
     transform: scale(1.03);
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 30px 60px rgba(59, 130, 246, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 .student-image-container:hover .glow-ring {
@@ -115,9 +125,9 @@
 
 .student-name {
     font-size: 3.5rem;
-    font-weight: 900;
+    font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     letter-spacing: -1px;
     background: linear-gradient(to right, #fff, #94a3b8);
     -webkit-background-clip: text;
@@ -192,6 +202,11 @@
 
 /* Mobile Responsive */
 @media (max-width: 900px) {
+    .student-image-container {
+        width: 280px;
+        height: 280px;
+    }
+    
     .spotlight-content {
         flex-direction: column;
         text-align: center;
@@ -216,5 +231,19 @@
     
     .student-name {
         font-size: 2.5rem;
+    }
+}
+@media (max-width: 480px) {
+    .student-image-container {
+        width: 220px;
+        height: 220px;
+    }
+    .student-name {
+        font-size: 2rem;
+    }
+    .student-spotlight-wrapper {
+        padding: 25px 15px;
+        margin: 20px 10px;
+        border-radius: 24px;
     }
 }

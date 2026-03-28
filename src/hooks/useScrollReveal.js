@@ -1,36 +1,27 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
-/**
- * Custom hook to apply 'revealed' class to elements when they enter the viewport.
- * @param {Object} options - IntersectionObserver options
- */
-const useScrollReveal = (options = { threshold: 0.15 }) => {
-    const sectionRef = useRef(null);
-
+export const useScrollReveal = (options = {}) => {
     useEffect(() => {
+        const observerOptions = {
+            threshold: options.threshold || 0.15,
+            rootMargin: options.rootMargin || '0px 0px -50px 0px'
+        };
+
         const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
+            entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('revealed');
-                    // Once revealed, we can stop observing it
-                    observer.unobserve(entry.target);
                 }
             });
-        }, options);
+        }, observerOptions);
 
-        const currentItems = sectionRef.current?.querySelectorAll('.reveal-on-scroll');
-        if (currentItems) {
-            currentItems.forEach((item) => observer.observe(item));
-        }
+        const elements = document.querySelectorAll('.reveal-on-scroll, .stagger-container');
+        elements.forEach(el => observer.observe(el));
 
-        return () => {
-            if (currentItems) {
-                currentItems.forEach((item) => observer.unobserve(item));
-            }
-        };
-    }, [options]);
-
-    return sectionRef;
+        return () => observer.disconnect();
+    }, [options.threshold, options.rootMargin]);
+    
+    return null;
 };
 
 export default useScrollReveal;

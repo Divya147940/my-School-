@@ -220,7 +220,7 @@ const StudentDashboard = () => {
                     </button>
                 </div>
             )}
-            <div className="premium-row" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '30px', marginBottom: '30px' }}>
+            <div className="premium-row responsive-grid-2" style={{ marginBottom: '30px' }}>
               <Gamification 
                 studentName={studentInfo.name}
               />
@@ -258,8 +258,8 @@ const StudentDashboard = () => {
               </div>
             </div>
 
-            <div className="analytics-grid">
-              <div className="analytics-card glass-panel">
+            <div className="analytics-grid responsive-grid-2">
+              <div className="analytics-card glass-panel table-responsive">
                 <h3 className="section-title">Attendance Trends</h3>
                 <div style={{ width: '100%', height: 300 }}>
                   <ResponsiveContainer>
@@ -380,8 +380,8 @@ const StudentDashboard = () => {
       case 'Performance Analytics':
         return (
           <div className="overview-content">
-            <div className="analytics-grid">
-              <div className="analytics-card glass-panel">
+            <div className="analytics-grid responsive-grid-2">
+              <div className="analytics-card glass-panel table-responsive">
                 <h3 className="section-title">Academic Skill Map</h3>
                 <div style={{ width: '100%', height: 350 }}>
                   <ResponsiveContainer>
@@ -427,7 +427,7 @@ const StudentDashboard = () => {
         return <div className="feature-section"><AIDoubtSolver /></div>;
       case 'Extra Resources':
         return (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+          <div className="responsive-grid-2" style={{ gap: '30px' }}>
             <div className="feature-section">
               <h3 className="section-title">Digital Library</h3>
               <Library />

@@ -135,8 +135,8 @@ const FacultyDashboard = () => {
               ))}
             </div>
 
-            <div className="analytics-grid">
-              <div className="analytics-card glass-panel">
+            <div className="analytics-grid responsive-grid-2">
+              <div className="analytics-card glass-panel table-responsive">
                 <h3 className="section-title">Class Performance (Average %)</h3>
                 <div style={{ width: '100%', height: 300 }}>
                   <ResponsiveContainer>
@@ -186,7 +186,7 @@ const FacultyDashboard = () => {
               </div>
             </div>
 
-            <div className="feature-section glass-panel">
+            <div className="feature-section glass-panel table-responsive">
               <h3 className="section-title">Today's Schedule</h3>
               <div className="schedule-list">
                 <div className="schedule-item">
@@ -300,7 +300,7 @@ const FacultyDashboard = () => {
         return <div className="feature-section"><CommunicationPortal userRole="faculty" userId={user?.id || 'TEA2026-02'} userName={user?.name || 'Professor Divyanshi'} /></div>;
       case 'Settings':
         return (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+          <div className="responsive-grid-2" style={{ gap: '30px' }}>
             <div className="feature-section">
               <h3 className="section-title">Library Management</h3>
               <Library />

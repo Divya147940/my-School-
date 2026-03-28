@@ -130,7 +130,7 @@ const ParentDashboard = () => {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginTop: '30px' }}>
+            <div className="responsive-grid-2" style={{ marginTop: '30px' }}>
               <div className="feature-box glass-panel">
                 <h3 className="section-title">Recent Activity for {childInfo.name}</h3>
                 <div className="activity-item" style={{ padding: '15px', background: 'var(--glass-bg)', borderRadius: '12px', marginBottom: '15px', border: '1px solid var(--glass-border)' }}>
