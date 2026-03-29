@@ -169,38 +169,44 @@
     box-shadow: 0 0 0 4px var(--glass-border);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
+    .legacy-timeline-section {
+        padding: 50px 0;
+    }
+    
     .timeline-item, .timeline-item.right { 
         flex-direction: column !important; 
         text-align: center !important; 
-        margin-bottom: 60px;
+        margin-bottom: 50px;
     }
     .timeline-marker { 
         position: relative; 
         left: auto; 
         transform: none; 
-        margin: 20px 0; 
+        margin: 15px 0; 
         z-index: 10;
     }
     .timeline-line { 
-        display: none; /* Hide line when stacked to avoid clutter */
+        display: none; 
     }
     .timeline-card-side, .timeline-text-side { 
         padding: 0; 
         width: 100% !important;
         flex: none;
     }
+    .timeline-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
     .hindi-content {
-        margin-top: 15px;
-        padding: 20px;
+        margin-top: 10px;
+        padding: 20px 15px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
     }
-    .v3-card-side {
-        order: 1;
-    }
-    .v3-marker {
-        order: 2;
-    }
-    .v3-text-side {
-        order: 3;
-    }
+    .v3-card-side { order: 1; }
+    .v3-marker { order: 2; }
+    .v3-text-side { order: 3; }
 }

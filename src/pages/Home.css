@@ -17,8 +17,11 @@
 
 @media (max-width: 768px) {
     .home-section-container {
-        margin: 15px 10px;
-        border-radius: 20px;
+        margin: 0;
+        border-radius: 0;
+        width: 100%;
+        border-left: none;
+        border-right: none;
     }
     
     .home-section-container.hero-container {

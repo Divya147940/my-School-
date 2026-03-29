@@ -267,6 +267,11 @@
 }
 
 @media (max-width: 1024px) {
+    .upper-container { padding: 0 20px; }
+    .contact-nodes { gap: 20px; }
+}
+
+@media (max-width: 768px) {
     .upper-bar { display: block; padding: 10px 0; }
     .upper-container { 
         flex-direction: row; 
@@ -298,7 +303,7 @@
         gap: 15px;
     }
     .social-mini, .upper-link { 
-        display: none !important; /* Hide non-essential links on small mobile to keep ticker and utils in one row */
+        display: none !important; 
     }
 }
 
