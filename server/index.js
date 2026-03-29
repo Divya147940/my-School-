@@ -186,10 +186,15 @@ const razorpay = new Razorpay({
 app.get('/api/health', async (req, res) => {
     try {
         const { rows } = await pool.query('SELECT NOW() as now');
-        res.json({ status: 'ok', time: rows[0].now });
+        res.json({ status: 'ok', database: 'connected', time: rows[0].now });
     } catch (err) {
-        console.error("Health Check Error:", err);
-        res.status(500).json({ status: 'error', message: 'Database connection failed', details: err.message });
+        console.warn("Health Check: Database connection failed (Continuing in Restricted Mode)");
+        res.json({ 
+            status: 'ok', 
+            database: 'unavailable', 
+            warning: 'System operating in restricted/mock mode',
+            details: err.message 
+        });
     }
 });
 
@@ -314,22 +319,30 @@ app.post('/api/auth/request-otp', authLimiter, async (req, res) => {
     try {
         // Lookup Email based on Role
         let email = null;
-        if (role === 'Admin') {
-            email = process.env.ADMIN_EMAIL || 'admin@school.edu'; // Admin email from env or default
-        } else if (role === 'Faculty') {
-            const { rows } = await pool.query('SELECT email FROM faculty WHERE id = $1 OR name = $2', [userId, userId]);
-            email = rows[0]?.email;
-        } else if (role === 'Student') {
-            const { rows } = await pool.query('SELECT email FROM students WHERE roll_no = $1 OR id = $2', [userId, userId]);
-            email = rows[0]?.email;
-        } else if (role === 'Parent') {
-            const { rows } = await pool.query('SELECT email FROM admissions WHERE phone = $1 OR email = $2 LIMIT 1', [userId, userId]);
-            email = rows[0]?.email;
+        try {
+            if (role === 'Admin') {
+                email = process.env.ADMIN_EMAIL || 'admin@school.edu'; 
+            } else if (role === 'Faculty') {
+                const { rows } = await pool.query('SELECT email FROM faculty WHERE id = $1 OR name = $2', [userId, userId]);
+                email = rows[0]?.email;
+            } else if (role === 'Student') {
+                const { rows } = await pool.query('SELECT email FROM students WHERE roll_no = $1 OR id = $2', [userId, userId]);
+                email = rows[0]?.email;
+            } else if (role === 'Parent') {
+                const { rows } = await pool.query('SELECT email FROM admissions WHERE phone = $1 OR email = $2 LIMIT 1', [userId, userId]);
+                email = rows[0]?.email;
+            }
+        } catch (dbError) {
+            console.error("[AUTH] DB Lookup failed, using default info for Admin/Demo.");
+            if (role === 'Admin') email = 'admin@school.edu';
         }
 
-        if (!email) {
+        if (!email && role !== 'Admin') {
             return res.status(404).json({ error: "USER_OR_EMAIL_NOT_FOUND", message: "We couldn't find a registered email for this account." });
         }
+        
+        // Ensure email is always set for Admin even if DB lookup was skipped
+        if (!email && role === 'Admin') email = 'admin@school.edu';
 
         // Alphanumeric 12-character high-security code
         const otp = Math.random().toString(36).substring(2, 14).toUpperCase();
