@@ -3,6 +3,7 @@ import { mockApi } from '../../utils/mockApi';
 import { detectFaceDirectly } from '../../utils/faceApiUtils';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../Common/Toaster';
+import * as faceapi from '@vladmandic/face-api';
 
 const FacultyManagement = () => {
     const { t, language } = useLanguage();
@@ -139,10 +140,17 @@ const FacultyManagement = () => {
             scanInterval = setInterval(async () => {
                 if (videoRef.current && canvasRef.current) {
                     const video = videoRef.current;
-                    if (!video || video.paused || video.ended) return;
+                    const canvas = canvasRef.current;
+                    if (!video || video.paused || video.ended || video.videoWidth === 0) return;
 
                     try {
-                        const detection = await detectFaceDirectly(video);
+                        // Workaround: draw to canvas first because tf.browser.fromPixels(video) can randomly fail in some browsers
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        const detection = await detectFaceDirectly(canvas);
                         
                         if (detection) {
                             setLandmarks(detection.landmarks);
@@ -169,18 +177,18 @@ const FacultyManagement = () => {
                                     setTimeout(() => {
                                         const box = detection.detection.box;
                                         const pad = 40;
-                                        const canvas = document.createElement('canvas');
-                                        canvas.width = box.width + pad * 2;
-                                        canvas.height = box.height + pad * 2;
-                                        const ctx = canvas.getContext('2d');
+                                        const finalCanvas = document.createElement('canvas'); // renamed
+                                        finalCanvas.width = box.width + pad * 2;
+                                        finalCanvas.height = box.height + pad * 2;
+                                        const finalCtx = finalCanvas.getContext('2d');
 
-                                        ctx.drawImage(
+                                        finalCtx.drawImage(
                                             video,
                                             box.x - pad, box.y - pad, box.width + pad * 2, box.height + pad * 2,
-                                            0, 0, canvas.width, canvas.height
+                                            0, 0, finalCanvas.width, finalCanvas.height
                                         );
 
-                                        setCapturedImage(canvas.toDataURL('image/jpeg', 0.9));
+                                        setCapturedImage(finalCanvas.toDataURL('image/jpeg', 0.9));
                                         setEnrollmentSource('CAMERA');
                                         stopCamera();
                                         addToAiLog("✅ BIOMETRIC IDENTITY LOCKED");
@@ -194,12 +202,16 @@ const FacultyManagement = () => {
                         } else {
                             setLandmarks(null);
                             setScanMessage("ALIGN YOUR FACE...");
-                            if (!faceapi.nets.ssdMobilenetv1.isLoaded) {
+                            if (!faceapi.nets.tinyFaceDetector.isLoaded) {
                                 setScanMessage("LOADING AI MODELS...");
+                            } else {
+                                addToAiLog("SCANNING... (NO FACE DETECTED)");
                             }
                         }
                     } catch (err) {
                         console.warn("AI Loop Error:", err);
+                        setScanMessage("ERROR: " + err.message);
+                        addToAiLog("ERR: " + err.message);
                     }
                 }
             }, 300); // Higher frequency tracking

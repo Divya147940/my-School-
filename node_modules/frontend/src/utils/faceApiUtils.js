@@ -1,38 +1,46 @@
 import * as faceapi from '@vladmandic/face-api';
 
-// Use JSDelivr CDN - bypasses local Vite SPA fallback bugs
 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+let modelsLoadingPromise = null;
 
 export const loadFaceModels = async () => {
-    if (!faceapi.nets.ssdMobilenetv1.isLoaded) {
-        try {
-            await Promise.all([
-                faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-            ]);
-            console.log("Elite SSD Face Models loaded via CDN.");
-        } catch (error) {
-            console.error("Failed to load Face Models:", error);
-            throw new Error("Facial Recognition Models failed to load. Check your network. " + error.message);
-        }
+    if (faceapi.nets.tinyFaceDetector.isLoaded) {
+        return modelsLoadingPromise || Promise.resolve();
     }
+    
+    if (!modelsLoadingPromise) {
+        modelsLoadingPromise = (async () => {
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+                console.log("Elite Face Models loaded via CDN.");
+            } catch (error) {
+                console.error("Failed to load Face Models:", error);
+                modelsLoadingPromise = null; // allow retry
+                throw new Error("Facial Recognition Models failed to load. Check your network. " + error.message);
+            }
+        })();
+    }
+    
+    return modelsLoadingPromise;
 };
 
 // Extracts a 128-d float array biometric signature from an image or video HTML element
 export const getFaceDescriptor = async (mediaElement) => {
     await loadFaceModels();
     
-    // ELITE SCANNING: Using SSD MobileNet for maximum accuracy in all conditions
-    const detectionOptions = new faceapi.SsdMobilenetv1Options({ 
-        minConfidence: 0.1 // ULTRA-LENIENT: Any face-like structure is accepted
+    const detectionOptions = new faceapi.TinyFaceDetectorOptions({ 
+        inputSize: 416,
+        scoreThreshold: 0.1 
     });
     const detection = await faceapi.detectSingleFace(
         mediaElement, 
         detectionOptions
     ).withFaceLandmarks().withFaceDescriptor();
 
-    // detection contains .descriptor (Float32Array) and .landmarks
     return detection || null;
 };
 
@@ -80,8 +88,9 @@ export const detectFaceDirectly = async (videoElement) => {
     if (!videoElement) return null;
     await loadFaceModels();
     
-    const detectionOptions = new faceapi.SsdMobilenetv1Options({ 
-        minConfidence: 0.1 // ULTRA-LENIENT: Optimized for diverse lighting
+    const detectionOptions = new faceapi.TinyFaceDetectorOptions({ 
+        inputSize: 416,
+        scoreThreshold: 0.1 
     });
 
     const detection = await faceapi.detectSingleFace(

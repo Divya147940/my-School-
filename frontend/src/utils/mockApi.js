@@ -115,6 +115,8 @@ const defaultData = {
   facultyRegistry: [
     { id: 'TEA2026-01', name: 'Dr. Sharma', subject: 'Mathematics', role: 'faculty', contact: '+91 99887 76655', salary: '₹85,000', isFaceEnrolled: true },
     { id: 'TEA2026-02', name: 'Professor Divyanshi', subject: 'Science', role: 'faculty', contact: '+91 98765 43210', salary: '₹72,000', isFaceEnrolled: true },
+    { id: 'ADM-001', name: 'Super Admin', subject: 'Administration', role: 'admin', contact: '+91 00000 00000', salary: '₹1,50,000', isFaceEnrolled: true },
+    { id: 'ADM-002', name: 'School Principal', subject: 'Management', role: 'admin', contact: '+91 11111 11111', salary: '₹1,20,000', isFaceEnrolled: true },
   ],
   achievers: [
     { id: 1, name: 'Aman Gupta', class: '10A', achievement: '1st Prize in Inter-School Science Fair', type: 'Science', image: '🏆', date: 'March 2026' },
@@ -2032,7 +2034,7 @@ export const mockApi = {
     const student = db.studentRegistry.find(s => s.id.toUpperCase() === id);
     if (student) return { name: student.name, role: 'student' };
     const faculty = db.facultyRegistry.find(f => f.id.toUpperCase() === id);
-    if (faculty) return { name: faculty.name, role: 'faculty' };
+    if (faculty) return { name: faculty.name, role: faculty.role };
     return null;
   },
 
@@ -2043,7 +2045,7 @@ export const mockApi = {
 
     const facultyMatches = (db.facultyRegistry || []).filter(f =>
       f.name.toLowerCase().includes(q) || f.id.toLowerCase().includes(q)
-    ).map(f => ({ id: f.id, name: f.name, role: 'faculty' }));
+    ).map(f => ({ id: f.id, name: f.name, role: f.role }));
 
     const studentMatches = (db.studentRegistry || []).filter(s =>
       s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)
@@ -2054,6 +2056,11 @@ export const mockApi = {
 
   getAvailableClasses: () => {
     return ['10A', '10B', '9A', '9B', '8A', '7A', '6A', '5A', '4A', '3A', '2A', '1A', 'Nursery', 'LKG', 'UKG'];
+  },
+
+  getStudentsByClass: (className) => {
+    const db = getDB();
+    return (db.studentRegistry || []).filter(s => s.class === className);
   },
 
   // SECURITY & AUDIT LOCKS

@@ -9,8 +9,8 @@ const MessageInbox = ({ studentId, studentClass, studentName }) => {
     const { addToast } = useToast();
     const [messages, setMessages] = useState([]);
     const [view, setView] = useState('inbox'); // 'inbox' or 'compose'
-    const [facultyId, setFacultyId] = useState('');
-    const [facultyName, setFacultyName] = useState('');
+    const [recipientId, setRecipientId] = useState('');
+    const [recipientName, setRecipientName] = useState('');
     const [replyText, setReplyText] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -33,36 +33,36 @@ const MessageInbox = ({ studentId, studentClass, studentName }) => {
     const handleSearch = (q) => {
         setSearchQuery(q);
         if (q.length > 1) {
-            const results = mockApi.searchRecipient(q).filter(r => r.role === 'faculty');
+            const results = mockApi.searchRecipient(q).filter(r => ['faculty', 'admin'].includes(r.role));
             setSearchResults(results);
         } else {
             setSearchResults([]);
         }
     };
 
-    const selectFaculty = (f) => {
-        setFacultyId(f.id);
-        setFacultyName(f.name);
+    const selectRecipient = (r) => {
+        setRecipientId(r.id);
+        setRecipientName(r.name);
         setSearchResults([]);
         setSearchQuery('');
-        addToast(`Selected: ${f.name}`, 'success');
+        addToast(`Selected: ${r.name}`, 'success');
     };
 
-    const verifyFaculty = () => {
-        if (!facultyId) return;
-        const info = mockApi.getRecipientInfo(facultyId);
-        if (info && info.role === 'faculty') {
-            setFacultyName(info.name);
-            addToast(`Verified: ${info.name}`, 'success');
+    const verifyRecipient = () => {
+        if (!recipientId) return;
+        const info = mockApi.getRecipientInfo(recipientId);
+        if (info && (info.role === 'faculty' || info.role === 'admin')) {
+            setRecipientName(info.name);
+            addToast(`Verified: ${info.name} (${info.role})`, 'success');
         } else {
-            setFacultyName('');
-            addToast('Invalid Faculty ID', 'error');
+            setRecipientName('');
+            addToast('Invalid ID', 'error');
         }
     };
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!replyText || !facultyId || !facultyName) {
+        if (!replyText || !recipientId || !recipientName) {
             addToast('Please fill all fields', 'warning');
             return;
         }
@@ -73,15 +73,15 @@ const MessageInbox = ({ studentId, studentClass, studentName }) => {
                 senderId: studentId,
                 senderName: studentName,
                 senderRole: 'student',
-                recipientId: facultyId,
-                recipientName: facultyName,
+                recipientId: recipientId,
+                recipientName: recipientName,
                 content: replyText,
                 type: 'message'
             });
-            addToast('Message sent to faculty!', 'success');
+            addToast(`Message sent to ${recipientName}!`, 'success');
             setReplyText('');
-            setFacultyId('');
-            setFacultyName('');
+            setRecipientId('');
+            setRecipientName('');
             setView('inbox');
             loadMessages();
         } catch (error) {
@@ -109,7 +109,7 @@ const MessageInbox = ({ studentId, studentClass, studentName }) => {
                         className={view === 'compose' ? 'active' : ''} 
                         onClick={() => setView('compose')}
                     >
-                        ✍️ Contact Faculty
+                        ✍️ Contact School
                     </button>
                 </div>
             </div>
@@ -141,16 +141,16 @@ const MessageInbox = ({ studentId, studentClass, studentName }) => {
                                         )}
                                     </div>
                                     <div className="card-footer">
-                                        {msg.senderRole === 'faculty' && (
+                                        {(msg.senderRole === 'faculty' || msg.senderRole === 'admin') && (
                                             <button 
                                                 className="reply-link"
                                                 onClick={() => {
-                                                    setFacultyId(msg.senderId);
-                                                    setFacultyName(msg.senderName);
+                                                    setRecipientId(msg.senderId);
+                                                    setRecipientName(msg.senderName);
                                                     setView('compose');
                                                 }}
                                             >
-                                                Reply to Teacher
+                                                Reply to {msg.senderRole === 'admin' ? 'Admin' : 'Teacher'}
                                             </button>
                                         )}
                                     </div>
@@ -161,43 +161,43 @@ const MessageInbox = ({ studentId, studentClass, studentName }) => {
                 </div>
             ) : (
                 <div className="compose-content card-inner">
-                    <h3>Send Message to Teacher</h3>
+                    <h3>Send Message to Admin/Teacher</h3>
                     <form onSubmit={handleSendMessage}>
                         <div className="search-group">
                             <div className="id-input-group">
                                 <input 
                                     type="text" 
-                                    placeholder="Search Teacher Name or Enter ID..." 
-                                    value={facultyId || searchQuery}
+                                    placeholder="Search Name or Enter ID..." 
+                                    value={recipientId || searchQuery}
                                     onChange={(e) => {
-                                        if (facultyId) setFacultyId('');
+                                        if (recipientId) setRecipientId('');
                                         handleSearch(e.target.value);
                                     }}
                                 />
-                                {!facultyId && searchQuery.length > 0 && (
-                                    <button type="button" onClick={verifyFaculty}>Verify ID</button>
+                                {!recipientId && searchQuery.length > 0 && (
+                                    <button type="button" onClick={verifyRecipient}>Verify ID</button>
                                 )}
                             </div>
                             
                             {searchResults.length > 0 && (
                                 <div className="search-results-dropdown glass-panel">
-                                    {searchResults.map(f => (
+                                    {searchResults.map(r => (
                                         <div 
-                                            key={f.id} 
+                                            key={r.id} 
                                             className="search-result-item"
-                                            onClick={() => selectFaculty(f)}
+                                            onClick={() => selectRecipient(r)}
                                         >
-                                            <span className="res-name">{f.name}</span>
-                                            <span className="res-meta">{f.id} • {f.role}</span>
+                                            <span className="res-name">{r.name}</span>
+                                            <span className="res-meta">{r.id} • {r.role}</span>
                                         </div>
                                     ))}
                                 </div>
                             )}
                         </div>
-                        {facultyName && (
+                        {recipientName && (
                             <div className="recipient-preview active">
-                                <span>To: <strong>{facultyName}</strong></span>
-                                <button type="button" onClick={() => { setFacultyId(''); setFacultyName(''); }}>✕</button>
+                                <span>To: <strong>{recipientName}</strong></span>
+                                <button type="button" onClick={() => { setRecipientId(''); setRecipientName(''); }}>✕</button>
                             </div>
                         )}
 
