@@ -1,0 +1,90 @@
+/* Visible ONLY on mobile */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 75px;
+    background: rgba(15, 23, 42, 0.85); /* Deep frosted glass */
+    backdrop-filter: blur(35px);
+    -webkit-backdrop-filter: blur(35px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 10000; /* Touches highest plane */
+    justify-content: space-around;
+    padding-bottom: env(safe-area-inset-bottom); /* iOS native swipe area safety */
+    box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: flex;
+        animation: slideUpNav 0.5s ease-out;
+    }
+}
+
+@keyframes slideUpNav {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #64748b; /* Disabled gray */
+    text-decoration: none;
+    flex: 1;
+    position: relative;
+    padding: 8px 0;
+    overflow: hidden;
+}
+
+.bottom-nav-icon {
+    width: 26px;
+    height: 26px;
+    margin-bottom: 5px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bottom-nav-item span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+/* App-style WOW Glowing Active State */
+.bottom-nav-item.active {
+    color: #3b82f6; /* Accent Blue */
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+    transform: translateY(-5px) scale(1.15);
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.8));
+}
+
+.bottom-nav-item.active span {
+    transform: translateY(-2px);
+    color: #ffffff;
+}
+
+.bottom-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 0 0 5px 5px;
+    transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bottom-nav-item.active::before {
+    width: 40px;
+    box-shadow: 0 5px 20px rgba(139, 92, 246, 0.8);
+}

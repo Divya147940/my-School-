@@ -1,0 +1,126 @@
+.cert-vault-container {
+    padding: 30px;
+    border-radius: 24px;
+}
+
+.vault-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.blockchain-badge {
+    font-size: 0.7rem;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 5px 12px;
+    border-radius: 50px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-weight: 800;
+}
+
+.cert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.cert-card {
+    padding: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.cert-card:hover {
+    border-color: var(--accent-blue);
+    background: rgba(255,255,255,0.05);
+}
+
+.cert-icon {
+    font-size: 2.5rem;
+}
+
+.cert-details h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.cert-details p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.cert-id {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    font-family: monospace;
+}
+
+.cert-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.verify-btn {
+    padding: 10px;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.verify-btn.loading {
+    background: #1e293b;
+    cursor: wait;
+}
+
+.download-btn {
+    padding: 10px;
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.verified-status {
+    padding: 10px;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.glitch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    animation: sweep 1.5s infinite;
+}
+
+@keyframes sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
