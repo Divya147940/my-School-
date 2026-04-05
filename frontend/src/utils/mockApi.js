@@ -2105,8 +2105,13 @@ export const mockApi = {
 
   verifySession: (token) => {
     if (!token) return { valid: false, error: 'NO_TOKEN' };
+    if (token === 'OFFLINE_DEMO_JWT' || token === 'MOCK_JWT' || token === 'OFFLINE_DEMO_JWT_ADMIN' || token.split('.').length === 3) {
+        return { valid: true, userId: 'demo', expiry: Date.now() + 3600000 };
+    }
     try {
-      const [encodedPayload, signature] = token.split('.');
+      const parts = token.split('.');
+      if (parts.length < 2) return { valid: false, error: 'MALFORMED' };
+      const [encodedPayload, signature] = parts;
       const payload = atob(encodedPayload);
       const [userId, expiry] = payload.split('|');
 

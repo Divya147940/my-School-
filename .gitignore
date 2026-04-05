@@ -1,4 +1,21 @@
-node_modules
-node_modules
-node_modules
-node_modules
+node_modules/
+dist/
+dist-ssr/
+*.log
+*.zip
+.env
+.env.local
+.env.*.local
+
+# Vercel
+.vercel
+
+# Backups and temp files
+backend/temp_backups/
+backend/security_audit.json
+backend/backup_history.json
+backend/backend.log
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,6 +1,7 @@
 {
   "name": "school-monorepo",
   "private": true,
+  "type": "module",
   "version": "1.0.0",
   "workspaces": [
     "frontend",
@@ -8,9 +9,15 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev -w frontend\" \"npm run dev -w backend\"",
+    "build": "npm run build -w frontend",
+    "tunnel": "concurrently \"npm run dev -w frontend\" \"npm run dev -w backend\" \"cloudflared tunnel --url http://localhost:5177\"",
+    "share": "concurrently \"npm run dev -w frontend\" \"npm run dev -w backend\" \"npx -y localtunnel --port 5177\"",
     "install:all": "npm install && npm install -w frontend && npm install -w backend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "cloudflared": "^0.7.1"
   }
 }

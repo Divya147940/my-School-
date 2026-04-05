@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { mockApi } from '../../utils/mockApi';
+import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config';
+import { useToast } from '../Common/Toaster';
 import './QRAttendance.css';
 
-const QRAttendance = ({ user }) => {
+const QRAttendance = ({ user: propUser }) => {
+    const { secureApi, user: authUser } = useAuth();
+    const { addToast } = useToast();
+    const activeUser = authUser || propUser;
     const [status, setStatus] = useState('Idle'); // Idle, Biometric, Scanning, Success, Error
     const [message, setMessage] = useState('');
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -14,6 +20,28 @@ const QRAttendance = ({ user }) => {
     const videoRef = React.useRef(null);
     const canvasRef = React.useRef(null);
 
+    const fetchTodayAttendance = async () => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const res = await secureApi(`${API_URL}/api/faculty/attendance?faculty_id=${activeUser.id}&date=${today}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.length > 0) {
+                    const latest = data[0];
+                    setAttendanceLog({
+                        complete: latest.status === 'Present',
+                        morning: latest.morning_time,
+                        evening: latest.evening_time
+                    });
+                } else {
+                    setAttendanceLog(null);
+                }
+            }
+        } catch(e) {
+            console.error("Failed to fetch today's attendance", e);
+        }
+    };
+
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentTime(new Date());
@@ -21,13 +49,12 @@ const QRAttendance = ({ user }) => {
             setCurrentSignature(mockApi.generateQRSignature());
         }, 10000);
 
-        const logs = mockApi.getQRAttendance(user.name);
-        const today = new Date().toISOString().split('T')[0];
-        const todayLog = logs.find(l => l.date === today);
-        if (todayLog) setAttendanceLog(todayLog);
+        if (activeUser?.id) {
+            fetchTodayAttendance();
+        }
         
         return () => clearInterval(timer);
-    }, [user.name]);
+    }, [activeUser]);
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         const R = 6371e3; // metres
@@ -47,10 +74,10 @@ const QRAttendance = ({ user }) => {
     const startBiometric = async () => {
         // Step 0: Check Device DNA
         const currentDna = mockApi.getDeviceDNA();
-        if (!mockApi.isDeviceAuthorized(user.id, currentDna)) {
+        if (!mockApi.isDeviceAuthorized(activeUser.id, currentDna)) {
             setStatus('Error');
             setMessage('UNAUTHORIZED DEVICE: Attendance must be marked from your registered phone.');
-            mockApi.logAudit('SECURITY_ALERT', `Unauthorized device attempt for attendance by ${user.name}`, user.role, { dna: currentDna });
+            mockApi.logAudit('SECURITY_ALERT', `Unauthorized device attempt for attendance by ${activeUser.name}`, activeUser.role, { dna: currentDna });
             return;
         }
 
@@ -95,7 +122,7 @@ const QRAttendance = ({ user }) => {
                             setBiometricProgress(prev => Math.max(0, prev - 10));
                             // Periodic log for persistent failure
                             if (biometricProgress === 0 && Math.random() > 0.9) {
-                                mockApi.logAudit('BIOMETRIC_FAIL', `Unrecognised face or biometric mismatch.`, user.role, { userId: user.id });
+                                mockApi.logAudit('BIOMETRIC_FAIL', `Unrecognised face or biometric mismatch.`, activeUser.role, { userId: activeUser.id });
                             }
                         }
                     } catch (e) { console.warn("Bio-scan error:", e); }
@@ -126,7 +153,7 @@ const QRAttendance = ({ user }) => {
                 if (dist > settings.rangeMeter) {
                     setStatus('Error');
                     setMessage(`Out of Range! You are ${Math.round(dist)}m away. Range: ${settings.rangeMeter}m.`);
-                    mockApi.logAudit('SECURITY_LOCATION_FAIL', `Out-of-range scan attempt. Dist: ${Math.round(dist)}m`, user.role, { distance: dist, threshold: settings.rangeMeter });
+                    mockApi.logAudit('SECURITY_LOCATION_FAIL', `Out-of-range scan attempt. Dist: ${Math.round(dist)}m`, activeUser.role, { distance: dist, threshold: settings.rangeMeter });
                     return;
                 }
 
@@ -153,26 +180,30 @@ const QRAttendance = ({ user }) => {
                     return;
                 }
 
-                // Log Attendance with Dynamic Signature
-                const result = mockApi.logQRAttendance({
-                    name: user.name,
-                    role: user.role,
-                    type,
-                    time: timeStr,
-                    signature: currentSignature // SECURE: Send the signature for verification
-                });
-
-                if (result.error === 'QR_EXPIRED') {
+                // Log Attendance dynamically to Real Backend
+                secureApi(`${API_URL}/api/faculty/attendance`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        faculty_id: activeUser.id,
+                        type,
+                        time: timeStr
+                    })
+                }).then(async (res) => {
+                    if (res.ok) {
+                        setStatus('Success');
+                        setMessage(`${type === 'morning' ? 'Check-in' : 'Check-out'} Successful!`);
+                        fetchTodayAttendance();
+                        addToast(`Marked ${type === 'morning' ? 'Check-in' : 'Check-out'} at ${timeStr}`, "success");
+                    } else {
+                        const errData = await res.json();
+                        throw new Error(errData.message || 'Failed to sync with server');
+                    }
+                }).catch(err => {
                     setStatus('Error');
-                    setMessage('Signature Expired! Please refresh and try again. Sharing QR photos is prohibited.');
-                    return;
-                }
-
-                setAttendanceLog(result);
-                setStatus('Success');
-                setMessage(`${type === 'morning' ? 'Check-in' : 'Check-out'} Successful!`);
-                
-                setTimeout(() => setStatus('Idle'), 3000);
+                    setMessage('Database Sync Error: ' + err.message);
+                }).finally(() => {
+                    setTimeout(() => setStatus('Idle'), 3000);
+                });
             },
             (error) => {
                 setStatus('Error');

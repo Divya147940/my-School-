@@ -1,46 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { mockApi } from '../../utils/mockApi';
-import { detectFaceDirectly } from '../../utils/faceApiUtils';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../Common/Toaster';
-import * as faceapi from '@vladmandic/face-api';
+import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config';
+import { mockApi } from '../../utils/mockApi';
 
 const FacultyManagement = () => {
     const { t, language } = useLanguage();
     const { addToast } = useToast();
+    const { secureApi } = useAuth();
     const [name, setName] = useState('');
     const [subject, setSubject] = useState('');
     const [assignedClass, setAssignedClass] = useState('');
     const [parentName, setParentName] = useState('');
     const [dob, setDob] = useState('');
-    const [capturedImage, setCapturedImage] = useState(null);
-    const [enrollmentSource, setEnrollmentSource] = useState(null); // 'CAMERA', 'FILE', 'DEMO'
-    const [isCameraOpen, setIsCameraOpen] = useState(false);
-    const [hardwareLocked, setHardwareLocked] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [recentFaculty, setRecentFaculty] = useState(null);
-    const [isVirtualStream, setIsVirtualStream] = useState(false);
-    const [isScanning, setIsScanning] = useState(false);
-    const [scanProgress, setScanProgress] = useState(0);
-    const [landmarks, setLandmarks] = useState(null);
-    const [scanMessage, setScanMessage] = useState('ALIGNING...');
-    const [scanTips, setScanTips] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisProgress, setAnalysisProgress] = useState(0);
 
     const TEST_ID_PHOTO = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop"; // Schematic Male/Female hybrid avatar
 
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setCapturedImage(reader.result);
-                setEnrollmentSource('FILE');
-                addToast("Photo uploaded successfully!", "success");
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+    // File upload removed
     const [facultyList, setFacultyList] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [revealStates, setRevealStates] = useState({}); // { [facultyId-field]: boolean }
@@ -53,252 +35,72 @@ const FacultyManagement = () => {
 
     const isRevealed = (fId, field) => revealStates[`${fId}-${field}`];
 
-    const videoRef = React.useRef(null);
-    const canvasRef = React.useRef(null);
+    // Refs removed
 
     useEffect(() => {
-        setFacultyList(mockApi.getDB().facultyRegistry || []);
-
-        // Cleanup camera on component unmount
-        return () => {
-            if (videoRef.current && videoRef.current.srcObject) {
-                videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        const fetchFaculty = async () => {
+            try {
+                const res = await secureApi(`${API_URL}/api/faculty`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setFacultyList(data);
+                }
+            } catch (e) {
+                console.error("Fetch failed", e);
             }
         };
-    }, []);
+        fetchFaculty();
+    }, [secureApi]);
 
 
-    const startCamera = async () => {
-        setIsCameraOpen(true);
-        setHardwareLocked(false);
-        // Step 1: Force release any existing app streams
-        if (videoRef.current?.srcObject) {
-            videoRef.current.srcObject.getTracks().forEach(t => t.stop());
-            videoRef.current.srcObject = null;
-        }
+    // Biometric Logic Removed
 
-        setTimeout(async () => {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                addToast("Your Browser does not support Camera Access.", "error");
-                setIsCameraOpen(false);
-                return;
-            }
-
-            const tiers = [
-                { video: { facingMode: 'user' } },
-                { video: true },
-                { video: { width: { ideal: 640 } } }
-            ];
-
-            let stream = null;
-            let lastErr = null;
-
-            for (const constraints of tiers) {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    if (stream) break;
-                } catch (e) {
-                    lastErr = e;
-                    console.warn("Retrying camera...", e.name);
-                }
-            }
-
-            if (stream && videoRef.current) {
-                videoRef.current.srcObject = stream;
-                videoRef.current.onloadedmetadata = () => {
-                    videoRef.current.play().then(() => {
-                        // Heartbeat check
-                        setTimeout(() => {
-                            if (videoRef.current && videoRef.current.videoWidth === 0) {
-                                setHardwareLocked(true);
-                            }
-                        }, 1500);
-                    }).catch(e => console.error("Playback blocked:", e));
-                };
-            } else {
-                // Fallback: Virtual Stream with explicit warning
-                setIsVirtualStream(true);
-                setIsCameraOpen(true);
-                setHardwareLocked(true);
-                setEnrollmentSource('BIOMETRIC');
-            }
-        }, 300); // Increased delay for stability
-    };
-
-    // ELITE AI DeepVision Log Messages
-    const [aiLog, setAiLog] = useState([]);
-    const addToAiLog = (msg) => {
-        setAiLog(prev => [msg, ...prev].slice(0, 5));
-    };
-
-    // Automated scanning loop for Faculty registration
-    useEffect(() => {
-        let scanInterval;
-        if (isCameraOpen && !capturedImage) {
-            setIsScanning(true);
-            setScanProgress(0);
-            scanInterval = setInterval(async () => {
-                if (videoRef.current && canvasRef.current) {
-                    const video = videoRef.current;
-                    const canvas = canvasRef.current;
-                    if (!video || video.paused || video.ended || video.videoWidth === 0) return;
-
-                    try {
-                        // Workaround: draw to canvas first because tf.browser.fromPixels(video) can randomly fail in some browsers
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                        const detection = await detectFaceDirectly(canvas);
-                        
-                        if (detection) {
-                            setLandmarks(detection.landmarks);
-                            setScanTips('');
-                            
-                            // ELITE PROGRESS LOGIC: Faster increments for responsive feel
-                            setScanProgress(prev => {
-                                const next = prev >= 100 ? 100 : prev + 25; // 4 steps to 100%
-                                
-                                // Dynamic UI Feedback based on NEW progress value
-                                if (prev === 0) {
-                                    addToAiLog("🔍 PROBING FACIAL VECTORS...");
-                                    setScanMessage("ANALYZING BIOMETRICS...");
-                                }
-                                if (prev > 20 && prev <= 32) addToAiLog("📐 MAPPING 3D CONTOURS...");
-                                if (prev > 50 && prev <= 62) {
-                                    addToAiLog("🧬 ANALYZING SKIN TEXTURE...");
-                                    setScanMessage("LOCKING FEATURES...");
-                                }
-                                if (prev > 80 && prev <= 92) addToAiLog("🎯 VERIFYING AXIAL SYMMETRY...");
-
-                                // Auto-capture on 100%
-                                if (next >= 100 && prev < 100) {
-                                    setTimeout(() => {
-                                        const box = detection.detection.box;
-                                        const pad = 40;
-                                        const finalCanvas = document.createElement('canvas'); // renamed
-                                        finalCanvas.width = box.width + pad * 2;
-                                        finalCanvas.height = box.height + pad * 2;
-                                        const finalCtx = finalCanvas.getContext('2d');
-
-                                        finalCtx.drawImage(
-                                            video,
-                                            box.x - pad, box.y - pad, box.width + pad * 2, box.height + pad * 2,
-                                            0, 0, finalCanvas.width, finalCanvas.height
-                                        );
-
-                                        setCapturedImage(finalCanvas.toDataURL('image/jpeg', 0.9));
-                                        setEnrollmentSource('CAMERA');
-                                        stopCamera();
-                                        addToAiLog("✅ BIOMETRIC IDENTITY LOCKED");
-                                        addToast("DeepVision Phase Locked Successfully!", "success");
-                                    }, 100);
-                                }
-                                
-                                return next;
-                            });
-
-                        } else {
-                            setLandmarks(null);
-                            setScanMessage("ALIGN YOUR FACE...");
-                            if (!faceapi.nets.tinyFaceDetector.isLoaded) {
-                                setScanMessage("LOADING AI MODELS...");
-                            } else {
-                                addToAiLog("SCANNING... (NO FACE DETECTED)");
-                            }
-                        }
-                    } catch (err) {
-                        console.warn("AI Loop Error:", err);
-                        setScanMessage("ERROR: " + err.message);
-                        addToAiLog("ERR: " + err.message);
-                    }
-                }
-            }, 300); // Higher frequency tracking
-        } else {
-            setIsScanning(false);
-        }
-        return () => clearInterval(scanInterval);
-    }, [isCameraOpen, capturedImage, isScanning]);
-
-    const stopCamera = () => {
-        if (videoRef.current && videoRef.current.srcObject) {
-            videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-            videoRef.current.srcObject = null;
-        }
-        setIsCameraOpen(false);
-    };
-
-    const capturePhoto = () => {
-        if (isVirtualStream) {
-            setCapturedImage(TEST_ID_PHOTO);
-            setIsVirtualStream(false);
-            setIsCameraOpen(false);
-            stopCamera();
-            return;
-        }
-        if (videoRef.current && canvasRef.current) {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            setCapturedImage(canvas.toDataURL('image/jpeg'));
-            setEnrollmentSource('CAMERA');
-            stopCamera();
-        }
-    };
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (!name || !subject || !assignedClass || !dob || !parentName) {
+        if (!name || !subject || !assignedClass || !dob || !parentName || !email || !password) {
             addToast("All fields are required", "error");
-            return;
-        }
-        if (!capturedImage) {
-            addToast("Biometric Photo is required. Use the Camera or 'Upload Photo' fallback.", "warning");
             return;
         }
         try {
             setIsAnalyzing(true);
-            setAnalysisProgress(0);
+            setAnalysisProgress(50);
 
-            // AI Face Analysis Sequence (Purely Face Focused)
-            const steps = [
-                { p: 20, m: "SCANNING FACE..." },
-                { p: 50, m: "ANALYZING FEATURES..." },
-                { p: 80, m: "GENERATING VECTOR..." },
-                { p: 100, m: "SAVING FACE..." }
-            ];
+            const response = await secureApi(`${API_URL}/api/faculty`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    name,
+                    designation: subject,
+                    description: `Class ${assignedClass} teacher`,
+                    faceImage: null,
+                    faceDescriptor: null,
+                    email,
+                    password
+                })
+            });
 
-            let currentStep = 0;
-            const interval = setInterval(() => {
-                if (currentStep < steps.length) {
-                    setAnalysisProgress(steps[currentStep].p);
-                    currentStep++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 300);
+            const result = await response.json();
 
-            const faculty = await mockApi.onboardFaculty(name, subject, assignedClass, dob, parentName, capturedImage);
-
-            clearInterval(interval);
             setAnalysisProgress(100);
 
-            setTimeout(() => {
-                setRecentFaculty(faculty);
-                setFacultyList(prev => [...prev, faculty]);
-                setName('');
-                setSubject('');
-                setAssignedClass('');
-                setParentName('');
-                setDob('');
-                setCapturedImage(null);
-                setEnrollmentSource(null);
-                setIsAnalyzing(false);
-                addToast("Faculty registered successfully with secure Biometrics!", "success");
-            }, 500);
+            if (result.status === 'success') {
+                const facultyWithId = { ...result.data, id: result.data.unique_id };
+                setTimeout(() => {
+                    setRecentFaculty(facultyWithId);
+                    setFacultyList(prev => [...prev, facultyWithId]);
+                    setName('');
+                    setSubject('');
+                    setAssignedClass('');
+                    setParentName('');
+                    setDob('');
+                    setEmail('');
+                    setPassword('');
+                    setIsAnalyzing(false);
+                    addToast("Faculty registered successfully!", "success");
+                }, 500);
+            } else {
+                throw new Error(result.message || "Failed to register faculty");
+            }
 
         } catch (err) {
             setIsAnalyzing(false);
@@ -306,18 +108,28 @@ const FacultyManagement = () => {
         }
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm("Delete this faculty record?")) {
-            mockApi.deleteFaculty(id);
-            setFacultyList(prev => prev.filter(f => f.id !== id));
-            addToast("Record removed", "info");
+            try {
+                const res = await secureApi(`${API_URL}/api/faculty/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    setFacultyList(prev => prev.filter(f => f.id !== id));
+                    addToast("Record removed from database", "success");
+                } else {
+                    const data = await res.json();
+                    throw new Error(data.message || "Failed to delete from database");
+                }
+            } catch (err) {
+                addToast(err.message, "error");
+            }
         }
     };
 
     const filteredFaculty = facultyList.filter(f =>
         (f.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (f.subject || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (f.id || '').toLowerCase().includes(searchTerm.toLowerCase())
+        (f.designation || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (f.unique_id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (f.id || '').toString().includes(searchTerm)
     );
 
     return (
@@ -382,120 +194,32 @@ const FacultyManagement = () => {
                                 />
                             </div>
 
-                            <div style={{ marginBottom: '30px', padding: '20px', borderRadius: '20px', background: 'rgba(59, 130, 246, 0.05)', border: '1px dashed #3b82f650' }}>
-                                <label style={{ display: 'block', color: '#3b82f6', marginBottom: '15px', fontWeight: '800', fontSize: '0.85rem' }}>👨‍🏫 BIOMETRIC FACE ENROLLMENT</label>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                                <div>
+                                    <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '10px' }}>Email ID</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="e.g. faculty@school.edu"
+                                        style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: '#fff' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '10px' }}>Login Password</label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Enter Password"
+                                        style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: '#fff' }}
+                                    />
+                                </div>
+                            </div>
 
-                                {!isCameraOpen && !capturedImage && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        <button type="button" onClick={startCamera} style={{ width: '100%', padding: '15px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)', cursor: 'pointer', fontWeight: '800', fontSize: '1rem', transition: '0.3s' }}>
-                                            📸 START BIOMETRIC SCAN
-                                        </button>
-
-                                        <label style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 'bold', textAlign: 'center', fontSize: '0.9rem', display: 'block' }}>
-                                            📁 UPLOAD PHOTO (FALLBACK)
-                                            <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
-                                        </label>
-                                    </div>
-                                )}
-
-                                {isCameraOpen && (
-                                    <div style={{ position: 'relative', background: '#000', borderRadius: '15px', overflow: 'hidden', border: '2px solid rgba(59, 130, 246, 0.3)' }}>
-                                        {isVirtualStream ? (
-                                            <img src={TEST_ID_PHOTO} alt="Virtual Stream" style={{ width: '100%', filter: 'brightness(0.6) sepia(0.5) contrast(1.2)', opacity: 0.9 }} />
-                                        ) : (
-                                            <video ref={videoRef} autoPlay playsInline style={{ width: '100%', filter: 'brightness(1.1) contrast(1.1)' }} />
-                                        )}
-
-                                        {/* Clean View: HUD Removed per user request */}
-
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '50%',
-                                            left: '50%',
-                                            transform: 'translate(-50%, -50%)',
-                                            width: 'min(90vw, 480px)', // ELITE RESPONSIVE SCANNER
-                                            height: 'min(90vw, 480px)',
-                                            border: '3px dashed ' + (scanProgress > 80 ? '#10b981' : (scanProgress > 40 ? '#3b82f6' : 'rgba(255,255,255,0.4)')),
-                                            borderRadius: '50%',
-                                            boxShadow: '0 0 0 2000px rgba(0,0,0,0.7), inset 0 0 80px rgba(59, 130, 246, 0.3)',
-                                            pointerEvents: 'none',
-                                            animation: isScanning ? 'pulse 2s infinite' : 'none'
-                                        }}>
-                                            <div style={{ position: 'absolute', top: '10%', left: 0, right: 0, textAlign: 'center', color: '#fff', fontSize: '0.8rem', fontWeight: '950', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                                                {isScanning ? 'DEEPVISION™ ACTIVE' : 'POSITION FACE'}
-                                            </div>
-                                        </div>
-
-                                        {/* ELITE 68-Point Landmark Mesh Rendering */}
-                                        {isScanning && landmarks && (
-                                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-                                                {/* HIGH-FIDELITY MULTI-POINT TRACKING */}
-                                                {landmarks.getJawOutline().map((pt, i) => (
-                                                    <div key={`j-${i}`} style={{ position: 'absolute', left: `${(pt.x / landmarks.imageDims._width) * 100}%`, top: `${(pt.y / landmarks.imageDims._height) * 100}%`, width: '4px', height: '4px', background: '#3b82f6', borderRadius: '50%', opacity: 0.8, boxShadow: '0 0 5px #3b82f6' }} />
-                                                ))}
-                                                {landmarks.getLeftEyeBrow().map((pt, i) => (
-                                                    <div key={`lb-${i}`} style={{ position: 'absolute', left: `${(pt.x / landmarks.imageDims._width) * 100}%`, top: `${(pt.y / landmarks.imageDims._height) * 100}%`, width: '4px', height: '4px', background: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 5px #3b82f6' }} />
-                                                ))}
-                                                {landmarks.getRightEyeBrow().map((pt, i) => (
-                                                    <div key={`rb-${i}`} style={{ position: 'absolute', left: `${(pt.x / landmarks.imageDims._width) * 100}%`, top: `${(pt.y / landmarks.imageDims._height) * 100}%`, width: '4px', height: '4px', background: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 5px #3b82f6' }} />
-                                                ))}
-                                                {landmarks.getNose().map((pt, i) => (
-                                                    <div key={`n-${i}`} style={{ position: 'absolute', left: `${(pt.x / landmarks.imageDims._width) * 100}%`, top: `${(pt.y / landmarks.imageDims._height) * 100}%`, width: '5px', height: '5px', background: '#06b6d4', borderRadius: '50%', boxShadow: '0 0 8px #06b6d4' }} />
-                                                ))}
-                                                {landmarks.getLeftEye().map((pt, i) => (
-                                                    <div key={`le-${i}`} style={{ position: 'absolute', left: `${(pt.x / landmarks.imageDims._width) * 100}%`, top: `${(pt.y / landmarks.imageDims._height) * 100}%`, width: '5px', height: '5px', background: '#22d3ee', borderRadius: '50%', boxShadow: '0 0 10px #22d3ee' }} />
-                                                ))}
-                                                {landmarks.getRightEye().map((pt, i) => (
-                                                    <div key={`re-${i}`} style={{ position: 'absolute', left: `${(pt.x / landmarks.imageDims._width) * 100}%`, top: `${(pt.y / landmarks.imageDims._height) * 100}%`, width: '5px', height: '5px', background: '#22d3ee', borderRadius: '50%', boxShadow: '0 0 10px #22d3ee' }} />
-                                                ))}
-                                                {landmarks.getMouth().map((pt, i) => (
-                                                    <div key={`m-${i}`} style={{ position: 'absolute', left: `${(pt.x / landmarks.imageDims._width) * 100}%`, top: `${(pt.y / landmarks.imageDims._height) * 100}%`, width: '4px', height: '4px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 6px #10b981' }} />
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {/* AI Deep Analysis Log */}
-                                        {isScanning && (
-                                            <div style={{ position: 'absolute', top: '15px', left: '15px', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '10px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', minWidth: '180px' }}>
-                                                {aiLog.map((log, i) => (
-                                                    <div key={i} style={{ color: '#3b82f6', fontSize: '0.65rem', fontFamily: 'monospace', textTransform: 'uppercase', marginBottom: '4px', opacity: 1 - (i * 0.2) }}>
-                                                        {log}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {isScanning && (
-                                            <div style={{ position: 'absolute', bottom: '60px', left: '0', right: '0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                                                <div style={{ width: '80%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                    <div style={{ width: `${scanProgress}%`, height: '100%', background: scanProgress > 80 ? '#10b981' : 'linear-gradient(90deg, #3b82f6, #06b6d4)', transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}></div>
-                                                </div>
-                                                <div style={{ color: '#fff', fontWeight: '950', fontSize: '1rem', textShadow: '0 2px 10px rgba(0,0,0,0.8)', letterSpacing: '2px' }}>
-                                                    {scanMessage} {scanProgress}%
-                                                </div>
-                                                {scanTips && (
-                                                    <div style={{ marginTop: '10px', color: '#fbbf24', fontSize: '0.75rem', fontWeight: 'bold', background: 'rgba(0,0,0,0.8)', padding: '8px 20px', borderRadius: '25px', border: '1px solid #fbbf2440', animation: 'fadeIn 0.5s' }}>
-                                                        {scanTips}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div style={{ position: 'absolute', bottom: '15px', right: '15px' }}>
-                                            <button type="button" onClick={stopCamera} style={{ padding: '8px 15px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.8)', color: '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)', fontSize: '0.8rem' }}>CANCEL</button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {capturedImage && (
-                                    <div style={{ textAlign: 'center' }}>
-                                        <img src={capturedImage} alt="Faculty" style={{ width: '100%', maxWidth: '220px', borderRadius: '15px', border: '4px solid #10b981', marginBottom: '10px' }} />
-                                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                                            <button type="button" onClick={() => { setCapturedImage(null); startCamera(); }} style={{ background: 'transparent', color: '#94a3b8', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}>🔄 Retake</button>
-                                        </div>
-                                    </div>
-                                )}
-                                <canvas ref={canvasRef} style={{ display: 'none' }} />
+                            <div style={{ marginBottom: '30px', padding: '20px', borderRadius: '20px', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid #3b82f630', textAlign: 'center', color: '#94a3b8' }}>
+                                <div style={{ fontSize: '1.2rem', marginBottom: '10px' }}>🔐 SECURITY READY</div>
+                                <p style={{ fontSize: '0.8rem' }}>Faculty will login using Email and Password only. Biometrics disabled for this role.</p>
                             </div>
 
                             <button
@@ -505,7 +229,7 @@ const FacultyManagement = () => {
                                     width: '100%',
                                     padding: '18px',
                                     borderRadius: '16px',
-                                    background: isAnalyzing ? 'rgba(59, 130, 246, 0.5)' : (capturedImage ? '#10b981' : '#3b82f6'),
+                                    background: isAnalyzing ? 'rgba(59, 130, 246, 0.5)' : '#3b82f6',
                                     color: '#fff',
                                     border: 'none',
                                     fontWeight: '800',
@@ -518,10 +242,10 @@ const FacultyManagement = () => {
                             >
                                 {isAnalyzing ? (
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                                        <span>🔍 AI ANALYZING FACE ({analysisProgress}%)</span>
+                                        <span>⚙️ REGISTERING FACULTY...</span>
                                     </div>
                                 ) : (
-                                    <>REGISTER FACULTY {capturedImage ? '✓' : '👨‍🏫'}</>
+                                    <>REGISTER FACULTY 👨‍🏫</>
                                 )}
                                 {isAnalyzing && (
                                     <div style={{ position: 'absolute', bottom: 0, left: 0, height: '4px', background: '#fff', width: `${analysisProgress}%`, transition: 'width 0.3s' }}></div>
@@ -537,7 +261,8 @@ const FacultyManagement = () => {
 
                             <div style={{ padding: '30px', background: 'rgba(0,0,0,0.5)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '30px' }}>
                                 <div style={{ color: '#64748b', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '10px', fontWeight: 'bold' }}>FACULTY UNIQUE ID</div>
-                                <div style={{ fontSize: '3.5rem', fontWeight: '900', color: '#fff' }}>{recentFaculty.id}</div>
+                                <div style={{ fontSize: '3.5rem', fontWeight: '900', color: '#fff' }}>{recentFaculty.unique_id || recentFaculty.id}</div>
+                                <div style={{ color: '#10b981', fontSize: '0.9rem', marginTop: '10px', fontWeight: 'bold' }}>PASSWORD SET SUCCESSFULLY</div>
                             </div>
 
                             <button
@@ -574,17 +299,14 @@ const FacultyManagement = () => {
                                 <div>
                                     <div style={{ fontWeight: '700' }}>{f.name}</div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                        {f.subject} • Class {f.assignedClass} • {f.id}
-                                        {f.isFaceEnrolled && (
-                                            <span style={{ color: '#10b981', fontSize: '0.65rem', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.2)', fontWeight: 'bold' }}>✓ BIOMETRIC</span>
-                                        )}
+                                        {f.designation} • {f.unique_id || f.id}
                                     </div>
 
                                     {/* GUARDIAN SUITE 2.0: MASKED DATA SECTION */}
                                     <div style={{ display: 'flex', gap: '15px', fontSize: '0.7rem' }}>
                                         <div style={{ color: '#94a3b8' }}>
-                                            📞 {isRevealed(f.id, 'contact') ? f.contact : '•••••• •••• '}
-                                            {!isRevealed(f.id, 'contact') && (
+                                            📞 {isRevealed(f.id, 'contact') ? f.contact : 'Verified'}
+                                            {!isRevealed(f.id, 'contact') && f.contact && (
                                                 <button onClick={() => handleReveal(f.id, 'contact', f.name)} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', marginLeft: '5px', textDecoration: 'underline', padding: 0 }}>Reveal</button>
                                             )}
                                         </div>

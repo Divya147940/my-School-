@@ -21,11 +21,11 @@ const LiveClasses = () => {
 
   const fetchClasses = async () => {
     try {
-      // Use mockApi instead of real backend
-      const data = mockApi.getLiveClasses(studentClass);
-      if (Array.isArray(data)) {
-        data.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
-        setClasses(data);
+      // Use real backend API instead of mockApi
+      const res = await secureApi.get(`/live-classes/${studentClass}`);
+      if (res.data && Array.isArray(res.data)) {
+        const sorted = res.data.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+        setClasses(sorted);
       }
     } catch (err) {
       console.error('Error fetching live classes:', err);

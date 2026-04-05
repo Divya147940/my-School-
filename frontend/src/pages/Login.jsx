@@ -100,9 +100,18 @@ const Login = () => {
   };
 
   const [isBiometric, setIsBiometric] = useState(false);
+  const [showFacultyModal, setShowFacultyModal] = useState(false);
   const [activePortal, setActivePortal] = useState(null);
-  const [facultyAuthMode, setFacultyAuthMode] = useState('biometric'); // 'biometric', 'password', 'setup'
+  const [facultyAuthMode, setFacultyAuthMode] = useState('password'); // Default to password
   const [facultyPassData, setFacultyPassData] = useState({ id: '', email: '', password: '' });
+  
+  const [showStudentModal, setShowStudentModal] = useState(false);
+  const [studentAuthMode, setStudentAuthMode] = useState('password');
+  const [studentPassData, setStudentPassData] = useState({ id: '', email: '', password: '' });
+
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminData, setAdminData] = useState({ email: '', password: '' });
+
   const [hardwareLocked, setHardwareLocked] = useState(false);
   const TEST_ID_PHOTO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
   const [cameraIndex, setCameraIndex] = useState(0);
@@ -229,9 +238,7 @@ const Login = () => {
                 
                 if (next >= 100 && prev < 100) {
                   (async () => {
-                    const matchResult = activePortal.type === 'Faculty' 
-                      ? await mockApi.matchFaceAcrossAllFaculty(detection.descriptor)
-                      : await mockApi.matchFaceAcrossAllStudents(detection.descriptor);
+                    const matchResult = await mockApi.matchFaceAcrossAllStudents(detection.descriptor);
 
                     if (matchResult && matchResult.success) { // ULTRA-LENIENT matching
                       addToAiLog("✅ BIOMETRIC IDENTITY VERIFIED");
@@ -324,10 +331,89 @@ const Login = () => {
         if (data.status === 'success') {
             login(data.user, data.token);
             addToast(`Welcome back, ${data.user.name}!`, "success");
-            setIsBiometric(false);
+            setShowFacultyModal(false);
             navigate('/faculty-dashboard');
         } else {
             addToast(data.message || "Login failed", "error");
+        }
+    } catch (err) {
+        addToast("Server Connection Error", "error");
+    }
+  };
+
+  const handleStudentSetup = async () => {
+    if (!studentPassData.id || !studentPassData.password) {
+        addToast("Please fill all required fields", "error");
+        return;
+    }
+    try {
+        const response = await fetch(`${API_URL}/api/auth/student/setup-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(studentPassData)
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+            addToast(data.message, "success");
+            setStudentAuthMode('password');
+        } else {
+            addToast(data.message || "Setup failed", "error");
+        }
+    } catch (err) {
+        addToast("Server Connection Error", "error");
+    }
+  };
+
+  const handleStudentPassLogin = async () => {
+    if (!studentPassData.id || !studentPassData.password) {
+        addToast("Please enter Roll No and Password", "error");
+        return;
+    }
+    try {
+        const response = await fetch(`${API_URL}/api/auth/student/login`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-device-dna': getDeviceFingerprint()
+            },
+            body: JSON.stringify({ id: studentPassData.id, password: studentPassData.password })
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+            login(data.user, data.token);
+            addToast(`Welcome back, ${data.user.name}!`, "success");
+            setShowStudentModal(false);
+            navigate('/student-dashboard');
+        } else {
+            addToast(data.message || "Login failed", "error");
+        }
+    } catch (err) {
+        addToast("Server Connection Error", "error");
+    }
+  };
+
+  const handleAdminLogin = async () => {
+    if (!adminData.email || !adminData.password) {
+        addToast("Please enter Admin Email and Password", "error");
+        return;
+    }
+    try {
+        const response = await fetch(`${API_URL}/api/auth/admin/login`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-device-dna': getDeviceFingerprint()
+            },
+            body: JSON.stringify(adminData)
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+            login(data.user, data.token);
+            addToast(`Welcome back, Administrator!`, "success");
+            setShowAdminModal(false);
+            navigate('/admin-dashboard');
+        } else {
+            addToast(data.message || "Invalid Admin Credentials", "error");
         }
     } catch (err) {
         addToast("Server Connection Error", "error");
@@ -348,7 +434,7 @@ const Login = () => {
             login(mockUser, "OFFLINE_DEMO_JWT");
             addToast("Elite Security Verified ✅", "success");
             setShowOTP(false);
-            navigate(tempUser?.path || '/admin');
+            navigate(tempUser?.path || '/admin-dashboard');
             return;
         }
 
@@ -392,17 +478,29 @@ const Login = () => {
 
   const handlePortalLogin = async (portal) => {
     if (portal.type === 'Student') {
-        login({ id: 'SR2026', name: 'Junior Student (Cl-3)', role: 'Student', class: 'Class 3' }, "MOCK_JWT");
-        navigate(portal.path);
+        setActivePortal(portal);
+        setShowStudentModal(true);
+        setStudentAuthMode('password');
+        setStudentPassData({ id: '', email: '', password: '' });
         return;
     }
 
     if (portal.type === 'Faculty') {
-        startBiometric(portal);
+        setActivePortal(portal);
+        setShowFacultyModal(true);
+        setFacultyAuthMode('password');
+        setFacultyPassData({ id: '', email: '', password: '' });
         return;
     }
 
-    if (portal.type === 'Admin' || portal.type === 'Parent' || portal.type === 'Emergency') {
+    if (portal.type === 'Admin') {
+        setActivePortal(portal);
+        setShowAdminModal(true);
+        setAdminData({ email: '', password: '' });
+        return;
+    }
+
+    if (portal.type === 'Parent' || portal.type === 'Emergency') {
       try {
         const userId = portal.type === 'Admin' ? 'ADM-001' : portal.type === 'Emergency' ? 'ADM-001' : 'PAR-001';
         const role = portal.type === 'Emergency' ? 'Admin' : portal.type;
@@ -506,30 +604,7 @@ const Login = () => {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
           <div className="glass-panel" style={{ background: '#0f172a', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '40px', maxWidth: '520px', width: '95%', textAlign: 'center', border: '1px solid rgba(59, 130, 246, 0.3)', boxShadow: '0 0 50px rgba(59, 130, 246, 0.2)' }}>
             
-            {activePortal?.type === 'Faculty' && (
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', background: 'rgba(255,255,255,0.05)', padding: '5px', borderRadius: '15px' }}>
-                    <button 
-                        onClick={() => {
-                            setFacultyAuthMode('biometric');
-                            startBiometric(activePortal);
-                        }}
-                        style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: facultyAuthMode === 'biometric' ? 'var(--accent-blue)' : 'transparent', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                        BIOMETRIC
-                    </button>
-                    <button 
-                        onClick={() => {
-                            setFacultyAuthMode('password');
-                            if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
-                        }}
-                        style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: facultyAuthMode !== 'biometric' ? 'var(--accent-blue)' : 'transparent', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
-                    >
-                        ID & PASS
-                    </button>
-                </div>
-            )}
-
-            {facultyAuthMode === 'biometric' || activePortal?.type !== 'Faculty' ? (
+            {/* Standard Biometric Latch for Non-Faculty */}
                 <>
                     <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.2rem)', fontWeight: '950', color: '#fff', marginBottom: '10px', letterSpacing: '-1px' }}>
                         {isScanning ? `SCANNING ${scanProgress}%` : `BIOMETRIC LATCH`}
@@ -652,15 +727,70 @@ const Login = () => {
                         </div>
                     )}
                 </>
-            ) : facultyAuthMode === 'password' ? (
+
+            <div style={{ padding: '0 40px 40px' }}>
+              <button onClick={() => { if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop()); setIsBiometric(false); setIsScanning(false); setLandmarks(null); }} style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 'bold' }}>CANCEL</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAdminModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+          <div className="glass-panel" style={{ background: '#0f172a', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '40px', maxWidth: '450px', width: '95%', textAlign: 'center', border: '1px solid rgba(59, 130, 246, 0.3)', boxShadow: '0 0 50px rgba(59, 130, 246, 0.2)' }}>
+            <div style={{ padding: '20px 0' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🔐</div>
+                <h1 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>ADMIN LOGIN</h1>
+                <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Enter system credentials</p>
+                <div style={{ textAlign: 'left', marginBottom: '15px' }}>
+                    <label style={{ display: 'block', color: '#3b82f6', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>ADMIN EMAIL</label>
+                    <input 
+                        type="email"
+                        placeholder="admin@school.edu"
+                        value={adminData.email}
+                        onChange={(e) => setAdminData({...adminData, email: e.target.value})}
+                        style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff' }}
+                    />
+                </div>
+                <div style={{ textAlign: 'left', marginBottom: '30px' }}>
+                    <label style={{ display: 'block', color: '#3b82f6', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>PASSWORD</label>
+                    <input 
+                        type="password"
+                        placeholder="••••••••"
+                        value={adminData.password}
+                        onChange={(e) => setAdminData({...adminData, password: e.target.value})}
+                        style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff' }}
+                    />
+                </div>
+                <button onClick={handleAdminLogin} style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--accent-purple)', color: '#fff', border: 'none', fontWeight: '900', cursor: 'pointer', fontSize: '1.1rem', marginBottom: '20px' }}>ACCESS SYSTEM</button>
+            </div>
+            <div style={{ padding: '0 40px 40px' }}>
+              <button 
+                  onClick={() => setShowAdminModal(false)}
+                  style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                  CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Faculty Dedicated Modal without Biometric UI */}
+      {showFacultyModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+          <div className="glass-panel" style={{ background: '#0f172a', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '40px', maxWidth: '450px', width: '95%', textAlign: 'center', border: '1px solid rgba(59, 130, 246, 0.3)', boxShadow: '0 0 50px rgba(59, 130, 246, 0.2)' }}>
+            
+            {facultyAuthMode === 'password' ? (
                 <div style={{ padding: '20px 0' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '10px' }}>👨‍🏫</div>
                     <h1 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>FACULTY LOGIN</h1>
                     <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Enter credentials to proceed</p>
                     <div style={{ textAlign: 'left', marginBottom: '15px' }}>
-                        <label style={{ display: 'block', color: '#3b82f6', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>FACULTY UNIQUE ID</label>
+                        <label style={{ display: 'block', color: '#3b82f6', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>UNIQUE ID / EMAIL</label>
                         <input 
                             type="text"
-                            placeholder="e.g. FAC@A1B2C3"
+                            placeholder="Enter Email or Unique ID"
                             value={facultyPassData.id}
                             onChange={(e) => setFacultyPassData({...facultyPassData, id: e.target.value})}
                             style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff' }}
@@ -676,25 +806,90 @@ const Login = () => {
                             style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff' }}
                         />
                     </div>
-                    <button onClick={handleFacultyPassLogin} style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '900', cursor: 'pointer', fontSize: '1.1rem', marginBottom: '20px' }}>LOGIN SECURELY</button>
-                    <p style={{ color: '#94a3b8', cursor: 'pointer' }} onClick={() => setFacultyAuthMode('setup')}>First time? <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', textDecoration: 'underline' }}>Setup password.</span></p>
+                    <button onClick={handleFacultyPassLogin} style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '900', cursor: 'pointer', fontSize: '1.1rem', marginBottom: '20px' }}>LOGIN</button>
+                    <p style={{ color: '#94a3b8', cursor: 'pointer', fontSize: '0.9rem' }} onClick={() => setFacultyAuthMode('setup')}>First time? <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', textDecoration: 'underline' }}>Setup password.</span></p>
                 </div>
             ) : (
                 <div style={{ padding: '20px 0' }}>
-                    <h1 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>SETUP SECURITY</h1>
-                    <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Initialize your faculty credentials</p>
+                    <div style={{ fontSize: '3rem', marginBottom: '10px' }}>👨‍🏫</div>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>SETUP CREDENTIALS</h1>
+                    <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Initialize your faculty account</p>
                     <div style={{ textAlign: 'left', marginBottom: '15px' }}>
                         <input type="text" placeholder="FACULTY UNIQUE ID" value={facultyPassData.id} onChange={(e) => setFacultyPassData({...facultyPassData, id: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff', marginBottom: '15px' }} />
                         <input type="email" placeholder="REGISTERED EMAIL" value={facultyPassData.email} onChange={(e) => setFacultyPassData({...facultyPassData, email: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff', marginBottom: '15px' }} />
                         <input type="password" placeholder="CREATE PASSWORD" value={facultyPassData.password} onChange={(e) => setFacultyPassData({...facultyPassData, password: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff' }} />
                     </div>
                     <button onClick={handleFacultySetup} style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '900', cursor: 'pointer', fontSize: '1.1rem', marginBottom: '20px' }}>INITIALIZE</button>
-                    <p style={{ color: '#94a3b8', cursor: 'pointer' }} onClick={() => setFacultyAuthMode('password')}>Already have a password? <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', textDecoration: 'underline' }}>Login here.</span></p>
+                    <p style={{ color: '#94a3b8', cursor: 'pointer', fontSize: '0.9rem' }} onClick={() => setFacultyAuthMode('password')}>Already have a password? <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', textDecoration: 'underline' }}>Login here.</span></p>
                 </div>
             )}
 
             <div style={{ padding: '0 40px 40px' }}>
-              <button onClick={() => { if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop()); setIsBiometric(false); setIsScanning(false); setLandmarks(null); }} style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 'bold' }}>CANCEL</button>
+              <button 
+                  onClick={() => setShowFacultyModal(false)}
+                  style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                  CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student Dedicated Modal */}
+      {showStudentModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)', zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px' }}>
+          <div className="glass-panel" style={{ background: '#0f172a', padding: 'clamp(20px, 5vw, 40px)', borderRadius: '40px', maxWidth: '450px', width: '95%', textAlign: 'center', border: '1px solid rgba(59, 130, 246, 0.3)', boxShadow: '0 0 50px rgba(59, 130, 246, 0.2)' }}>
+            
+            {studentAuthMode === 'password' ? (
+                <div style={{ padding: '20px 0' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🎓</div>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>STUDENT LOGIN</h1>
+                    <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Enter credentials to proceed</p>
+                    <div style={{ textAlign: 'left', marginBottom: '15px' }}>
+                        <label style={{ display: 'block', color: '#3b82f6', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>ROLL NO / ID</label>
+                        <input 
+                            type="text"
+                            placeholder="Enter Roll Number/ID"
+                            value={studentPassData.id}
+                            onChange={(e) => setStudentPassData({...studentPassData, id: e.target.value})}
+                            style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff' }}
+                        />
+                    </div>
+                    <div style={{ textAlign: 'left', marginBottom: '30px' }}>
+                        <label style={{ display: 'block', color: '#3b82f6', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px' }}>PASSWORD</label>
+                        <input 
+                            type="password"
+                            placeholder="••••••••"
+                            value={studentPassData.password}
+                            onChange={(e) => setStudentPassData({...studentPassData, password: e.target.value})}
+                            style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff' }}
+                        />
+                    </div>
+                    <button onClick={handleStudentPassLogin} style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '900', cursor: 'pointer', fontSize: '1.1rem', marginBottom: '20px' }}>LOGIN</button>
+                    <p style={{ color: '#94a3b8', cursor: 'pointer', fontSize: '0.9rem' }} onClick={() => setStudentAuthMode('setup')}>First time? <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', textDecoration: 'underline' }}>Setup password.</span></p>
+                </div>
+            ) : (
+                <div style={{ padding: '20px 0' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🎓</div>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#fff', marginBottom: '10px' }}>STUDENT SETUP</h1>
+                    <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Initialize your student account</p>
+                    <div style={{ textAlign: 'left', marginBottom: '15px' }}>
+                        <input type="text" placeholder="ROLL NO / ID" value={studentPassData.id} onChange={(e) => setStudentPassData({...studentPassData, id: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff', marginBottom: '15px' }} />
+                        <input type="password" placeholder="CREATE PASSWORD" value={studentPassData.password} onChange={(e) => setStudentPassData({...studentPassData, password: e.target.value})} style={{ width: '100%', padding: '15px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(59,130,246,0.3)', color: '#fff' }} />
+                    </div>
+                    <button onClick={handleStudentSetup} style={{ width: '100%', padding: '18px', borderRadius: '15px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '900', cursor: 'pointer', fontSize: '1.1rem', marginBottom: '20px' }}>INITIALIZE</button>
+                    <p style={{ color: '#94a3b8', cursor: 'pointer', fontSize: '0.9rem' }} onClick={() => setStudentAuthMode('password')}>Already have a password? <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', textDecoration: 'underline' }}>Login here.</span></p>
+                </div>
+            )}
+
+            <div style={{ padding: '0 40px 40px' }}>
+              <button 
+                  onClick={() => setShowStudentModal(false)}
+                  style={{ width: '100%', padding: '18px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                  CANCEL
+              </button>
             </div>
           </div>
         </div>

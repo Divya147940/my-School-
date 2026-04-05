@@ -11,7 +11,7 @@ const Homework = () => {
     const [showForm, setShowForm] = useState(false);
     const [assignments, setAssignments] = useState([]);
     
-    const userClass = user?.assignedClass ? `Class ${user.assignedClass}` : 'Class 10A';
+    const userClass = user?.assignedClass ? user.assignedClass : '10A';
 
     const [newAssignment, setNewAssignment] = useState({ 
         title: '', 
@@ -121,10 +121,10 @@ const Homework = () => {
                         <div className="form-group">
                             <label>Target Class</label>
                             <select value={newAssignment.class} onChange={e => setNewAssignment({...newAssignment, class: e.target.value})} className="premium-input">
-                                {user?.assignedClass && <option value={`Class ${user.assignedClass}`}>Class {user.assignedClass}</option>}
-                                <option>Class 10A</option>
-                                <option>Class 9B</option>
-                                <option>Class 8C</option>
+                                {user?.assignedClass && <option value={user.assignedClass}>{user.assignedClass}</option>}
+                                <option>10A</option>
+                                <option>9B</option>
+                                <option>8C</option>
                             </select>
                         </div>
                         <div className="form-group">

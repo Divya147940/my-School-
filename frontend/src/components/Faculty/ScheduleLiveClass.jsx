@@ -31,8 +31,9 @@ const ScheduleLiveClass = () => {
   const fetchAllClasses = async () => {
     setFetchLoading(true);
     try {
-      // Use mockApi instead of real backend
-      const results = mockApi.getLiveClasses();
+      // Use real backend API instead of mockApi
+      const res = await secureApi.get('/live-classes/all'); 
+      const results = Array.isArray(res.data) ? res.data : [];
       results.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
       setScheduledClasses(results);
 
@@ -62,11 +63,11 @@ const ScheduleLiveClass = () => {
     const finalData = { ...formData, start_time: combinedDateTime };
     setLoading(true);
     try {
-      // Store in mock data
-      mockApi.addLiveClass(finalData);
+      // Use real backend API instead of mockApi
+      await secureApi.post('/live-classes', finalData);
       
       setSuccessMsg('✅ Live Class Scheduled Successfully!');
-      setFormData({ ...formData, meeting_link: '', start_time: '', topic: '' });
+      setFormData({ ...formData, meeting_link: '', topic: '' });
       setSelectedDate('');
       setSelectedTime('09:00');
       fetchAllClasses();
@@ -74,7 +75,7 @@ const ScheduleLiveClass = () => {
       setActiveView('list');
     } catch (err) {
       console.error('Error scheduling class:', err);
-      setSuccessMsg('❌ Server error. Please try again.');
+      setSuccessMsg('❌ ' + (err.response?.data?.message || 'Server error. Please try again.'));
       setTimeout(() => setSuccessMsg(''), 3000);
     } finally {
       setLoading(false);

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { mockApi } from '../../utils/mockApi';
+import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config';
 import { useToast } from '../Common/Toaster';
 
 const FeeManagement = () => {
+  const { secureApi } = useAuth();
   const { addToast } = useToast();
-  const [view, setView] = useState('dashboard'); // dashboard, structure, collect, defaulters, ledger
-  const [students, setStudents] = useState([]);
+  const [view, setView] = useState('dashboard');
   const [fees, setFees] = useState([]);
   const [ledger, setLedger] = useState([]);
   const [structure, setStructure] = useState({ 
@@ -13,15 +13,31 @@ const FeeManagement = () => {
   });
   const [receipt, setReceipt] = useState(null);
 
+  const fetchData = async () => {
+    try {
+      const feeRes = await secureApi(`${API_URL}/api/fees`);
+      if (feeRes.ok) {
+        const data = await feeRes.json();
+        setFees(data.map(f => ({
+            ...f,
+            total: parseFloat(f.total) || 0,
+            paid: parseFloat(f.paid) || 0
+        })));
+      }
+
+      const ledgerRes = await secureApi(`${API_URL}/api/fees/ledger`);
+      if (ledgerRes.ok) {
+        const data = await ledgerRes.json();
+        setLedger(data);
+      }
+    } catch (e) { console.error("Fetch failed", e); }
+  };
+
   useEffect(() => {
-    const db = mockApi.getDB();
-    setStudents(db.studentRegistry || []);
-    setFees(db.fees || []);
-    setLedger(db.feeLedger || []);
-    
+    fetchData();
     const savedStructure = localStorage.getItem('fee_structure');
     if (savedStructure) setStructure(JSON.parse(savedStructure));
-  }, []);
+  }, [secureApi]);
 
   // NEW: Auto-Fine Logic
   const calculateAutoFine = (studentName) => {
@@ -41,72 +57,48 @@ const FeeManagement = () => {
     defaulters: fees.filter(f => f.total - f.paid > 0).length
   };
 
-  const handleCollect = (studentName, amount, mode, adjustment = 0, adjReason = '', concession = 0) => {
-    const db = mockApi.getDB();
-    const feeIndex = db.fees.findIndex(f => f.student === studentName);
-    if (feeIndex === -1) return;
-
+  const handleCollect = async (studentId, studentName, amount, mode, adjustment = 0, adjReason = '', concession = 0) => {
     const amt = parseInt(amount);
     const adj = parseInt(adjustment || 0);
     const disc = parseInt(concession || 0);
 
-    // ELITE DEFENSE: Duplicate Guard (5-minute window)
-    const isDuplicate = db.feeLedger?.some(txn => 
-        txn.studentName === studentName && 
-        txn.amount === amt && 
-        (Date.now() - new Date(txn.createdAt || txn.date).getTime()) < 300000
+    const isDuplicate = ledger.some(txn => 
+        txn.student_name === studentName && 
+        parseFloat(txn.amount) === amt && 
+        (Date.now() - new Date(txn.created_at).getTime()) < 300000
     );
     if (isDuplicate) {
-        addToast("🔒 SECURITY BLOCK: Duplicate Transaction detected! (5m Cooldown)", "error");
+        addToast("🔒 SECURITY BLOCK: Duplicate Transaction detected!", "error");
         return;
     }
 
-    // ELITE DEFENSE: High-Value Alert (>10,000)
-    if (amt > 10000) {
-        addToast("🚩 HIGH-VALUE ALERT: Transaction flagged for Principal review.", "warning");
-        mockApi.logAudit('SECURITY_ALERT', `High-value payment detected: ₹${amt}`, 'System', { studentName, amount: amt });
+    try {
+        const txnId = `TXN-${Date.now()}`;
+        const securityHash = mockApi.getSecurityHash({ id: txnId, amount: amt, studentName });
+
+        const payload = {
+            studentId,
+            studentName,
+            amount: amt,
+            discount: disc,
+            fine: adj,
+            mode,
+            securityHash
+        };
+
+        const res = await secureApi(`${API_URL}/api/fees/collect`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            addToast(`₹${amt} collected & secured! 🛡️`, "success");
+            fetchData();
+            setReceipt({ ...payload, id: txnId, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() });
+        }
+    } catch (err) {
+        addToast("Payment processing failed", "error");
     }
-
-    // Apply Discount first (if any)
-    db.fees[feeIndex].total -= disc;
-    // Apply Fine/Adjustment
-    db.fees[feeIndex].total += adj;
-    // Apply Payment
-    db.fees[feeIndex].paid += amt;
-    db.fees[feeIndex].status = db.fees[feeIndex].paid >= db.fees[feeIndex].total ? 'Paid' : 'Partial';
-    
-    // NEW: Security Hash for Integrity
-    const txnId = `TXN-${Date.now()}`;
-    const securityHash = mockApi.getSecurityHash({ id: txnId, amount: amt, studentName });
-
-    const newTxn = {
-      id: txnId,
-      studentName,
-      studentId: db.studentRegistry.find(s => s.name === studentName)?.id,
-      amount: amt,
-      discount: disc,
-      fine: adj,
-      adjReason,
-      date: new Date().toLocaleDateString(),
-      time: new Date().toLocaleTimeString(),
-      mode,
-      collectedBy: 'Admin',
-      securityHash,
-      createdAt: new Date().toISOString(),
-      priority: amt > 10000 ? 'HIGH' : 'NORMAL'
-    };
-    
-    if (!db.feeLedger) db.feeLedger = [];
-    db.feeLedger.push(newTxn);
-    
-    // AUDIT LOG
-    mockApi.logAudit('FEE_COLLECTION', `Collected fees for ${studentName}`, 'Admin', { amount: amt, disc, fine: adj });
-
-    localStorage.setItem('NSGI_MOCK_DATA', JSON.stringify(db));
-    setFees([...db.fees]);
-    setLedger([...db.feeLedger]);
-    setReceipt(newTxn);
-    addToast(`₹${amt} collected! Security signature generated. 🛡️`, "success");
   };
 
   return (
@@ -148,7 +140,9 @@ const FeeManagement = () => {
             <h3 style={{ margin: '0 0 20px 0' }}>💡 Smart Fee Collection</h3>
             <form onSubmit={e => {
                 e.preventDefault();
-                handleCollect(e.target.student.value, e.target.amount.value, e.target.mode.value, e.target.adjustment.value, e.target.adjReason.value, e.target.concession.value);
+                const studentSelect = e.target.student;
+                const studentId = studentSelect.options[studentSelect.selectedIndex].getAttribute('data-id');
+                handleCollect(studentId, studentSelect.value, e.target.amount.value, e.target.mode.value, e.target.adjustment.value, e.target.adjReason.value, e.target.concession.value);
             }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                     <div className="form-group">
@@ -158,7 +152,7 @@ const FeeManagement = () => {
                             if (fine > 0) addToast(`Auto-Fine of ₹${fine} calculated for late payment.`, "info");
                         }}>
                              <option value="">Select Student...</option>
-                            {fees.map(f => <option key={f.id} value={f.student}>{f.student} - Due: ₹{f.total - f.paid}</option>)}
+                            {fees.map(f => <option key={f.student_id} value={f.student} data-id={f.student_id}>{f.student} - Due: ₹{f.total - f.paid}</option>)}
                         </select>
                     </div>
                     <div className="form-group">
@@ -220,12 +214,12 @@ const FeeManagement = () => {
                         const isLocked = new Date() - new Date(txn.createdAt || txn.date) > 86400000;
                         const isValid = mockApi.verifyIntegrity(txn);
                         return (
-                            <tr key={txn.id}>
+                             <tr key={txn.id}>
                                 <td>
                                     <div style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>{txn.id}</div>
-                                    <div style={{ fontSize: '0.65rem', color: '#10b981', fontFamily: 'monospace' }}>Seal: {txn.securityHash || 'LEGACY-UNSEALED'}</div>
+                                    <div style={{ fontSize: '0.65rem', color: '#10b981', fontFamily: 'monospace' }}>Seal: {txn.security_hash || 'LEGACY-UNSEALED'}</div>
                                 </td>
-                                <td>{txn.studentName}</td>
+                                <td>{txn.student_name}</td>
                                 <td>{txn.date} <small style={{ display: 'block', opacity: 0.5 }}>{txn.time}</small></td>
                                 <td style={{ fontWeight: 'bold' }}>₹{txn.amount}</td>
                                 <td style={{ color: txn.fine > 0 ? '#f43f5e' : '#10b981' }}>

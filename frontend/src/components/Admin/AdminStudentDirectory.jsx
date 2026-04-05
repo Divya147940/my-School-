@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { mockApi } from '../../utils/mockApi';
+import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config';
+import { useToast } from '../Common/Toaster';
 
 // All possible classes in the school
 const ALL_CLASSES = [
@@ -11,52 +13,46 @@ const ALL_CLASSES = [
 ];
 
 const AdminStudentDirectory = () => {
+  const { secureApi } = useAuth();
+  const { addToast } = useToast();
   const [allStudents, setAllStudents] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [availableClasses, setAvailableClasses] = useState([]);
 
-  useEffect(() => {
-    // Load students from mockApi + any locally generated ones
-    const registryStudents = mockApi.getStudents();
-
-    // Also include teacher-attendance system students (from Attendance.jsx)
-    const teacherMap = [
-      { id: 1, name: 'Divyanshi Verma', class: 'AI Class' },
-      { id: 2, name: 'Rahul Sharma', class: 'Class 10-A' },
-      { id: 3, name: 'Priya Singh', class: 'Class 9-B' },
-    ];
-
-    const generatedStudents = [];
-    teacherMap.forEach(teacher => {
-      for (let i = 1; i <= 40; i++) {
-        const baseId = teacher.id * 1000;
-        generatedStudents.push({
-          id: `GEN-${baseId + i}`,
-          name: `Student ${baseId + i}`,
-          class: teacher.class,
-          rollNo: i,
-          parentName: '-',
-          contact: '-',
-          source: 'attendance'
-        });
+  const fetchStudents = async () => {
+    try {
+      const res = await secureApi(`${API_URL}/api/students`);
+      if (res.ok) {
+        const data = await res.json();
+        setAllStudents(data);
+        
+        // Compute unique classes
+        const classes = [...new Set(data.map(s => s.class).filter(Boolean))].sort();
+        setAvailableClasses(classes);
       }
-    });
+    } catch (e) {
+      console.error("Fetch failed", e);
+    }
+  };
 
-    // Merge — registry students take priority, generated fill in the rest
-    const merged = [
-      ...registryStudents.map(s => ({ ...s, source: 'registry' })),
-      ...generatedStudents.filter(gs =>
-        !registryStudents.some(rs => rs.name === gs.name && rs.class === gs.class)
-      )
-    ];
+  useEffect(() => {
+    fetchStudents();
+  }, [secureApi]);
 
-    setAllStudents(merged);
-
-    // Compute unique classes
-    const classes = [...new Set(merged.map(s => s.class).filter(Boolean))].sort();
-    setAvailableClasses(classes);
-  }, []);
+  const handleDelete = async (id) => {
+    if (window.confirm("Delete this student record permanently?")) {
+      try {
+        const res = await secureApi(`${API_URL}/api/students/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          addToast("Student removed from database.", "success");
+          fetchStudents();
+        }
+      } catch (e) {
+        addToast("Failed to delete student.", "error");
+      }
+    }
+  };
 
   const filteredStudents = allStudents.filter(s => {
     const matchClass = !selectedClass || s.class === selectedClass;
@@ -188,6 +184,7 @@ const AdminStudentDirectory = () => {
               <th style={{ padding: '14px 16px', textAlign: 'left', color: '#94a3b8', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>Class</th>
               <th style={{ padding: '14px 16px', textAlign: 'left', color: '#94a3b8', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>Parent / Guardian</th>
               <th style={{ padding: '14px 16px', textAlign: 'left', color: '#94a3b8', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>Contact</th>
+              <th style={{ padding: '14px 16px', textAlign: 'left', color: '#94a3b8', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -201,9 +198,9 @@ const AdminStudentDirectory = () => {
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                <td style={{ padding: '14px 16px', color: '#64748b' }}>{s.rollNo || idx + 1}</td>
+                <td style={{ padding: '14px 16px', color: '#64748b' }}>{s.roll_no || idx + 1}</td>
                 <td style={{ padding: '14px 16px', color: '#64748b', fontSize: '0.8rem', fontFamily: 'monospace' }}>
-                  {s.id}
+                  {s.unique_id || s.id}
                 </td>
                 <td style={{ padding: '14px 16px', fontWeight: '600', color: '#f8fafc' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -227,8 +224,14 @@ const AdminStudentDirectory = () => {
                     {s.class || '-'}
                   </span>
                 </td>
-                <td style={{ padding: '14px 16px', color: '#94a3b8' }}>{s.parentName || '-'}</td>
-                <td style={{ padding: '14px 16px', color: '#94a3b8' }}>{s.contact || '-'}</td>
+                <td style={{ padding: '14px 16px', color: '#94a3b8' }}>{s.parent_name || s.parentName || '-'}</td>
+                <td style={{ padding: '14px 16px', color: '#94a3b8' }}>{s.phone || s.contact || '-'}</td>
+                <td style={{ padding: '14px 16px' }}>
+                  <button 
+                    onClick={() => handleDelete(s.id)}
+                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer' }}
+                  >🗑️</button>
+                </td>
               </tr>
             )) : (
               <tr>

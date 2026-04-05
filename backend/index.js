@@ -15,6 +15,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import nodemailer from 'nodemailer';
+import { generateUniqueId } from './utils/idGenerator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,6 +84,10 @@ const initDB = async () => {
             ALTER TABLE students ADD COLUMN IF NOT EXISTS face_descriptor TEXT;
             ALTER TABLE students ADD COLUMN IF NOT EXISTS face_image TEXT;
             ALTER TABLE students ADD COLUMN IF NOT EXISTS is_face_enrolled BOOLEAN DEFAULT FALSE;
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS parent_name VARCHAR(100);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS dob DATE;
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS address TEXT;
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS password TEXT;
 
             CREATE TABLE IF NOT EXISTS otp_codes (
                 id SERIAL PRIMARY KEY,
@@ -92,7 +97,41 @@ const initDB = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS fee_ledger (
+                id SERIAL PRIMARY KEY,
+                student_id INT REFERENCES students(id),
+                student_name VARCHAR(100),
+                amount DECIMAL(10,2),
+                discount DECIMAL(10,2) DEFAULT 0,
+                fine DECIMAL(10,2) DEFAULT 0,
+                mode VARCHAR(50),
+                security_hash TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
             ALTER TABLE otp_codes ALTER COLUMN otp TYPE VARCHAR(35);
+
+            CREATE TABLE IF NOT EXISTS faculty_attendance (
+                id SERIAL PRIMARY KEY,
+                faculty_id INT REFERENCES faculty(id) ON DELETE CASCADE,
+                date DATE NOT NULL,
+                morning_time VARCHAR(10),
+                evening_time VARCHAR(10),
+                status VARCHAR(50) DEFAULT 'Pending',
+                UNIQUE(faculty_id, date)
+            );
+
+            CREATE TABLE IF NOT EXISTS live_classes (
+                id SERIAL PRIMARY KEY,
+                teacher_id INT REFERENCES faculty(id) ON DELETE SET NULL,
+                class_name VARCHAR(50),
+                subject VARCHAR(100),
+                meeting_link TEXT,
+                start_time TIMESTAMP,
+                topic TEXT,
+                status VARCHAR(20) DEFAULT 'Scheduled',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         `);
         console.log("Database schema updated for biometrics (Status + Descriptors).");
     } catch (e) {
@@ -212,24 +251,45 @@ app.get('/api/faculty', async (req, res) => {
 });
 
 app.post('/api/faculty', async (req, res) => {
-    const { name, designation, description, faceImage, faceDescriptor } = req.body;
+    const { name, designation, description, faceImage, faceDescriptor, email, password } = req.body;
     try {
+        const uId = generateUniqueId('FAC');
+        let hashedPassword = null;
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
+
         const query = `
-            INSERT INTO faculty (name, designation, description, face_image, face_descriptor, is_face_enrolled) 
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;
+            INSERT INTO faculty (unique_id, name, designation, description, face_image, face_descriptor, is_face_enrolled, email, password) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, unique_id;
         `;
         const result = await pool.query(query, [
+            uId,
             name, 
             designation || 'Teacher', 
             description || '', 
             faceImage, 
             faceDescriptor,
-            !!faceDescriptor
+            !!faceDescriptor,
+            email ? email.toLowerCase() : null,
+            hashedPassword
         ]);
-        res.status(201).json({ status: 'success', data: { id: result.rows[0].id, name, designation } });
+        res.status(201).json({ status: 'success', data: { id: result.rows[0].id, unique_id: result.rows[0].unique_id, name, designation } });
     } catch (err) {
-        console.error(err);
+        console.error("Backend /api/faculty Error:", err);
         res.status(500).json({ status: 'error', message: 'Failed to save faculty' });
+    }
+});
+
+app.delete('/api/faculty/:id', verifyToken, checkRole(['Admin']), async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM faculty WHERE id = $1 OR unique_id = $2', [id, id]);
+        res.json({ status: 'success', message: 'Faculty deleted successfully' });
+    } catch (err) {
+        console.error("Backend DELETE /api/faculty Error:", err);
+        res.status(500).json({ status: 'error', message: 'Failed to delete faculty' });
     }
 });
 
@@ -286,8 +346,31 @@ app.post('/api/admissions', async (req, res) => {
     }
 });
 
+app.put('/api/admissions/:id', verifyToken, checkRole(['Admin']), async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        await pool.query('UPDATE admissions SET status = $1 WHERE id = $2', [status, id]);
+        res.json({ status: 'success', message: 'Admission status updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
+app.delete('/api/admissions/:id', verifyToken, checkRole(['Admin']), async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM admissions WHERE id = $1', [id]);
+        res.json({ status: 'success', message: 'Lead deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
 // Students API
-app.get('/api/students', async (req, res) => {
+app.get('/api/students', verifyToken, checkRole(['Admin', 'Faculty']), async (req, res) => {
     try {
         const { rows } = await pool.query('SELECT * FROM students ORDER BY roll_no');
         res.json(rows);
@@ -297,13 +380,106 @@ app.get('/api/students', async (req, res) => {
     }
 });
 
+app.post('/api/students', verifyToken, checkRole(['Admin', 'Faculty']), async (req, res) => {
+    const { name, roll_no, class: studentClass, email, phone, parent_name, dob, address, face_image } = req.body;
+    try {
+        const uId = generateUniqueId('STU');
+        const query = `
+            INSERT INTO students (unique_id, name, roll_no, class, email, phone, parent_name, dob, address, face_image)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id, unique_id;
+        `;
+        const result = await pool.query(query, [uId, name, roll_no, studentClass, email, phone, parent_name, dob, address, face_image]);
+        res.status(201).json({ status: 'success', data: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
+app.delete('/api/students/:id', verifyToken, checkRole(['Admin']), async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM students WHERE id = $1 OR unique_id = $2', [id, id]);
+        res.json({ status: 'success' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
 app.get('/api/students/search/:id', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            'SELECT * FROM students WHERE UPPER(name) = $1 OR UPPER(roll_no) = $2 LIMIT 1',
-            [req.params.id.toUpperCase(), req.params.id.toUpperCase()]
+            'SELECT * FROM students WHERE UPPER(name) = $1 OR UPPER(roll_no) = $2 OR unique_id = $3 LIMIT 1',
+            [req.params.id.toUpperCase(), req.params.id.toUpperCase(), req.params.id]
         );
         res.json(rows[0] || null);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
+// Fees API
+app.get('/api/fees', async (req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            SELECT s.name as student, s.id as student_id, sum(f.amount) as total, 
+            sum(case when f.status = 'Paid' then f.amount else 0 end) as paid
+            FROM students s
+            LEFT JOIN fees f ON s.id = f.student_id
+            GROUP BY s.id, s.name
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
+app.post('/api/fees/collect', verifyToken, checkRole(['Admin']), async (req, res) => {
+    const { studentId, studentName, amount, mode, fine, discount, securityHash } = req.body;
+    try {
+        // Record in ledger
+        await pool.query(
+            'INSERT INTO fee_ledger (student_id, student_name, amount, fine, discount, mode, security_hash) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+            [studentId, studentName, amount, fine, discount, mode, securityHash]
+        );
+        
+        // Update fee status (Simplified for demo: just add to paid)
+        // In a real system, we'd find the specific fee record for the month.
+        
+        res.json({ status: 'success' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
+app.get('/api/fees/ledger', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM fee_ledger ORDER BY created_at DESC');
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error' });
+    }
+});
+
+// Admin Stats
+app.get('/api/admin/stats', verifyToken, checkRole(['Admin']), async (req, res) => {
+    try {
+        const studentCount = (await pool.query('SELECT count(*) FROM students')).rows[0].count;
+        const facultyCount = (await pool.query('SELECT count(*) FROM faculty')).rows[0].count;
+        const admissionCount = (await pool.query('SELECT count(*) FROM admissions WHERE status = \'pending\'')).rows[0].count;
+        const revenue = (await pool.query('SELECT sum(amount) FROM fee_ledger')).rows[0].sum || 0;
+
+        res.json([
+            { label: 'Total Students', value: studentCount, icon: '🎓', color: '#3b82f6' },
+            { label: 'Faculty Staff', value: facultyCount, icon: '👨‍🏫', color: '#8b5cf6' },
+            { label: 'New Admissions', value: admissionCount, icon: '📩', color: '#10b981' },
+            { label: 'Gross Revenue', value: `₹${Number(revenue).toLocaleString()}`, icon: '💰', color: '#f59e0b' }
+        ]);
     } catch (err) {
         console.error(err);
         res.status(500).json({ status: 'error' });
@@ -393,7 +569,7 @@ app.post('/api/auth/verify-otp', authLimiter, async (req, res) => {
     try {
         let isValid = false;
         try {
-            const { rows } = await pool.query('SELECT * FROM otp_codes WHERE user_id = $1 AND otp = $2 AND expires_at > NOW()', [userId, otp]);
+            const { rows } = await pool.query('SELECT * FROM otp_codes WHERE user_id = $1 AND otp = $2', [userId, otp]);
             if (rows.length > 0) isValid = true;
         } catch (dbErr) {
             console.warn("[AUTH] DB Verify failed, checking In-Memory Fallback.");
@@ -422,21 +598,14 @@ app.post('/api/auth/verify-otp', authLimiter, async (req, res) => {
         try {
             await pool.query('DELETE FROM otp_codes WHERE user_id = $1', [userId]);
         } catch (e) {
-            otpFallback.delete(userId);
+            console.warn("Could not delete OTP after use.");
         }
 
         const token = jwt.sign(
-            { id: userId, username: userId, role: role, ip: clientIp, deviceDNA: req.headers['x-device-dna'] || 'unknown' },
+            { id: userId, role: role, ip: clientIp },
             JWT_SECRET,
             { expiresIn: '24h' }
         );
-
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 8 * 60 * 60 * 1000
-        });
 
         res.json({
             status: 'success',
@@ -446,6 +615,50 @@ app.post('/api/auth/verify-otp', authLimiter, async (req, res) => {
 
     } catch (err) {
         res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
+// Dedicated Admin Email/Password Login
+app.post('/api/auth/admin/login', authLimiter, async (req, res) => {
+    const { email, password } = req.body;
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+
+    // Verification Logic for Admin
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@gmail.com';
+    const ADMIN_PASS_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$zaEvPaSAyxtZepqYFLvLTu1wxdfZll5k.vP/uSm1zpUV0yod7BYxC';
+
+    try {
+        if (email !== ADMIN_EMAIL) {
+            return res.status(401).json({ status: 'error', message: 'Invalid Admin Credentials' });
+        }
+
+        const isMatch = await bcrypt.compare(password, ADMIN_PASS_HASH);
+        if (!isMatch) {
+            return res.status(401).json({ status: 'error', message: 'Invalid Admin Credentials' });
+        }
+
+        const token = jwt.sign(
+            { id: 'ADM-001', role: 'Admin', ip: clientIp },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        logSecurityAction({
+            type: 'ADMIN_LOGIN_SUCCESS',
+            user: 'ADM-001',
+            role: 'Admin',
+            ip: clientIp,
+            details: 'Admin logged in via Email/Password'
+        });
+
+        res.json({
+            status: 'success',
+            token,
+            user: { id: 'ADM-001', role: 'Admin', name: 'System Administrator' }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
 });
 
@@ -497,8 +710,14 @@ app.post('/api/auth/faculty/login', authLimiter, async (req, res) => {
     }
 
     try {
-        // 1. Find Teacher
-        const { rows } = await pool.query('SELECT * FROM faculty WHERE UPPER(unique_id) = $1 OR UPPER(name) = $2', [id.toUpperCase(), id.toUpperCase()]);
+        const idLower = id.toLowerCase().trim();
+        const idUpper = id.toUpperCase().trim();
+
+        // 1. Find Teacher (Search by ID, Email, or Name)
+        const { rows } = await pool.query(
+            'SELECT * FROM faculty WHERE UPPER(unique_id) = $1 OR LOWER(email) = $2 OR UPPER(name) = $3', 
+            [idUpper, idLower, idUpper]
+        );
         const teacher = rows[0];
 
         if (!teacher || !teacher.password) {
@@ -533,6 +752,128 @@ app.post('/api/auth/faculty/login', authLimiter, async (req, res) => {
     } catch (err) {
         console.error("Faculty Login Error:", err);
         res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+});
+
+// --- STUDENT SELF-REGISTRATION & PASSWORD LOGIN ---
+
+app.post('/api/auth/student/setup-password', authLimiter, async (req, res) => {
+    const { id: rawId, email, password } = req.body;
+    const id = rawId ? rawId.trim() : '';
+    
+    if (!id || !password) {
+        return res.status(400).json({ status: 'error', message: 'Roll Number/ID and Password are required' });
+    }
+
+    try {
+        const idLower = id.toLowerCase().trim();
+        const idUpper = id.toUpperCase().trim();
+        const { rows } = await pool.query('SELECT * FROM students WHERE UPPER(roll_no) = $1 OR id::text = $2', [idUpper, idLower]);
+        const student = rows[0];
+
+        if (!student) {
+            return res.status(404).json({ status: 'error', message: 'Student ID/Roll No not found' });
+        }
+
+        // 2. Hash Password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // 3. Update Student Record
+        await pool.query('UPDATE students SET password = $1, email = COALESCE($2, email) WHERE id = $3', [hashedPassword, email || student.email, student.id]);
+
+        res.json({ status: 'success', message: 'Password setup successful! You can now login.' });
+    } catch (err) {
+        console.error("Student Setup Error:", err);
+        res.status(500).json({ status: 'error', message: 'Server error during setup' });
+    }
+});
+
+app.post('/api/auth/student/login', authLimiter, async (req, res) => {
+    const { id: rawId, password } = req.body;
+    const id = rawId ? rawId.trim() : '';
+    const clientIp = req.ip || req.connection.remoteAddress;
+
+    if (!id || !password) {
+        return res.status(400).json({ status: 'error', message: 'ID and Password are required' });
+    }
+
+    try {
+        const idLower = id.toLowerCase().trim();
+        const idUpper = id.toUpperCase().trim();
+
+        // 1. Find Student
+        const { rows } = await pool.query(
+            'SELECT * FROM students WHERE UPPER(roll_no) = $1 OR LOWER(email) = $2 OR id::text = $3', 
+            [idUpper, idLower, idLower]
+        );
+        const student = rows[0];
+
+        if (!student || !student.password) {
+            return res.status(401).json({ status: 'error', message: 'Invalid credentials or password not set' });
+        }
+
+        // 2. Verify Password
+        const isMatch = await bcrypt.compare(password, student.password);
+        if (!isMatch) {
+            return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+        }
+
+        // 3. Generate Token
+        const token = jwt.sign(
+            { id: student.id, username: student.name, role: 'Student', class: student.class, ip: clientIp, deviceDNA: req.headers['x-device-dna'] || 'unknown' },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 8 * 60 * 60 * 1000
+        });
+
+        res.json({
+            status: 'success',
+            token,
+            user: { id: student.id, roll_no: student.roll_no, role: 'Student', name: student.name, class: student.class }
+        });
+    } catch (err) {
+        console.error("Student Login Error:", err);
+        res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+});
+
+// --- STUDENT SELF ATTENDANCE API ---
+app.post('/api/student/self-attendance', verifyToken, checkRole(['Student']), async (req, res) => {
+    const { student_id, type } = req.body; // type morning/evening doesn't matter for general "Present"
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        await pool.query(
+            `INSERT INTO attendance (student_id, date, status, marked_by) 
+             VALUES ($1, $2, $3, NULL) 
+             ON CONFLICT (student_id, date) DO UPDATE SET status = EXCLUDED.status RETURNING id`,
+            [student_id, today, 'Present']
+        );
+        res.status(201).json({ status: 'success', message: 'Attendance marked as Present' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to mark self attendance' });
+    }
+});
+
+app.get('/api/student/self-attendance', verifyToken, checkRole(['Student']), async (req, res) => {
+    const { student_id, date } = req.query;
+    try {
+        const { rows } = await pool.query(
+            'SELECT * FROM attendance WHERE student_id = $1 AND date = $2',
+            [student_id, date]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch attendance' });
     }
 });
 
@@ -585,7 +926,65 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     }
 });
 
-// Attendance API
+// Faculty Attendance API
+app.get('/api/faculty/attendance', verifyToken, checkRole(['Admin', 'Faculty']), async (req, res) => {
+    const { faculty_id, date } = req.query;
+    try {
+        let query = 'SELECT a.*, f.name, f.unique_id FROM faculty_attendance a JOIN faculty f ON a.faculty_id = f.id';
+        const params = [];
+        const conditions = [];
+
+        if (faculty_id) { params.push(faculty_id); conditions.push(`a.faculty_id = $${params.length}`); }
+        if (date) { params.push(date); conditions.push(`a.date = $${params.length}`); }
+
+        if (conditions.length > 0) query += ' WHERE ' + conditions.join(' AND ');
+        query += ' ORDER BY a.date DESC';
+
+        const { rows } = await pool.query(query, params);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch faculty attendance' });
+    }
+});
+
+app.post('/api/faculty/attendance', verifyToken, checkRole(['Faculty', 'Admin']), async (req, res) => {
+    const { faculty_id, type, time, date } = req.body;
+    try {
+        const queryDate = date || new Date().toISOString().split('T')[0];
+        // Insert empty state if missing, then update specific time
+        await pool.query(
+            `INSERT INTO faculty_attendance (faculty_id, date) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+            [faculty_id, queryDate]
+        );
+        
+        let updateQuery = '';
+        if (type === 'morning') {
+            updateQuery = `UPDATE faculty_attendance SET morning_time = $1 WHERE faculty_id = $2 AND date = $3 RETURNING *`;
+        } else if (type === 'evening') {
+            updateQuery = `UPDATE faculty_attendance SET evening_time = $1 WHERE faculty_id = $2 AND date = $3 RETURNING *`;
+        } else {
+            return res.status(400).json({ status: 'error', message: 'Invalid attendance type' });
+        }
+        
+        const result = await pool.query(updateQuery, [time, faculty_id, queryDate]);
+        
+        // Update overall status
+        const row = result.rows[0];
+        let newStatus = 'Pending';
+        if (row.morning_time && row.evening_time) newStatus = 'Present';
+        else if (row.morning_time || row.evening_time) newStatus = 'Half Day';
+        
+        await pool.query(`UPDATE faculty_attendance SET status = $1 WHERE id = $2`, [newStatus, row.id]);
+        
+        res.status(201).json({ id: row.id, faculty_id, status: newStatus });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to mark faculty attendance' });
+    }
+});
+
+// Student Attendance API
 app.get('/api/attendance', verifyToken, async (req, res) => {
     const { date, class_name } = req.query;
     try {
@@ -792,11 +1191,23 @@ app.post('/api/fees/verify-payment', async (req, res) => {
 });
 
 // Live Classes API
+app.get('/api/live-classes/all', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            'SELECT l.*, f.name as teacher_name FROM live_classes l JOIN faculty f ON l.teacher_id = f.id ORDER BY l.start_time ASC'
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch all live classes' });
+    }
+});
+
 app.get('/api/live-classes/:className', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            'SELECT l.*, f.name as teacher_name FROM live_classes l JOIN faculty f ON l.teacher_id = f.id WHERE l.class_name = $1 AND l.status = $2 ORDER BY l.start_time ASC',
-            [req.params.className, 'Scheduled']
+            'SELECT l.*, f.name as teacher_name FROM live_classes l JOIN faculty f ON l.teacher_id = f.id WHERE l.class_name = $1 AND l.start_time > NOW() - INTERVAL \'90 minutes\' ORDER BY l.start_time ASC',
+            [req.params.className]
         );
         res.json(rows);
     } catch (err) {
@@ -806,14 +1217,24 @@ app.get('/api/live-classes/:className', async (req, res) => {
 });
 
 app.post('/api/live-classes', async (req, res) => {
-    const { teacher_id, class_name, subject, meeting_link, start_time, topic, teacher_name } = req.body;
+    const { teacher_id, class_name, subject, meeting_link, start_time, topic } = req.body;
     try {
-        // Try to find teacher_id from DB if not provided or invalid
-        let finalTeacherId = teacher_id;
-        if (!finalTeacherId || isNaN(parseInt(finalTeacherId))) {
+        let finalTeacherId = null;
+        
+        // Find numeric faculty ID starting with unique_id lookup
+        const { rows: facultyLookup } = await pool.query(
+            'SELECT id FROM faculty WHERE unique_id = $1 OR id::text = $2 LIMIT 1',
+            [teacher_id, String(teacher_id)]
+        );
+        
+        if (facultyLookup.length > 0) {
+            finalTeacherId = facultyLookup[0].id;
+        } else {
+            // Fallback to first available faculty if absolutely necessary, or return error
             const { rows: fallback } = await pool.query('SELECT id FROM faculty LIMIT 1');
             finalTeacherId = fallback[0]?.id || 1;
         }
+
         const result = await pool.query(
             'INSERT INTO live_classes (teacher_id, class_name, subject, meeting_link, start_time, topic) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
             [finalTeacherId, class_name, subject, meeting_link, start_time, topic]
@@ -920,6 +1341,10 @@ app.post('/api/admin/run-backup', verifyToken, checkRole(['Admin']), async (req,
     }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on all interfaces at port ${PORT}`);
-});
+export default app;
+
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on all interfaces at port ${PORT}`);
+    });
+}

@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { mockApi } from '../../utils/mockApi';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../Common/Toaster';
+import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../config';
+import { mockApi } from '../../utils/mockApi';
 
 const StudentManagement = () => {
     const { t, language } = useLanguage();
     const { addToast } = useToast();
+    const { secureApi } = useAuth();
     const [name, setName] = useState('');
     const [className, setClassName] = useState('10A');
     const [parentName, setParentName] = useState('');
@@ -26,11 +29,21 @@ const StudentManagement = () => {
     
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
-    
-    const TEST_ID_PHOTO = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop"; // Schematic hybrid avatar
+
+    const fetchStudents = async () => {
+        try {
+            const res = await secureApi(`${API_URL}/api/students`);
+            if (res.ok) {
+                const data = await res.json();
+                setStudentList(data);
+            }
+        } catch (e) {
+            console.error("Student fetch failed", e);
+        }
+    };
 
     useEffect(() => {
-        setStudentList(mockApi.getDB().studentRegistry || []);
+        fetchStudents();
 
         // Cleanup camera on component unmount
         return () => {
@@ -41,11 +54,17 @@ const StudentManagement = () => {
         };
     }, []);
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this student and all their records?")) {
-            mockApi.deleteStudent(id);
-            setStudentList(prev => prev.filter(s => s.id !== id));
-            addToast("Student record purged successfully.", "info");
+            try {
+                const res = await secureApi(`${API_URL}/api/students/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    addToast("Student record purged successfully from database.", "info");
+                    fetchStudents();
+                }
+            } catch (e) {
+                addToast("Failed to delete student.", "error");
+            }
         }
     };
 
@@ -65,14 +84,32 @@ const StudentManagement = () => {
         }
         
         try {
-            const newStudent = await mockApi.onboardStudent(name, className, parentName, dob, capturedImage);
-            setRecentStudent(newStudent);
-            setStudentList(prev => [...prev, newStudent]);
-            setName('');
-            setParentName('');
-            setDob('');
-            setCapturedImage(null);
-            addToast(`Student ID Signed: ${newStudent.id}`, "success");
+            const payload = {
+                name,
+                class: className,
+                parent_name: parentName,
+                dob,
+                face_image: capturedImage
+            };
+
+            const res = await secureApi(`${API_URL}/api/students`, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                const newStudent = result.data;
+                setRecentStudent(newStudent);
+                fetchStudents();
+                setName('');
+                setParentName('');
+                setDob('');
+                setCapturedImage(null);
+                addToast(`Student Onboarded Successfully: ${newStudent.unique_id}`, "success");
+            } else {
+                addToast("Enrollment failed. Please check server logs.", "error");
+            }
         } catch (err) {
             addToast(err.message, "error");
         }
@@ -177,34 +214,31 @@ const StudentManagement = () => {
                             let progress = 30; // 30% for just detecting face
                             if (detection.landmarks) progress += 40; // 70% for landmarks (eyes, nose, mouth)
                             
-                            // Check for "Multi-angle" by looking at landmarks distribution
-                            // (Simulated: if landmarks are within a good range, we hit 100)
-                            if (progress >= 70) {
-                                setScanProgress(prev => Math.min(100, prev + 15));
-                            } else {
-                                setScanProgress(prev => Math.max(10, prev - 5));
-                            }
-
                             // If we hit 100%, crop to face
-                            if (scanProgress >= 100) {
-                                const box = detection.detection.box;
-                                const pad = 30; // Padding around face
-                                const cropCanvas = document.createElement('canvas');
-                                cropCanvas.width = box.width + pad * 2;
-                                cropCanvas.height = box.height + pad * 2;
-                                const cropCtx = cropCanvas.getContext('2d');
+                            setScanProgress(prev => {
+                                const next = progress >= 70 ? Math.min(100, prev + 15) : Math.max(0, prev - 10);
                                 
-                                cropCtx.drawImage(
-                                    video, 
-                                    box.x - pad, box.y - pad, box.width + pad * 2, box.height + pad * 2, 
-                                    0, 0, cropCanvas.width, cropCanvas.height
-                                );
-                                
-                                const croppedData = cropCanvas.toDataURL('image/jpeg');
-                                setCapturedImage(croppedData);
-                                stopCamera();
-                                addToast("Biometric Lock: Face Profile Captured!", "success");
-                            }
+                                if (next >= 100) {
+                                    const box = detection.detection.box;
+                                    const pad = 30; // Padding around face
+                                    const cropCanvas = document.createElement('canvas');
+                                    cropCanvas.width = box.width + pad * 2;
+                                    cropCanvas.height = box.height + pad * 2;
+                                    const cropCtx = cropCanvas.getContext('2d');
+                                    
+                                    cropCtx.drawImage(
+                                        video, 
+                                        box.x - pad, box.y - pad, box.width + pad * 2, box.height + pad * 2, 
+                                        0, 0, cropCanvas.width, cropCanvas.height
+                                    );
+                                    
+                                    const croppedData = cropCanvas.toDataURL('image/jpeg');
+                                    setCapturedImage(croppedData);
+                                    stopCamera();
+                                    addToast("Biometric Lock: Face Profile Captured!", "success");
+                                }
+                                return next;
+                            });
                         } else {
                             setLandmarks(null);
                             setScanProgress(prev => Math.max(0, prev - 10));
@@ -497,15 +531,17 @@ const StudentManagement = () => {
                             </div>
                             <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <div>
-                                    <div style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--accent-blue)' }}>{s.id}</div>
-                                    <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>{s.parentName}</div>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--accent-blue)' }}>{s.unique_id || s.id}</div>
+                                    <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>{s.parent_name || s.parentName}</div>
                                 </div>
-                                <button 
-                                    onClick={() => handleDelete(s.id)}
-                                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef444450', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.8rem' }}
-                                >
-                                    🗑️
-                                </button>
+                                {useAuth().user?.role === 'Admin' && (
+                                    <button 
+                                        onClick={() => handleDelete(s.id)}
+                                        style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef444450', borderRadius: '8px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.8rem' }}
+                                    >
+                                        🗑️
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )) : (

@@ -1,5 +1,53 @@
 [
   {
+    "id": 1775062555257,
+    "timestamp": "2026-04-01T16:55:55.257Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "127.0.0.1",
+    "details": "Invalid or expired OTP: smith@school.edu"
+  },
+  {
+    "id": 1775054147125,
+    "timestamp": "2026-04-01T14:35:47.125Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "127.0.0.1",
+    "details": "Invalid or expired OTP: SPRHG@King"
+  },
+  {
+    "id": 1775052189998,
+    "timestamp": "2026-04-01T14:03:09.998Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "127.0.0.1",
+    "details": "Invalid or expired OTP: SPRHD9792@king"
+  },
+  {
+    "id": 1775052174893,
+    "timestamp": "2026-04-01T14:02:54.893Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "127.0.0.1",
+    "details": "Invalid or expired OTP: SPRHD9792@king"
+  },
+  {
+    "id": 1775052160475,
+    "timestamp": "2026-04-01T14:02:40.475Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "127.0.0.1",
+    "details": "Invalid or expired OTP: SPRHD@king"
+  },
+  {
+    "id": 1775052122433,
+    "timestamp": "2026-04-01T14:02:02.433Z",
+    "type": "INVALID_OTP_ATTEMPT",
+    "user": "ADM-001",
+    "ip": "127.0.0.1",
+    "details": "Invalid or expired OTP: SPRHD@king"
+  },
+  {
     "id": 1774801420598,
     "timestamp": "2026-03-29T16:23:40.598Z",
     "type": "INVALID_OTP_ATTEMPT",

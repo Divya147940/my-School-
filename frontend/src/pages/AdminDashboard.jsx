@@ -15,6 +15,7 @@ import AttendanceControl from '../components/Admin/AttendanceControl';
 import ReviewManager from '../components/Admin/ReviewManager';
 import FacultyManagement from '../components/Admin/FacultyManagement';
 import AdminStudentDirectory from '../components/Admin/AdminStudentDirectory';
+import StudentManagement from '../components/Faculty/StudentManagement';
 import AdminAttendanceDashboard from '../components/Admin/AdminAttendanceDashboard';
 import InquiryTracker from '../components/Admin/InquiryTracker';
 import FeeCollector from '../components/Common/FeeCollector';
@@ -75,27 +76,43 @@ const AdminDashboard = () => {
     } catch (e) { console.error('Security logs fetch failed', e); }
   };
 
+  const fetchStats = async () => {
+    try {
+      const res = await secureApi(`${API_URL}/api/admin/stats`);
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch (e) { console.error('Stats fetch failed', e); }
+  };
+
+  const fetchRecentTxns = async () => {
+    try {
+      const res = await secureApi(`${API_URL}/api/fees/ledger`);
+      if (res.ok) {
+        const data = await res.json();
+        setRecentTransactions(data.slice(0, 5));
+      }
+    } catch (e) { console.error('Txns fetch failed', e); }
+  };
+
   useEffect(() => {
     fetchBackupHistory();
     fetchSecurityLogs();
-  }, []);
-
-  useEffect(() => {
-    // Simulate initial loading and fetch real data
+    fetchStats();
+    fetchRecentTxns();
+    
     const timer = setTimeout(() => {
-      const systemStats = mockApi.getSystemStats();
-      const txns = mockApi.getRecentTransactions(5);
-      setStats(systemStats);
-      setRecentTransactions(txns);
       setLoading(false);
       addToast(`Welcome back, ${user?.name || 'Admin'}!`, 'success');
-    }, 1200);
+    }, 1000);
     return () => clearTimeout(timer);
-  }, [addToast, user]);
+  }, []);
 
   const navItems = [
     { name: 'Overview', icon: '💎' },
     { name: 'Student Directory', icon: '🎓' },
+    { name: 'Register New Student', icon: '👤' },
     { name: "Today's Attendance", icon: '📊' },
     { name: 'Fee management', icon: '💰' },
     { name: 'Leads & Inquiries', icon: '📥' },
@@ -187,10 +204,10 @@ const AdminDashboard = () => {
                 <tbody>
                   {recentTransactions.length > 0 ? recentTransactions.map((txn) => (
                     <tr key={txn.id}>
-                      <td>{txn.studentName}</td>
-                      <td>{txn.class || 'N/A'}</td>
-                      <td>₹{txn.amount}</td>
-                      <td><span className={`badge badge-${txn.status?.toLowerCase() || 'pending'}`}>{txn.status}</span></td>
+                      <td>{txn.student_name}</td>
+                      <td>{new Date(txn.created_at).toLocaleDateString()}</td>
+                      <td>₹{Number(txn.amount).toLocaleString()}</td>
+                      <td><span className="badge badge-paid">Success</span></td>
                     </tr>
                   )) : (
                     <tr>
@@ -204,6 +221,8 @@ const AdminDashboard = () => {
         );
       case 'Student Directory':
         return <div className="feature-box"><AdminStudentDirectory /></div>;
+      case 'Register New Student':
+        return <div className="feature-box"><StudentManagement /></div>;
       case "Today's Attendance":
         return <div className="feature-box"><AdminAttendanceDashboard /></div>;
       case 'Fee management':

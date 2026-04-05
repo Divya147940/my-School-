@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { mockApi } from '../utils/mockApi';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
   BarChart, Bar, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -27,6 +28,7 @@ import StudentIdCard from '../components/Student/StudentIdCard';
 import HallOfFame from '../components/Common/HallOfFame';
 import BusTracker from '../components/Common/BusTracker';
 import FaceAttendance from '../components/Student/FaceAttendance';
+import StudentSelfAttendance from '../components/Student/StudentSelfAttendance';
 import StudentAttendanceAudit from '../components/Common/StudentAttendanceAudit';
 import CertificateGenerator from '../components/Common/CertificateGenerator';
 import { useAuth } from '../context/AuthContext';
@@ -92,6 +94,25 @@ const StudentDashboard = () => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [recentMessages, setRecentMessages] = useState([]);
+  const [pendingAssignmentsCount, setPendingAssignmentsCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      const msgs = mockApi.getMessages({ 
+        role: 'student', 
+        userId: user.id || 'STU2026-001', 
+        className: user.class || '10A' 
+      });
+      setRecentMessages(msgs.slice(0, 3));
+
+      // Standardized fetching for assignments count
+      const asms = mockApi.getAssignments().filter(a => 
+        (a.class === user.class || a.class === `Class ${user.class}`) && a.status !== 'Completed'
+      );
+      setPendingAssignmentsCount(asms.length);
+    }
+  }, [user]);
 
   const juniorClasses = ['Class 0', 'Class 1', 'Class 2', 'Class 3', 'Nursery', 'LKG', 'UKG', '0', '1', '2', '3'];
   const isJunior = juniorClasses.includes(user?.class);
@@ -114,7 +135,7 @@ const StudentDashboard = () => {
     { name: 'Brain Boost Hub', icon: '🧠', juniorOnly: true },
     { name: 'My Courses', icon: isJunior ? '🌈' : '📚' },
     { name: 'Live Classes', icon: isJunior ? '📺' : '🎥' },
-    // { name: 'Face Attendance', icon: '👤✨' },
+    { name: 'Self Attendance', icon: '👤✨' },
     { name: 'Attendance', icon: isJunior ? '⭐' : '📝' },
     { name: 'Assignments', icon: isJunior ? '🦄' : '📚' },
     { name: 'Results', icon: isJunior ? '🎉' : '🏆' },
@@ -249,13 +270,56 @@ const StudentDashboard = () => {
                 <div style={{ color: 'var(--text-secondary)' }}>Academic Grade</div>
               </div>
               <div className="student-stat-card glass-panel card-vibe">
-                <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-primary)' }}>2 Active</div>
+                <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-primary)' }}>{pendingAssignmentsCount} Active</div>
                 <div style={{ color: 'var(--text-secondary)' }}>Assignments</div>
               </div>
               <div className="student-stat-card glass-panel card-vibe">
                 <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#10b981' }}>Paid</div>
                 <div style={{ color: 'var(--text-secondary)' }}>Fee Status</div>
               </div>
+            </div>
+
+            {/* NEW: RECENT ANNOUNCEMENTS WIDGET */}
+            <div className="announcements-section glass-panel" style={{ marginBottom: '30px', padding: '30px', borderRadius: '28px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 className="section-title" style={{ margin: 0 }}>Latest School Announcements</h3>
+                    <button 
+                        onClick={() => setActiveTab('Inbox')}
+                        style={{ background: 'none', border: 'none', color: 'var(--accent-blue)', fontWeight: '700', cursor: 'pointer', fontSize: '0.9rem' }}
+                    >
+                        View All Messages 💬
+                    </button>
+                </div>
+                <div className="announcements-list" style={{ display: 'grid', gap: '15px' }}>
+                    {recentMessages.length === 0 ? (
+                        <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', padding: '10px' }}>No new announcements for your class.</p>
+                    ) : (
+                        recentMessages.map(msg => (
+                            <div key={msg.id} className="announcement-item" style={{ 
+                                padding: '15px', 
+                                background: 'rgba(255,255,255,0.03)', 
+                                borderRadius: '16px', 
+                                border: '1px solid var(--glass-border)',
+                                position: 'relative',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '15px'
+                            }}>
+                                <div style={{ fontSize: '1.5rem' }}>{msg.senderRole === 'admin' ? '📢' : '👨‍🏫'}</div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                        <span style={{ fontWeight: '800', fontSize: '0.85rem', color: msg.senderRole === 'admin' ? 'var(--accent-purple)' : 'var(--accent-blue)' }}>
+                                            {msg.senderName} • {msg.senderRole.toUpperCase()}
+                                        </span>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{new Date(msg.timestamp).toLocaleDateString()}</span>
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: '1.5', color: '#fff' }}>{msg.content}</p>
+                                    {msg.attachment && <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--accent-blue)' }}>📄 {msg.attachment}</div>}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
 
             <div className="analytics-grid responsive-grid-2">
@@ -331,6 +395,8 @@ const StudentDashboard = () => {
         );
       case 'Scan Attendance':
         return <div className="feature-section"><QRAttendance user={{ name: studentInfo.name, role: 'student' }} /></div>;
+      case 'Self Attendance':
+        return <div className="feature-section"><StudentSelfAttendance /></div>;
       case 'Face Attendance':
         return <div className="feature-section"><FaceAttendance /></div>;
       case 'Live Classes':

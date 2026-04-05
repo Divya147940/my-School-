@@ -1,5 +1,37 @@
 [
   {
+    "id": 1775327400718,
+    "timestamp": "2026-04-04T18:30:00.718Z",
+    "status": "Success",
+    "cloudSync": "Skipped (No Config)",
+    "fileName": "backup-2026-04-04T18-30-00-432Z.zip",
+    "size": "3.70 KB"
+  },
+  {
+    "id": 1775241000505,
+    "timestamp": "2026-04-03T18:30:00.505Z",
+    "status": "Success",
+    "cloudSync": "Skipped (No Config)",
+    "fileName": "backup-2026-04-03T18-30-00-243Z.zip",
+    "size": "3.47 KB"
+  },
+  {
+    "id": 1775068200615,
+    "timestamp": "2026-04-01T18:30:00.615Z",
+    "status": "Success",
+    "cloudSync": "Skipped (No Config)",
+    "fileName": "backup-2026-04-01T18-30-00-282Z.zip",
+    "size": "3.47 KB"
+  },
+  {
+    "id": 1774981800477,
+    "timestamp": "2026-03-31T18:30:00.478Z",
+    "status": "Success",
+    "cloudSync": "Skipped (No Config)",
+    "fileName": "backup-2026-03-31T18-30-00-181Z.zip",
+    "size": "0.54 KB"
+  },
+  {
     "id": 1774031400435,
     "timestamp": "2026-03-20T18:30:00.435Z",
     "status": "Failed",
