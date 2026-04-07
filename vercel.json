@@ -6,9 +6,16 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/frontend/dist/$1",
-      "check": true
+      "source": "/assets/(.*)",
+      "destination": "/frontend/dist/assets/$1"
+    },
+    {
+      "source": "/models/(.*)",
+      "destination": "/frontend/dist/models/$1"
+    },
+    {
+      "source": "/vite.svg",
+      "destination": "/frontend/dist/vite.svg"
     },
     {
       "source": "/(.*)",
